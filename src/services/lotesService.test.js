@@ -1,0 +1,61 @@
+import React from 'react'
+import { getLotes, createLote, updateLote, deleteLote, getLote } from './lotesService'
+
+// Mockear fetch
+global.fetch = jest.fn()
+
+beforeEach(() => {
+  fetch.mockClear()
+})
+
+describe('loteService', () => {
+  it('getLotes realiza fetch a la URL correcta con headers', async () => {
+    fetch.mockResolvedValueOnce({ json: async () => ([]) })
+
+    await getLotes()
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes', expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: expect.stringContaining('Bearer')
+      })
+    }))
+  })
+
+  it('createLote realiza POST con FormData', async () => {
+    const formData = new FormData()
+    formData.append('lote[nombre]', 'Test Lote')
+
+    fetch.mockResolvedValueOnce({})
+
+    await createLote(formData)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes', expect.objectContaining({
+      method: 'POST',
+      body: formData
+    }))
+  })
+
+  it('updateLote realiza PATCH correctamente', async () => {
+    const formData = new FormData()
+    formData.append('lote[nombre]', 'Nuevo Nombre')
+
+    fetch.mockResolvedValueOnce({})
+
+    await updateLote(1, formData)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes/1', expect.objectContaining({
+      method: 'PATCH',
+      body: formData
+    }))
+  })
+
+  it('deleteLote realiza DELETE correctamente', async () => {
+    fetch.mockResolvedValueOnce({})
+
+    await deleteLote(2)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes/2', expect.objectContaining({
+      method: 'DELETE'
+    }))
+  })
+})

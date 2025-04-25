@@ -5,6 +5,7 @@ export default function App() {
     <div>
       <nav>
         <Link to="/estancias">Estancias</Link>
+        <Link to="/lotes">Lotes</Link>
       </nav>
       <hr />
       <Outlet />
