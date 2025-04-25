@@ -52,4 +52,35 @@ describe('Lotes Form', () => {
       expect(createLote).toHaveBeenCalledTimes(1)
     })
   })
+
+  it('muestra errores si nombre y hectareas no se completan o son inválidas', async () => {
+    render(
+      <MemoryRouter>
+        <Lotes />
+      </MemoryRouter>
+    )
+  
+    const botonCrear = screen.getByRole('button', { name: /crear/i })
+    fireEvent.click(botonCrear)
+  
+    expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
+    expect(await screen.findByText('Las hectáreas son obligatorias')).toBeInTheDocument()
+  
+    // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
+    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Hectareas'), '0')
+  
+    fireEvent.click(botonCrear)
+  
+    expect(await screen.findByText('Debe ser mayor a 0')).toBeInTheDocument()
+
+    // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
+    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Hectareas'), '10001')
+  
+    fireEvent.click(botonCrear)
+  
+    expect(await screen.findByText('Debe ser menor a 10000')).toBeInTheDocument()
+  })
+  
 })

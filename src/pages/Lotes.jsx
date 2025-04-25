@@ -7,7 +7,7 @@ import { getLotes, createLote, updateLote, deleteLote } from '../services/lotesS
 export default function Lotes() {
   const [lotes, setLotes] = useState([])
   const [selected, setSelected] = useState(null)
-  const { register, handleSubmit, reset } = useForm()
+  const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
   const fetchLotes = async () => {
     const data = await getLotes()
@@ -55,11 +55,28 @@ export default function Lotes() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Lotes</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 mb-6">
-        <input {...register('nombre')} placeholder="Nombre" className="block border p-1 w-full" />
+        <input
+          {...register('nombre', { required: 'El nombre es obligatorio' })}
+          placeholder="Nombre"
+          className="block border p-1 w-full"
+        />
+        {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
         <input {...register('lat')} placeholder="Lat" type="number" step="any" className="block border p-1 w-full" />
         <input {...register('long')} placeholder="Long" type="number" step="any" className="block border p-1 w-full" />
         <input {...register('link_mapa')} placeholder="Link mapa" className="block border p-1 w-full" />
-        <input {...register('hectareas')} placeholder="Hectareas" type="number" step="any" className="block border p-1 w-full" />
+        <input
+          {...register('hectareas', {
+            required: 'Las hectáreas son obligatorias',
+            min: { value: 0.01, message: 'Debe ser mayor a 0' },
+            max: { value: 10000, message: 'Debe ser menor a 10000' },
+            valueAsNumber: true
+          })}
+          placeholder="Hectareas"
+          type="number"
+          step="0.01"
+          className="block border p-1 w-full"
+        />
+        {errors.hectareas && <p className="text-red-500">{errors.hectareas.message}</p>}
         <input {...register('estancia_id')} placeholder="Estancia ID" className="block border p-1 w-full" />
         <input type="file" multiple {...register('adjuntos')} className="block" />
         <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">{selected ? 'Actualizar' : 'Crear'}</button>
