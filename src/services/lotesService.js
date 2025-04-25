@@ -1,39 +1,43 @@
-const API_URL = 'http://localhost:3000/estancias'
+const API_URL = 'http://localhost:3000/lotes'
 
 const getAuthHeaders = () => {
   const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzQ1NTk5MjE3LCJleHAiOjE3NDU2ODU2MTcsImp0aSI6Ijk3OGQxYTdjLTc0ODAtNGJkMS1hZTRmLTcwN2NmOWZiOThlZiJ9.8fNkfVeyA_Xm_DJdmMe144WVvy8lEh6PY_wyqmiZ9EM'
   return {
-    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   }
 }
 
-export const getEstancias = async () => {
+export const getLotes = async () => {
   const res = await fetch(API_URL, {
     headers: getAuthHeaders(),
   })
-  debugger;
   return await res.json()
 }
 
-export const createEstancia = async (estancia) => {
-  console.log(estancia)
+export const getLote = async (id) => {
+  const res = await fetch(`${API_URL}/${id}`, {
+    headers: getAuthHeaders(),
+  })
+  return await res.json()
+}
+
+export const createLote = async (formData) => {
   await fetch(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ estancia }),
+    body: formData,
   })
 }
 
-export const updateEstancia = async (id, estancia) => {
+export const updateLote = async (id, formData) => {
   await fetch(`${API_URL}/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ estancia }),
+    body: formData,
   })
 }
 
-export const deleteEstancia = async (id) => {
+export const deleteLote = async (id) => {
   await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
