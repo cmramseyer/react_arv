@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { getLotes, createLote, updateLote, deleteLote } from '../services/lotesService'
+import { getEstancias } from '../services/estanciasService'
 
 export default function Lotes() {
   const [lotes, setLotes] = useState([])
+  const [estancias, setEstancias] = useState([])
   const [selected, setSelected] = useState(null)
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
@@ -13,6 +15,11 @@ export default function Lotes() {
     const data = await getLotes()
     setLotes(data)
   }
+
+  const fetchEstancias = async () => {
+    const data = await getEstancias()
+    setEstancias(data)
+  }  
 
   const onSubmit = async (data) => {
     const formData = new FormData()
@@ -49,6 +56,7 @@ export default function Lotes() {
 
   useEffect(() => {
     fetchLotes()
+    fetchEstancias()
   }, [])
 
   return (
@@ -77,7 +85,17 @@ export default function Lotes() {
           className="block border p-1 w-full"
         />
         {errors.hectareas && <p className="text-red-500">{errors.hectareas.message}</p>}
-        <input {...register('estancia_id')} placeholder="Estancia ID" className="block border p-1 w-full" />
+
+        <select {...register('estancia_id', { required: 'La estancia es obligatoria' })} className="block border p-1 w-full">
+          <option value="">Selecciona una estancia</option>
+          {estancias.map(estancia => (
+            <option key={estancia.id} value={estancia.id}>
+              {estancia.nombre}
+            </option>
+          ))}
+        </select>
+        {errors.estancia_id && <p className="text-red-500">{errors.estancia_id.message}</p>}
+
         <input type="file" multiple {...register('adjuntos')} className="block" />
         <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">{selected ? 'Actualizar' : 'Crear'}</button>
       </form>

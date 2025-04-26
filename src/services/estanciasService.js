@@ -1,7 +1,7 @@
 const API_URL = 'http://localhost:3000/estancias'
 
 const getAuthHeaders = () => {
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzQ1NTk5MjE3LCJleHAiOjE3NDU2ODU2MTcsImp0aSI6Ijk3OGQxYTdjLTc0ODAtNGJkMS1hZTRmLTcwN2NmOWZiOThlZiJ9.8fNkfVeyA_Xm_DJdmMe144WVvy8lEh6PY_wyqmiZ9EM'
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzQ1NjI2ODc2LCJleHAiOjE3NDU3MTMyNzYsImp0aSI6IjRjYTRkZDhhLTMzZDUtNGI2ZC04ZTMxLTI2ZGE4Y2IzOGRiZSJ9.2KxlRU3dZUgx7HSiXGCn1PYFGj1PncpaLLdfdZrCExQ'
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
