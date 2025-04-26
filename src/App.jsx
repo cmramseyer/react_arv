@@ -8,6 +8,7 @@ export default function App() {
         <Link to="/estancias">Estancias</Link>
         <Link to="/lotes">Lotes</Link>
         <Link to="/productos">Productos</Link>
+        <Link to="/ordenes_fumigacion">Ordenes</Link>
       </nav>
       <hr />
       <Outlet />

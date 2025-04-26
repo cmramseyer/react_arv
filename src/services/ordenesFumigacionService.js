@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/lotes'
+const API_URL = 'http://localhost:3000/ordenes_fumigacion'
 
 const getAuthHeaders = () => {
   const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzQ1NjI2ODc2LCJleHAiOjE3NDU3MTMyNzYsImp0aSI6IjRjYTRkZDhhLTMzZDUtNGI2ZC04ZTMxLTI2ZGE4Y2IzOGRiZSJ9.2KxlRU3dZUgx7HSiXGCn1PYFGj1PncpaLLdfdZrCExQ'
@@ -7,49 +7,53 @@ const getAuthHeaders = () => {
   }
 }
 
-export const getLotes = async () => {
+export const getOrdenesFumigacion = async () => {
   const res = await fetch(API_URL, {
     headers: getAuthHeaders(),
   })
   return await res.json()
 }
 
-export const getLotesPorEstancia = async (estancia_id) => {
-  const url = new URL(API_URL)
-  url.searchParams.append('estancia_id', estancia_id)
-
-  const res = await fetch(url.toString(), {
-    headers: getAuthHeaders(),
-  })
-  return await res.json()
-}
-
-export const getLote = async (id) => {
+export const getOrdenFumigacion = async (id) => {
   const res = await fetch(`${API_URL}/${id}`, {
     headers: getAuthHeaders(),
   })
   return await res.json()
 }
 
-export const createLote = async (formData) => {
+export const createOrdenFumigacion = async (data) => {
   await fetch(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: formData,
+    body: data,
   })
 }
 
-export const updateLote = async (id, formData) => {
+export const updateOrdenFumigacion = async (id, data) => {
   await fetch(`${API_URL}/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
-    body: formData,
+    body: data,
   })
 }
 
-export const deleteLote = async (id) => {
+export const terminarOrdenFumigacion = async (id, data) => {
+  await fetch(`${API_URL}/${id}/terminar`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: data,
+  })
+}
+
+export const deleteOrdenFumigacion = async (id) => {
   await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+}
+
+export const imprimirOrdenFumigacion = async (id) => {
+  await fetch(`${API_URL}/${id}/pdf`, {
     headers: getAuthHeaders(),
   })
 }
