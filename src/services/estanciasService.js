@@ -12,7 +12,6 @@ export const getEstancias = async () => {
   const res = await fetch(API_URL, {
     headers: getAuthHeaders(),
   })
-  debugger;
   return await res.json()
 }
 

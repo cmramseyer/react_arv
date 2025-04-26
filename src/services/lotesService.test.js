@@ -1,8 +1,7 @@
-import React from 'react'
 import { getLotes, createLote, updateLote, deleteLote, getLote } from './lotesService'
 
 // Mockear fetch
-global.fetch = jest.fn()
+globalThis.fetch = jest.fn()
 
 beforeEach(() => {
   fetch.mockClear()
@@ -32,6 +31,18 @@ describe('loteService', () => {
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes', expect.objectContaining({
       method: 'POST',
       body: formData
+    }))
+  })
+
+  it('getLote realiza GET con id', async () => {
+    fetch.mockResolvedValueOnce({ json: async () => ({}) })
+
+    await getLote(5)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes/5', expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: expect.stringContaining('Bearer')
+      })
     }))
   })
 

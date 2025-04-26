@@ -1,3 +1,6 @@
+import { React } from 'react'
+import PropTypes from 'prop-types'
+
 export default function EstanciaList({ estancias, onEdit, onDelete }) {
   return (
     <table>
@@ -26,4 +29,10 @@ export default function EstanciaList({ estancias, onEdit, onDelete }) {
       </tbody>
     </table>
   )
+}
+
+EstanciaList.propTypes = {
+  estancias: PropTypes.array.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 }

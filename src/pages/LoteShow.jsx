@@ -25,7 +25,7 @@ export default function LoteShow() {
         {lote.adjuntos?.map((adj, idx) => (
           <li key={idx}>
             {adj.url.endsWith('.pdf') ? (
-              <a href={adj.url} className="text-blue-600 underline" target="_blank">Ver PDF</a>
+              <a href={adj.url} className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">Ver PDF</a>
             ) : (
               <img src={adj.url} alt="adjunto" className="w-32 mt-2" />
             )}

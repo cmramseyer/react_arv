@@ -1,5 +1,7 @@
+import { React } from 'react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import PropTypes from 'prop-types'
 
 export default function EstanciaForm({ onSubmit, estancia }) {
   const {
@@ -70,4 +72,9 @@ export default function EstanciaForm({ onSubmit, estancia }) {
       <button type="submit">{estancia ? 'Actualizar' : 'Crear'}</button>
     </form>
   )
+}
+
+EstanciaForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  estancia: PropTypes.array.isRequired,
 }

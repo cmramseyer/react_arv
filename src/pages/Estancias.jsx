@@ -1,3 +1,4 @@
+import { React } from 'react'
 import { useEffect, useState } from 'react'
 import { getEstancias, createEstancia, updateEstancia, deleteEstancia } from '../services/estanciasService'
 import EstanciaForm from '../components/EstanciaForm'
