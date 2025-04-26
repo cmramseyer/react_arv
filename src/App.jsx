@@ -6,6 +6,7 @@ export default function App() {
       <nav>
         <Link to="/estancias">Estancias</Link>
         <Link to="/lotes">Lotes</Link>
+        <Link to="/productos">Productos</Link>
       </nav>
       <hr />
       <Outlet />

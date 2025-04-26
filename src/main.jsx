@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Estancias from './pages/Estancias'
 import Lotes from './pages/Lotes'
 import LoteShow from './pages/LoteShow'
+import Productos from './pages/Productos'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/estancias" element={<Estancias />} />
         <Route path="/lotes" element={<Lotes />} />
         <Route path="/lotes/:id" element={<LoteShow />} />
+        <Route path="/productos" element={<Productos />} />
       </Route>
     </Routes>
   </BrowserRouter>
