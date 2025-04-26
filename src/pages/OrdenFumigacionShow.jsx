@@ -59,7 +59,17 @@ export default function OrdenFumigacionShow() {
         <button onClick={handleEditar} className="bg-yellow-500 text-white px-4 py-2 rounded">Editar</button>
         <button onClick={handleTerminar} className="bg-green-600 text-white px-4 py-2 rounded">Terminar</button>
         <button onClick={handleBorrar} className="bg-red-600 text-white px-4 py-2 rounded">Borrar</button>
-        <button onClick={handleImprimir} className="bg-blue-600 text-white px-4 py-2 rounded">Imprimir</button>
+        <button
+          type="button"
+          onClick={async () => {
+            await imprimirOrdenFumigacion(id)
+            navigate('/ordenes_fumigacion')
+          }}
+          className={`mt-4 bg-blue-500 text-white px-4 py-2 rounded ${orden.estado_orden !== 'activa' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={orden.estado_orden !== 'activa'}
+        >
+          Imprimir Orden
+        </button>
       </div>
     </div>
   )
