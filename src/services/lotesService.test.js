@@ -5,6 +5,7 @@ globalThis.fetch = jest.fn()
 
 beforeEach(() => {
   fetch.mockClear()
+  localStorage.setItem('arv_token', 'fake-token')
 })
 
 describe('loteService', () => {
