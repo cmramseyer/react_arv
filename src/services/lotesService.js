@@ -1,14 +1,16 @@
 const API_URL = 'http://localhost:3000/lotes'
 
+import { fetchWithAuth } from "./fetchWithAuth"
+
 const getAuthHeaders = () => {
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzQ1NjI2ODc2LCJleHAiOjE3NDU3MTMyNzYsImp0aSI6IjRjYTRkZDhhLTMzZDUtNGI2ZC04ZTMxLTI2ZGE4Y2IzOGRiZSJ9.2KxlRU3dZUgx7HSiXGCn1PYFGj1PncpaLLdfdZrCExQ'
+  const token = localStorage.getItem('arv_token')
   return {
     Authorization: `Bearer ${token}`,
   }
 }
 
 export const getLotes = async () => {
-  const res = await fetch(API_URL, {
+  const res = await fetchWithAuth(API_URL, {
     headers: getAuthHeaders(),
   })
   return await res.json()
@@ -18,21 +20,21 @@ export const getLotesPorEstancia = async (estancia_id) => {
   const url = new URL(API_URL)
   url.searchParams.append('estancia_id', estancia_id)
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAuth(url.toString(), {
     headers: getAuthHeaders(),
   })
   return await res.json()
 }
 
 export const getLote = async (id) => {
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await fetchWithAuth(`${API_URL}/${id}`, {
     headers: getAuthHeaders(),
   })
   return await res.json()
 }
 
 export const createLote = async (formData) => {
-  await fetch(API_URL, {
+  await fetchWithAuth(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: formData,
@@ -40,7 +42,7 @@ export const createLote = async (formData) => {
 }
 
 export const updateLote = async (id, formData) => {
-  await fetch(`${API_URL}/${id}`, {
+  await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: formData,
@@ -48,7 +50,7 @@ export const updateLote = async (id, formData) => {
 }
 
 export const deleteLote = async (id) => {
-  await fetch(`${API_URL}/${id}`, {
+  await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   })

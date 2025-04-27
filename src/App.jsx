@@ -1,5 +1,6 @@
 import { React } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import { signOut } from './services/loginService'
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
         <Link to="/lotes">Lotes</Link>
         <Link to="/productos">Productos</Link>
         <Link to="/ordenes_fumigacion">Ordenes</Link>
+        <Link onClick={() => signOut()}to="/">Sign Out</Link>
       </nav>
       <hr />
       <Outlet />
