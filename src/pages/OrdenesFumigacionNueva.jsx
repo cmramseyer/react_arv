@@ -5,6 +5,8 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
+import DosisFields from '../components/DosisFields'
+import SelectField from '../components/SelectField'
 
 export default function OrdenFumigacionNueva() {
   const { register, handleSubmit, control, watch, setValue } = useForm({
@@ -12,11 +14,6 @@ export default function OrdenFumigacionNueva() {
       lote_id: '',
       dosis: [{ producto_id: '', cantidad: '' }]
     }
-  })
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'dosis'
   })
 
   const [estancias, setEstancias] = useState([])
@@ -61,53 +58,23 @@ export default function OrdenFumigacionNueva() {
       <h2 className="text-xl font-bold mb-4">Nueva Orden de Fumigación</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label>Estancia</label>
-          <select {...register('estancia_id', { required: true })} className="block w-full border p-2">
-            <option value="">Seleccione una estancia</option>
-            {estancias.map(estancia => (
-              <option key={estancia.id} value={estancia.id}>{estancia.nombre}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label="Estancia"
+          name="estancia_id"
+          options={estancias}
+          register={register}
+          required={true}
+        />
 
-        <div>
-          <label>Lote</label>
-          <select {...register('lote_id', { required: true })} className="block w-full border p-2">
-            <option value="">Seleccione un lote</option>
-            {lotes.map(lote => (
-              <option key={lote.id} value={lote.id}>{lote.nombre}</option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label="Lote"
+          name="lote_id"
+          options={lotes}
+          register={register}
+          required={true}
+        />
 
-        <div>
-          <label>Dosis</label>
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex space-x-2 mb-2">
-              <select {...register(`dosis.${index}.producto_id`, { required: true })} className="border p-2">
-                <option value="">Producto</option>
-                {productos.map(producto => (
-                  <option key={producto.id} value={producto.id}>{producto.nombre}</option>
-                ))}
-              </select>
-              <input
-                {...register(`dosis.${index}.cantidad`, { required: true, min: 0.01 })}
-                type="number"
-                step="0.01"
-                placeholder="Cantidad"
-                className="border p-2 w-24"
-              />
-              <button type="button" onClick={() => remove(index)} className="text-red-500">X</button>
-            </div>
-          ))}
-
-          {fields.length < 10 && (
-            <button type="button" onClick={() => append({ producto_id: '', cantidad: '' })} className="text-green-500">
-              + Agregar Dosis
-            </button>
-          )}
-        </div>
+        <DosisFields control={control} register={register} productos={productos} />
 
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
           Crear Orden
