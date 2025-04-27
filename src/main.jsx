@@ -2,6 +2,7 @@ import { React } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Estancias from './pages/Estancias'
@@ -17,20 +18,22 @@ import './index.css'
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<App />}>
-        <Route index element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/estancias" element={<Estancias />} />
-        <Route path="/lotes" element={<Lotes />} />
-        <Route path="/lotes/:id" element={<LoteShow />} />
-        <Route path="/productos" element={<Productos />} />
-        <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
-        <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
-        <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
-        <Route path="/ordenes_fumigacion/:id/editar" element={<OrdenFumigacionEditar />} />
-        <Route path="/ordenes_fumigacion/:id/terminar" element={<OrdenFumigacionTerminar />} />
-      </Route>
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/estancias" element={<Estancias />} />
+          <Route path="/lotes" element={<Lotes />} />
+          <Route path="/lotes/:id" element={<LoteShow />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
+          <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
+          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+          <Route path="/ordenes_fumigacion/:id/editar" element={<OrdenFumigacionEditar />} />
+          <Route path="/ordenes_fumigacion/:id/terminar" element={<OrdenFumigacionTerminar />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   </BrowserRouter>
 )

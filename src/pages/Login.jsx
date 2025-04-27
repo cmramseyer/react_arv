@@ -1,15 +1,16 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-import { signIn } from '../services/loginService'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const { register, handleSubmit } = useForm()
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const onSubmit = async (data) => {
     try {
-      signIn(data)
+      login(data)
       navigate('/')
     } catch (error) {
       alert('Login incorrecto')

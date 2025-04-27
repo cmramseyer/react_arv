@@ -18,7 +18,6 @@ export const getEstancias = async () => {
 }
 
 export const createEstancia = async (estancia) => {
-  console.log(estancia)
   await fetchWithAuth(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),

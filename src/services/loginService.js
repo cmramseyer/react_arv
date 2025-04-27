@@ -9,11 +9,5 @@ export const signIn = async(data) => {
 
   if (!response.ok) throw new Error('Login fallido')
 
-  const { token } = await response.json()
-  localStorage.setItem('arv_token', token)
-
-}
-
-export const signOut = async() => {
-  localStorage.setItem('arv_token', null)
+  return await response.json()
 }
