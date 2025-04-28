@@ -29,20 +29,29 @@ export default function OrdenesFumigacion() {
 
       <ul className="space-y-2">
         {ordenes.map((orden) => (
-          <li key={orden.id} className="border p-4 rounded">
-            <div className="font-bold">Orden #{orden.id}</div>
-            <div>Estancia: {orden.nombre_estancia}</div>
-            <div>Lote: {orden.nombre_lote}</div>
-            <div>Estado: {orden.estado_orden}</div>
-            <div>Creado por: {orden.creado_por}</div>
-            <div>Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
+          <li key={orden.id} className="border p-4 rounded flex flex-col justify-between md:flex-row">
+            <div className="flex-1">
+              <div className="font-bold">Orden #{orden.id}</div>
+              <div>Estancia: {orden.nombre_estancia}</div>
+              <div>Lote: {orden.nombre_lote}</div>
+            </div>
 
-            <Link
-              to={`/ordenes_fumigacion/${orden.id}`}
-              className="inline-block mt-2 text-blue-600 hover:underline"
-            >
-              Ver Orden
-            </Link>
+            <div className="flex-1">
+              <div>Estado: {orden.estado_orden}</div>
+              <div>Creado por: {orden.creado_por}</div>
+              <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
+            </div>
+            
+            
+            <div className="flex-1 w-full">
+              <Link
+                to={`/ordenes_fumigacion/${orden.id}`}
+                className="inline-block mt-2 text-blue-600 hover:underline"
+              >
+                Ver Orden
+              </Link>
+            </div>
+            
           </li>
         ))}
       </ul>
