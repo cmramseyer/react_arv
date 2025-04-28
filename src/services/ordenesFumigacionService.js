@@ -55,7 +55,8 @@ export const deleteOrdenFumigacion = async (id) => {
 }
 
 export const imprimirOrdenFumigacion = async (id) => {
-  await fetchWithAuth(`${API_URL}/${id}/pdf`, {
+  const response = await fetchWithAuth(`${API_URL}/${id}/pdf`, {
     headers: getAuthHeaders(),
   })
+  return await response.json()
 }

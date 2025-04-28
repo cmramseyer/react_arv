@@ -7,9 +7,15 @@ export default function OrdenFumigacionShow() {
   const navigate = useNavigate()
 
   const [orden, setOrden] = useState(null)
+  const [pdfUrl, setPdfUrl] = useState(null)
+  const [fechaPdf, setFechaPdf] = useState(null)
 
-  useEffect(() => {
-    getOrdenFumigacion(id).then(setOrden)
+  useEffect(()=> {
+    getOrdenFumigacion(id).then((data) => {
+      setOrden(data)
+      setPdfUrl(data.orden_url)
+      setPdfUrl(data.orden_pdf_fecha_creacion)
+    })
   }, [id])
 
   const handleEditar = () => {
@@ -27,10 +33,24 @@ export default function OrdenFumigacionShow() {
     }
   }
 
-  const handleImprimir = async () => {
-    await imprimirOrdenFumigacion(id)
-    navigate('/ordenes_fumigacion')
+  const handleGenerarPdf = async () => {
+    imprimirOrdenFumigacion(id).then((data) => {
+      setPdfUrl(data.orden_url)
+      setFechaPdf(data.orden_pdf_fecha_creacion)
+    })
   }
+
+  const handleVerPdf = async () => {
+    window.open(pdfUrl, '_blank');
+  }
+
+  const labelGenerarPdf = !!pdfUrl ? "Regenerar PDF" : "Generar PDF"
+
+  const botonVerPdf = !!pdfUrl && (
+    <button onClick={handleVerPdf} className="bg-red-600 text-white px-4 py-2 rounded">
+      Ver Pdf
+    </button>
+  )
 
   if (!orden) {
     return <div className="p-4">Cargando...</div>
@@ -47,6 +67,7 @@ export default function OrdenFumigacionShow() {
       <p><strong>Maquinista:</strong> {orden.maquinista}</p>
       <p><strong>Info Trabajo:</strong> {orden.info_trabajo}</p>
       <p><strong>Datos Clima:</strong> {orden.datos_clima}</p>
+      <p><strong>PDF creado:</strong> {fechaPdf || orden.orden_pdf_fecha_creacion}</p>
 
       <h3 className="font-semibold mt-4">Dosis</h3>
       <ul className="list-disc list-inside">
@@ -59,18 +80,13 @@ export default function OrdenFumigacionShow() {
         <button onClick={handleEditar} className="bg-yellow-500 text-white px-4 py-2 rounded">Editar</button>
         <button onClick={handleTerminar} className="bg-green-600 text-white px-4 py-2 rounded">Terminar</button>
         <button onClick={handleBorrar} className="bg-red-600 text-white px-4 py-2 rounded">Borrar</button>
-        <button
-          type="button"
-          onClick={async () => {
-            await imprimirOrdenFumigacion(id)
-            navigate('/ordenes_fumigacion')
-          }}
-          className={`mt-4 bg-blue-500 text-white px-4 py-2 rounded ${orden.estado_orden !== 'activa' ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={orden.estado_orden !== 'activa'}
-        >
-          Imprimir Orden
+        <button onClick={handleGenerarPdf} className="bg-red-600 text-white px-4 py-2 rounded">
+          {labelGenerarPdf}
         </button>
+        {botonVerPdf}
       </div>
+      
+
     </div>
   )
 }
