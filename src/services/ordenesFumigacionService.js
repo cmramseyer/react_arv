@@ -9,8 +9,10 @@ const getAuthHeaders = () => {
   }
 }
 
-export const getOrdenesFumigacion = async () => {
-  const res = await fetchWithAuth(API_URL, {
+export const getOrdenesFumigacion = async (estado = null) => {
+  const url = new URL(API_URL)
+  url.searchParams.append('estado', estado)
+  const res = await fetchWithAuth(url.toString(), {
     headers: getAuthHeaders(),
   })
   return await res.json()

@@ -5,20 +5,54 @@ import { Link, useNavigate } from 'react-router-dom'
 export default function OrdenesFumigacion() {
   const [ordenes, setOrdenes] = useState([])
   const navigate = useNavigate()
+  const [estadoOrdenSeleccionada, setEstadoOrdenSeleccionada] = useState('activa')
 
   const fetchOrdenes = async () => {
-    const data = await getOrdenesFumigacion()
+    const data = await getOrdenesFumigacion(estadoOrdenSeleccionada)
     setOrdenes(data)
   }
 
   useEffect(() => {
     fetchOrdenes()
-  }, [])
+  }, [estadoOrdenSeleccionada])
+
+  const handleEstadoOrdenes = async (estado) => {
+    setEstadoOrdenSeleccionada(estado)
+  }
+
+  const seleccionadoClass = (boton) => {
+    if(boton == estadoOrdenSeleccionada){
+      return "bg-green-500 border-2 border-black text-white px-4 py-2 rounded"
+    } else {
+      return "bg-green-500 text-white px-4 py-2 rounded"
+    }
+  }
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Órdenes de Fumigación</h2>
+        <div>
+          <button
+            onClick={() => handleEstadoOrdenes('')}
+            className={seleccionadoClass('')}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => handleEstadoOrdenes('activa')}
+            className={seleccionadoClass('activa')}
+          >
+            Activas
+          </button>
+          <button
+            onClick={() => handleEstadoOrdenes('terminada')}
+            className={seleccionadoClass('terminada')}
+          >
+            Terminadas
+          </button>
+        </div>
+        
         <button
           onClick={() => navigate('/ordenes_fumigacion/nueva')}
           className="bg-green-500 text-white px-4 py-2 rounded"
