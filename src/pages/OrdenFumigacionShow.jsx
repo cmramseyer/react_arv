@@ -62,6 +62,7 @@ export default function OrdenFumigacionShow() {
       <p><strong>Estado:</strong> {orden.estado_orden}</p>
       <p><strong>Estancia:</strong> {orden.nombre_estancia}</p>
       <p><strong>Lote:</strong> {orden.nombre_lote}</p>
+      <p><strong>Hectareas:</strong> {orden.hectareas}</p>
       <p><strong>Creado por:</strong> {orden.creado_por}</p>
       <p><strong>Fecha de Creación:</strong> {new Date(orden.created_at).toLocaleString()}</p>
       <p><strong>Maquinista:</strong> {orden.maquinista}</p>
