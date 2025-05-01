@@ -10,15 +10,6 @@ import { Input } from '@/components/ui/input'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 export default function OrdenFumigacionNueva() {
   const form = useForm({
@@ -78,19 +69,7 @@ export default function OrdenFumigacionNueva() {
             <FormItem>
               <FormLabel>Estancia</FormLabel>
               <FormControl>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Seleccionar Estancia"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Estancias</SelectLabel>
-                      {estancias.map(estancia => (
-                        <SelectItem value={String(estancia.id)}>{estancia.nombre}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <SelectField field={field} label="estancia" options={estancias} register={register} control={control}/>
               </FormControl>
               <FormDescription>Estancia desc.</FormDescription>
               <FormMessage/>
@@ -105,19 +84,7 @@ export default function OrdenFumigacionNueva() {
             <FormItem>
               <FormLabel>Lote</FormLabel>
               <FormControl>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Seleccionar lotes"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Lotes</SelectLabel>
-                      {lotes.map(lote => (
-                        <SelectItem value={String(lote.id)}>{lote.nombre}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <SelectField field={field} label="lote" options={lotes} register={register} control={control}/>
               </FormControl>
               <FormDescription>Lote desc.</FormDescription>
               <FormMessage/>

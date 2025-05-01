@@ -1,20 +1,30 @@
 import React from 'react'
 
-export default function SelectField({ label, name, options, register, required = false, className = '' }) {
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+
+export default function SelectField({ field, label, name, options, register, required = false, className = '' }) {
   return (
-    <div>
-      <label>{label}</label>
-      <select
-        {...register(name, { required })}
-        className={`block w-full border p-2 ${className}`}
-      >
-        <option value="">Seleccione {label.toLowerCase()}</option>
-        {options.map(option => (
-          <option key={option.id} value={option.id}>
-            {option.nombre}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Select value={field.value} onValueChange={field.onChange}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder={`Seleccionar ${label}`}/>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>{label}</SelectLabel>
+          {options.map(option => (
+            <SelectItem value={String(option.id)}>{option.nombre}</SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   )
 }
