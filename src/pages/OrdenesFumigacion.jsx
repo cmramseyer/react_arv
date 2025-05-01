@@ -3,9 +3,6 @@ import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-
 export default function OrdenesFumigacion() {
   const [ordenes, setOrdenes] = useState([])
   const navigate = useNavigate()
@@ -37,15 +34,8 @@ export default function OrdenesFumigacion() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Órdenes de Fumigación</h2>
         <div>
-        <Button variant="secondary">Botón secundario</Button>
-        <Button variant="default">Botón default</Button>
-        <Button variant="outline">Botón outline</Button>
-        <Button variant="link">Botón link</Button>
-        <Button variant="ghost">Botón ghost</Button>
         <div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="terms" />
-            <Label htmlFor="terms">Accept terms and conditions</Label>
           </div>
         </div>
           <button
