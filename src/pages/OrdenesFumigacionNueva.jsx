@@ -5,16 +5,30 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
+import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 export default function OrdenFumigacionNueva() {
-  const { register, handleSubmit, control, watch, setValue } = useForm({
+  const form = useForm({
     defaultValues: {
       lote_id: '',
       dosis: [{ producto_id: '', cantidad: '' }]
     }
   })
+
+  const { register, handleSubmit, control, watch, setValue } = form
 
   const [estancias, setEstancias] = useState([])
   const [lotes, setLotes] = useState([])
@@ -54,24 +68,61 @@ export default function OrdenFumigacionNueva() {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Nueva Orden de Fumigación</h2>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <SelectField
-          label="Estancia"
+    
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={control}
           name="estancia_id"
-          options={estancias}
-          register={register}
-          required={true}
+          render={({field}) => (
+            <FormItem>
+              <FormLabel>Estancia</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Seleccionar Estancia"/>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Estancias</SelectLabel>
+                      {estancias.map(estancia => (
+                        <SelectItem value={String(estancia.id)}>{estancia.nombre}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription>Estancia desc.</FormDescription>
+              <FormMessage/>
+            </FormItem>
+          )}
         />
-
-        <SelectField
-          label="Lote"
+          
+          <FormField
+          control={control}
           name="lote_id"
-          options={lotes}
-          register={register}
-          required={true}
+          render={({field}) => (
+            <FormItem>
+              <FormLabel>Lote</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Seleccionar lotes"/>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Lotes</SelectLabel>
+                      {lotes.map(lote => (
+                        <SelectItem value={String(lote.id)}>{lote.nombre}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription>Lote desc.</FormDescription>
+              <FormMessage/>
+            </FormItem>
+          )}
         />
 
         <DosisFields control={control} register={register} productos={productos} />
@@ -80,6 +131,6 @@ export default function OrdenFumigacionNueva() {
           Crear Orden
         </button>
       </form>
-    </div>
+    </Form>
   )
 }
