@@ -5,16 +5,21 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
+import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
+
 export default function OrdenFumigacionNueva() {
-  const { register, handleSubmit, control, watch, setValue } = useForm({
+  const form = useForm({
     defaultValues: {
       lote_id: '',
       dosis: [{ producto_id: '', cantidad: '' }]
     }
   })
+
+  const { register, handleSubmit, control, watch, setValue } = form
 
   const [estancias, setEstancias] = useState([])
   const [lotes, setLotes] = useState([])
@@ -54,24 +59,37 @@ export default function OrdenFumigacionNueva() {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Nueva Orden de Fumigación</h2>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <SelectField
-          label="Estancia"
+    
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={control}
           name="estancia_id"
-          options={estancias}
-          register={register}
-          required={true}
+          render={({field}) => (
+            <FormItem>
+              <FormLabel>Estancia</FormLabel>
+              <FormControl>
+                <SelectField field={field} label="estancia" options={estancias} register={register} control={control}/>
+              </FormControl>
+              <FormDescription>Estancia desc.</FormDescription>
+              <FormMessage/>
+            </FormItem>
+          )}
         />
-
-        <SelectField
-          label="Lote"
+          
+          <FormField
+          control={control}
           name="lote_id"
-          options={lotes}
-          register={register}
-          required={true}
+          render={({field}) => (
+            <FormItem>
+              <FormLabel>Lote</FormLabel>
+              <FormControl>
+                <SelectField field={field} label="lote" options={lotes} register={register} control={control}/>
+              </FormControl>
+              <FormDescription>Lote desc.</FormDescription>
+              <FormMessage/>
+            </FormItem>
+          )}
         />
 
         <DosisFields control={control} register={register} productos={productos} />
@@ -80,6 +98,6 @@ export default function OrdenFumigacionNueva() {
           Crear Orden
         </button>
       </form>
-    </div>
+    </Form>
   )
 }

@@ -22,6 +22,7 @@ export default function Estancias() {
       await updateEstancia(selected.id, formData)
     } else {
       await createEstancia(formData)
+      reset()
     }
     setSelected(null)
     fetchEstancias()

@@ -1,6 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
 import { Link, useNavigate } from 'react-router-dom'
+import { Button } from "@/components/ui/button"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function OrdenesFumigacion() {
   const [ordenes, setOrdenes] = useState([])
@@ -20,11 +40,15 @@ export default function OrdenesFumigacion() {
     setEstadoOrdenSeleccionada(estado)
   }
 
+  const handleVerOrden = (id) => {
+    navigate(`/ordenes_fumigacion/${id}`)
+  }
+
   const seleccionadoClass = (boton) => {
     if(boton == estadoOrdenSeleccionada){
-      return "bg-green-500 border-2 border-black text-white px-4 py-2 rounded"
+      return "default"
     } else {
-      return "bg-green-500 text-white px-4 py-2 rounded"
+      return "secondary"
     }
   }
 
@@ -33,62 +57,55 @@ export default function OrdenesFumigacion() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Órdenes de Fumigación</h2>
         <div>
-          <button
+        <div>
+          <div className="flex items-center space-x-2">
+          </div>
+        </div>
+          <Button
             onClick={() => handleEstadoOrdenes('')}
-            className={seleccionadoClass('')}
+            variant={seleccionadoClass('')}
           >
             Todas
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleEstadoOrdenes('activa')}
-            className={seleccionadoClass('activa')}
+            variant={seleccionadoClass('activa')}
           >
             Activas
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleEstadoOrdenes('terminada')}
-            className={seleccionadoClass('terminada')}
+            variant={seleccionadoClass('terminada')}
           >
             Terminadas
-          </button>
+          </Button>
         </div>
         
-        <button
+        <Button
           onClick={() => navigate('/ordenes_fumigacion/nueva')}
-          className="bg-green-500 text-white px-4 py-2 rounded"
+          variant="outline"
         >
           Crear Nueva Orden
-        </button>
+        </Button>
       </div>
 
-      <ul className="space-y-2">
-        {ordenes.map((orden) => (
-          <li key={orden.id} className="border p-4 rounded flex flex-col justify-between md:flex-row">
-            <div className="flex-1">
-              <div className="font-bold">Orden #{orden.id}</div>
-              <div>Estancia: {orden.nombre_estancia}</div>
-              <div>Lote: {orden.nombre_lote}</div>
-            </div>
-
-            <div className="flex-1">
-              <div>Estado: {orden.estado_orden}</div>
-              <div>Creado por: {orden.creado_por}</div>
-              <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
-            </div>
-            
-            
-            <div className="flex-1 w-full">
-              <Link
-                to={`/ordenes_fumigacion/${orden.id}`}
-                className="inline-block mt-2 text-blue-600 hover:underline"
-              >
-                Ver Orden
-              </Link>
-            </div>
-            
-          </li>
-        ))}
-      </ul>
+      {ordenes.map((orden) => (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>#{orden.id}</CardTitle>
+            <CardDescription>{orden.nombre_estancia} - Lote: {orden.nombre_lote}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>Estado: {orden.estado_orden}</div>
+            <div>Hectareas: {orden.hectareas}</div>
+            <div>Creado por: {orden.creado_por}</div>
+            <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button onClick={ () => handleVerOrden(orden.id)} variant="default">Ver orden</Button>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   )
 }

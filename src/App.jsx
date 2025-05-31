@@ -2,6 +2,23 @@ import { React } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
+import { AppSidebar } from './components/AppSidebar'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+
+
 export default function App() {
   const { isAuthenticated, logout } = useAuth()
 
@@ -16,21 +33,34 @@ export default function App() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="bg-white shadow p-4 flex justify-between items-center">
-        <div className="space-x-4">
-          <Link to="/estancias" className="text-sm text-blue-600 hover:text-blue-800">Estancias</Link>
-          <Link to="/lotes" className="text-sm text-blue-600 hover:text-blue-800">Lotes</Link>
-          <Link to="/productos" className="text-sm text-blue-600 hover:text-blue-800">Productos</Link>
-          <Link to="/ordenes_fumigacion" className="text-sm text-blue-600 hover:text-blue-800">Órdenes</Link>
+    <SidebarProvider>
+    <AppSidebar />
+    <SidebarInset>
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href="#">
+                Building Your Application
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </header>
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+          <Outlet/>
         </div>
-        <div>
-          {authButton}
-        </div>
-      </nav>
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
-    </div>
+        
+      </div>
+    </SidebarInset>
+  </SidebarProvider>
+
   )
 }

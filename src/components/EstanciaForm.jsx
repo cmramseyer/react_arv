@@ -3,13 +3,12 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import PropTypes from 'prop-types'
 
+import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+
 export default function EstanciaForm({ onSubmit, estancia }) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm({
+  const form =  useForm({
     defaultValues: {
       nombre: '',
       contacto: '',
@@ -18,59 +17,83 @@ export default function EstanciaForm({ onSubmit, estancia }) {
     }
   })
 
-  // Si cambia la estancia, actualizamos el form
+  const { register, handleSubmit, control, reset, formState: { errors } } = form
+
   useEffect(() => {
     if (estancia) reset(estancia)
   }, [estancia, reset])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label>Nombre</label>
-        <input
-          {...register('nombre', { required: 'El nombre es requerido' })}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormField
+          control={control}
+          name="nombre"
+          render={(field) => (
+            <FormItem>
+              <FormLabel />
+              <FormControl>
+                <Input {...register('nombre', { required: 'El nombre es requerido' })} type="text" placeholder="Nombre" />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.nombre && <span style={{ color: 'red' }}>{errors.nombre.message}</span>}
-      </div>
 
-      <div>
-        <label>Contacto</label>
-        <input
-          {...register('contacto', { required: 'El contacto es requerido' })}
+        <FormField
+          control={control}
+          name="contacto"
+          render={(field) => (
+            <FormItem>
+              <FormLabel />
+              <FormControl>
+                <Input {...register('contacto', { required: 'El contacto es requerido' })} type="text" placeholder="Contacto" />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.contacto && <span style={{ color: 'red' }}>{errors.contacto.message}</span>}
-      </div>
-
-      <div>
-        <label>Teléfono</label>
-        <input
-          {...register('telefono', {
-            required: 'El teléfono es requerido',
-            pattern: {
-              value: /^\d{7,15}$/,
-              message: 'El teléfono debe tener entre 7 y 15 dígitos'
-            }
-          })}
+          
+        <FormField
+          control={control}
+          name="telefono"
+          render={(field) => (
+            <FormItem>
+              <FormLabel />
+              <FormControl>
+                <Input {...register('telefono', { required: 'El telefono es requerido' })} type="text" placeholder="Teléfono" />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.telefono && <span style={{ color: 'red' }}>{errors.telefono.message}</span>}
-      </div>
 
-      <div>
-        <label>Email</label>
-        <input
-          {...register('email', {
-            required: 'El email es requerido',
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'El email no es válido'
-            }
-          })}
+        <FormField
+          control={control}
+          name="email"
+          render={(field) => (
+            <FormItem>
+              <FormLabel />
+              <FormControl>
+                <Input {...register('email', { 
+                  required: 'El email es requerido',
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'El email no es válido'
+                  } })} type="email" placeholder="email@empresa.com" />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.email && <span style={{ color: 'red' }}>{errors.email.message}</span>}
-      </div>
 
-      <button type="submit">{estancia ? 'Actualizar' : 'Crear'}</button>
-    </form>
+        <Button type="submit">{estancia ? 'Actualizar' : 'Crear'}</Button>
+      </form>
+    </Form>
   )
 }
 

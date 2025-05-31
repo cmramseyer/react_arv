@@ -1,33 +1,45 @@
 import { React } from 'react'
 import PropTypes from 'prop-types'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+ 
+import { Button } from './ui/button'
 
 export default function EstanciaList({ estancias, onEdit, onDelete }) {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Contacto</th>
-          <th>Teléfono</th>
-          <th>Email</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nombre</TableHead>
+          <TableHead>Contacto</TableHead>
+          <TableHead>Teléfono</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Acciones</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {estancias.map((e) => (
-          <tr key={e.id}>
-            <td>{e.nombre}</td>
-            <td>{e.contacto}</td>
-            <td>{e.telefono}</td>
-            <td>{e.email}</td>
-            <td>
-              <button onClick={() => onEdit(e)}>Editar</button>
-              <button onClick={() => onDelete(e.id)}>Eliminar</button>
-            </td>
-          </tr>
+          <TableRow key={e.id}>
+            <TableCell>{e.nombre}</TableCell>
+            <TableCell>{e.contacto}</TableCell>
+            <TableCell>{e.telefono}</TableCell>
+            <TableCell>{e.email}</TableCell>
+            <TableCell>
+              <Button variant="default" onClick={() => onEdit(e)}>Editar</Button>
+              <Button variant="default" onClick={() => onDelete(e.id)}>Eliminar</Button>
+            </TableCell>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   )
 }
 
