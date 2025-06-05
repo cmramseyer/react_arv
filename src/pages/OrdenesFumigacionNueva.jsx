@@ -14,7 +14,9 @@ import SelectField from '../components/SelectField'
 export default function OrdenFumigacionNueva() {
   const form = useForm({
     defaultValues: {
-      lote_id: '',
+      lote_ids: [],
+			temp_lotes: '',
+			temp_hectareas: '',
       dosis: [{ producto_id: '', cantidad: '' }]
     }
   })
@@ -76,6 +78,35 @@ export default function OrdenFumigacionNueva() {
             </FormItem>
           )}
         />
+
+<FormField
+  control={control}
+  name="lote_ids"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Lotes</FormLabel>
+      <FormControl>
+        <select
+          {...field}
+          multiple
+          className="w-full border rounded p-2"
+          onChange={(e) => {
+            const selected = Array.from(e.target.selectedOptions).map(option => option.value)
+            setValue('lote_ids', selected)
+          }}
+        >
+          {lotes.map((lote) => (
+            <option key={lote.id} value={lote.id}>
+              {lote.nombre}
+            </option>
+          ))}
+        </select>
+      </FormControl>
+      <FormDescription>Puedes seleccionar uno o más lotes.</FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
           
           <FormField
           control={control}
