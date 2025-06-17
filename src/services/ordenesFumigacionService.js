@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/ordenes_fumigacion'
+const API_URL = `http://${import.meta.env.VITE_API_URL}/ordenes_fumigacion`
 
 import { fetchWithAuth } from "./fetchWithAuth"
 

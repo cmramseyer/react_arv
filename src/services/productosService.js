@@ -1,5 +1,5 @@
 // src/services/productoService.js
-const API_URL = 'http://localhost:3000/productos'
+const API_URL = `http://${import.meta.env.VITE_API_URL}/productos` 
 
 import { fetchWithAuth } from "./fetchWithAuth"
 
