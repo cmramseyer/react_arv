@@ -49,8 +49,6 @@
     const onSubmit = async (data) => {
       const formData = new FormData()
 
-      console.log('data.lote_id')
-      console.log(data)
       data.lote_ids.forEach(id => {
         formData.append('orden_fumigacion[lote_ids][]', id)
       })

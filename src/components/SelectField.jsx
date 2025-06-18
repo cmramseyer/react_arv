@@ -21,7 +21,7 @@ export default function SelectField({ field, label, name, options, register, req
         <SelectGroup>
           <SelectLabel>{label}</SelectLabel>
           {options.map(option => (
-            <SelectItem value={String(option.id)}>{option.nombre}</SelectItem>
+            <SelectItem key={String(option.id)} value={String(option.id)}>{option.nombre}</SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
