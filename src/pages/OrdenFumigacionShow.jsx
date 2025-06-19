@@ -20,14 +20,26 @@ export default function OrdenFumigacionShow() {
   const [orden, setOrden] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [fechaPdf, setFechaPdf] = useState(null)
+  const [nombreLote, setNombreLote] = useState(null)
+  const [hectareasLote, setHectareasLote] = useState(null)
 
   useEffect(()=> {
     getOrdenFumigacion(id).then((data) => {
       setOrden(data)
       setPdfUrl(data.orden_url)
       setPdfUrl(data.orden_pdf_fecha_creacion)
+      console.log("data data")
+      console.log(data)
+      const lotePresent = (data.lotes_ids && data.lotes_ids.length > 0) === true
+      console.log(lotePresent)
+      const nombreLote = lotePresent ? data.nombre_lote : data.temp_lotes
+      const hectareasLote = lotePresent ? data.hectareas : data.temp_hectareas 
+      setNombreLote(nombreLote)
+      setHectareasLote(hectareasLote)
     })
   }, [id])
+
+  
 
   const handleEditar = () => {
     navigate(`/ordenes_fumigacion/${id}/editar`)
@@ -75,9 +87,9 @@ export default function OrdenFumigacionShow() {
       </CardHeader>
       <CardContent>
         <div>Estancia: {orden.nombre_estancia}</div>
-        <div>Lote: {orden.nombre_lote}</div>
+        <div>Lote: {nombreLote}</div>
         <div>Estado: {orden.estado_orden}</div>
-        <div>Hectareas: {orden.hectareas}</div>
+        <div>Hectareas: {hectareasLote}</div>
         <div>Creado por: {orden.creado_por}</div>
         <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
         <p><strong>Fecha de Creación:</strong> {new Date(orden.created_at).toLocaleString()}</p>

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/lotes'
+const API_URL = `http://${import.meta.env.VITE_API_URL}/lotes`
 
 import { fetchWithAuth } from "./fetchWithAuth"
 

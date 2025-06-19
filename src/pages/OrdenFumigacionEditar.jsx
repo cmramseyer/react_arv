@@ -5,18 +5,27 @@ import { getOrdenFumigacion, updateOrdenFumigacion } from '../services/ordenesFu
 import { getProductos } from '../services/productosService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
+import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import DosisFields from '../components/DosisFields'
+import SelectField from '../components/SelectField'
 
 export default function OrdenFumigacionEditar() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { register, handleSubmit, control, watch, reset, setValue } = useForm({
+  const form = useForm({
     defaultValues: {
       estancia_id: '',
-      lote_id: '',
+      lotes_ids: [],
+      temp_lotes: '',
+      temp_hectareas: '',
       dosis: []
     }
   })
 
+  const { register, reset, handleSubmit, control, watch, setValue } = form
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'dosis'
@@ -25,43 +34,65 @@ export default function OrdenFumigacionEditar() {
   const [productos, setProductos] = useState([])
   const [estancias, setEstancias] = useState([])
   const [lotes, setLotes] = useState([])
+  const [loteCargado, setLoteCargado] = useState(false)
 
   const estanciaId = watch('estancia_id')
 
   useEffect(() => {
+    console.log('use1')
     getEstancias().then(setEstancias)
+    console.log(estancias)
     getProductos().then(setProductos)
   }, [])
 
   useEffect(() => {
+    console.log('use2')
     if (estanciaId) {
+      console.log(estanciaId)
       getLotesPorEstancia(estanciaId).then(setLotes)
+    } else {
+      setLotes([])
     }
   }, [estanciaId])
 
+  
   useEffect(() => {
+    console.log('use3')
     const fetchData = async () => {
-      const estanciasData = await getEstancias()
-      const productosData = await getProductos()
-  
-      setEstancias(estanciasData)
-      setProductos(productosData)
-  
       const orden = await getOrdenFumigacion(id)
-  
+
+      console.log(orden)
+
       if (orden.estancia_id) {
         const lotesData = await getLotesPorEstancia(orden.estancia_id)
         setLotes(lotesData)
       }
-  
+
+      const tieneLotes = (orden.lotes_ids && orden.lotes_ids.length > 0) === true
+      setLoteCargado(tieneLotes)
+
+      await getEstancias().then(setEstancias)
+
+      if (estanciaId) {
+        console.log(estanciaId)
+        await getLotesPorEstancia(estanciaId).then(setLotes)
+      } else {
+        setLotes([])
+      }
+
+      console.log('orden_lote_ids')
+      console.log((orden.lotes_ids || []).map(id => String(id)))
+
       reset({
-        estancia_id: orden.estancia_id,
-        lote_id: orden.lote_id,
-        datos_clima: orden.datos_clima,
-        info_trabajo: orden.info_trabajo,
-        creado_por: orden.creado_por,
-        fecha_trabajo: orden.fecha_trabajo,
-        maquinista: orden.maquinista,
+        estancia_id: String(orden.estancia_id) || '',
+        lote_ids: (orden.lotes_ids || []).map(id => String(id)),
+        temp_lotes: orden.temp_lotes || '',
+        temp_hectareas: orden.temp_hectareas || '',
+        datos_clima: orden.datos_clima || '',
+        info_trabajo: orden.info_trabajo || '',
+        creado_por: orden.creado_por || '',
+        fecha_trabajo: orden.fecha_trabajo || '',
+        maquinista: orden.maquinista || '',
         dosis: orden.dosis?.map(d => ({
           id: d.id,
           producto_id: d.producto_id,
@@ -69,23 +100,35 @@ export default function OrdenFumigacionEditar() {
         })) || []
       })
     }
-  
+
     fetchData()
   }, [id, reset, setValue])
 
   useEffect(() => {
-    if (lotes.length > 0) {
-      setValue('lote_id', watch('lote_id'))
+    console.log('use4')
+    console.log(loteCargado)
+    if (loteCargado === true) {
+      setValue('temp_lotes', '')
+      setValue('temp_hectareas', '')
+    } else {
+      setValue('lote_ids', [])
     }
-  }, [lotes, setValue, watch])
-  
-  
+  }, [loteCargado])
+
+
   const onSubmit = async (data) => {
     const formData = new FormData()
 
-    console.log(data)
+    if (loteCargado) {
+      data.lote_ids.forEach(id => {
+        formData.append('orden_fumigacion[lote_ids][]', id)
+      })
+    } else {
+      formData.append('orden_fumigacion[lote_ids][]', [])
+      formData.append('orden_fumigacion[temp_lotes]', data.temp_lotes)
+      formData.append('orden_fumigacion[temp_hectareas]', data.temp_hectareas)
+    }
 
-    formData.append('orden_fumigacion[lote_id]', data.lote_id)
     formData.append('orden_fumigacion[creado_por]', data.creado_por)
     formData.append('orden_fumigacion[datos_clima]', data.datos_clima || '')
     formData.append('orden_fumigacion[info_trabajo]', data.info_trabajo || '')
@@ -113,111 +156,169 @@ export default function OrdenFumigacionEditar() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Editar Orden de Fumigación</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label>Estancia</label>
-          <select {...register('estancia_id', { required: true })} className="block w-full border p-2">
-            <option value="">Seleccione una estancia</option>
-            {estancias.map(estancia => (
-              <option key={estancia.id} value={estancia.id}>{estancia.nombre}</option>
-            ))}
-          </select>
-        </div>
+      <Form {...form}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch id="lote-cargado" checked={loteCargado} onCheckedChange={setLoteCargado} />
+            <Label htmlFor="lote-cargado">Lote cargado</Label>
+          </div>
 
-        <div>
-          <label>Lote</label>
-          <select {...register('lote_id', { required: true })} className="block w-full border p-2">
-            <option value="">Seleccione un lote</option>
-            {lotes.map(lote => (
-              <option key={lote.id} value={lote.id}>{lote.nombre}</option>
-            ))}
-          </select>
-        </div>
+          {loteCargado ? (
+            <>
+              <FormField
+                control={control}
+                name="estancia_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estancia</FormLabel>
+                    <FormControl>
+                      <SelectField field={field} label="estancia" options={estancias} register={register} control={control} />
+                    </FormControl>
+                    <FormDescription>Estancia desc.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <div>
-          <label>Creado Por</label>
-          <input {...register('creado_por')} disabled className="block w-full border p-2 bg-gray-100" />
-        </div>
+              <FormField
+                control={control}
+                name="lote_ids"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lotes</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        multiple
+                        className="w-full border rounded p-2"
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions).map(option => option.value)
+                          setValue('lote_ids', selected)
+                        }}
+                        value={Array.isArray(field.value) ? field.value : []}
+                      >
+                        {lotes.map((lote) => (
+                          <option key={lote.id} value={String(lote.id)}>
+                            {lote.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormDescription>Puedes seleccionar uno o más lotes.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          ) : (
+            <>
+              <FormField
+                control={control}
+                name="temp_lotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lote (texto libre)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <div>
-          <label>Datos Clima</label>
-          <input {...register('datos_clima')} disabled className="block w-full border p-2 bg-gray-100" />
-        </div>
-
-        <div>
-          <label>Info Trabajo</label>
-          <input {...register('info_trabajo')} disabled className="block w-full border p-2 bg-gray-100" />
-        </div>
-
-        <div>
-          <label>Fecha Trabajo</label>
-          <input {...register('fecha_trabajo')} disabled className="block w-full border p-2 bg-gray-100" />
-        </div>
-
-        <div>
-          <label>Maquinista</label>
-          <input {...register('maquinista')} disabled className="block w-full border p-2 bg-gray-100" />
-        </div>
-        
-
-        <div>
-          <label>Dosis</label>
-          {fields.map((field, index) => {
-            const isDeleted = watch(`dosis.${index}._destroy`);
-            if (isDeleted) return null; // ⬅️ Oculta el row si está marcado para eliminar
-
-            return (
-              <div key={field.id} className="flex space-x-2 mb-2">
-                <select {...register(`dosis.${index}.producto_id`)} className="border p-2">
-                  <option value="">Producto</option>
-                  {productos.map(producto => (
-                    <option key={producto.id} value={producto.id}>{producto.nombre}</option>
-                  ))}
-                </select>
-                <input
-                  {...register(`dosis.${index}.cantidad`)}
-                  type="number"
-                  step="0.01"
-                  placeholder="Cantidad"
-                  className="border p-2 w-24"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentDosis = fields[index];
-                    if (currentDosis.id) {
-                      setValue(`dosis.${index}._destroy`, true); // Marcar como eliminada
-                    } else {
-                      remove(index); // Dosis nueva => borrar directamente
-                    }
-                  }}
-                  className="text-red-500 font-bold px-2"
-                >
-                  X
-                </button>
-              </div>
-            )
-          })}
-
-
-          {/* Botón para agregar una nueva dosis */}
-          {fields.length < 10 && (
-            <button
-              type="button"
-              onClick={() => append({ producto_id: '', cantidad: '' })}
-              className="text-green-500 mt-2"
-            >
-              + Agregar Dosis
-            </button>
+              <FormField
+                control={control}
+                name="temp_hectareas"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hectáreas (texto libre)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
           )}
-        </div>
 
+          <FormField
+            control={control}
+            name="creado_por"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Creado Por</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={control}
+            name="datos_clima"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Datos Clima</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Guardar Cambios
-        </button>
-      </form>
+          <FormField
+            control={control}
+            name="info_trabajo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Info Trabajo</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="fecha_trabajo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fecha Trabajo</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="maquinista"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maquinista</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <DosisFields control={control} register={register} productos={productos} fields={fields} append={append} remove={remove} watch={watch} setValue={setValue} />
+
+          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+            Guardar Cambios
+          </button>
+        </form>
+      </Form>
     </div>
   )
 }
