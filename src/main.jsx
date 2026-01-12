@@ -7,6 +7,8 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Estancias from './pages/Estancias'
 import Lotes from './pages/Lotes'
+import LoteNuevo from './pages/LoteNuevo'
+import LoteEditar from './pages/LoteEditar'
 import LoteShow from './pages/LoteShow'
 import Productos from './pages/Productos'
 import OrdenesFumigacion from './pages/OrdenesFumigacion'
@@ -30,6 +32,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="/estancias/:id/editar" element={<EstanciaEditar />} />
           <Route path="/lotes" element={<Lotes />} />
           <Route path="/lotes/:id" element={<LoteShow />} />
+          <Route path="/lotes/nuevo" element={<LoteNuevo />} />
+          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
           <Route path="/productos" element={<Productos />} />
           <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
           <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
