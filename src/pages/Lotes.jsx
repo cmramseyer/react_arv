@@ -1,15 +1,18 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getLotes, createLote, updateLote, deleteLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
+import LoteList from '../components/LoteList'
 
 export default function Lotes() {
   const [lotes, setLotes] = useState([])
   const [estancias, setEstancias] = useState([])
   const [selected, setSelected] = useState(null)
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+
+  const navigate = useNavigate()
 
   const fetchLotes = async () => {
     const data = await getLotes()
@@ -54,12 +57,17 @@ export default function Lotes() {
     fetchLotes()
   }
 
+  const handleShow = (lote) => {
+    navigate(`/lotes/${lote.id}`)
+  }
+
   useEffect(() => {
     fetchLotes()
     fetchEstancias()
   }, [])
 
   return (
+    <>
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Lotes</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 mb-6">
@@ -99,17 +107,8 @@ export default function Lotes() {
         <input type="file" multiple {...register('adjuntos')} className="block" />
         <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">{selected ? 'Actualizar' : 'Crear'}</button>
       </form>
-
-      <ul className="space-y-2">
-        {lotes.map(lote => (
-          <li key={lote.id} className="border p-2 rounded">
-            <div className="font-bold">{lote.nombre}</div>
-            <button onClick={() => handleEdit(lote)} className="text-sm text-blue-600">Editar</button>
-            <button onClick={() => handleDelete(lote.id)} className="ml-2 text-sm text-red-600">Eliminar</button>
-            <Link to={`/lotes/${lote.id}`} className="ml-2 text-sm text-green-600">Ver</Link>
-          </li>
-        ))}
-      </ul>
     </div>
+    <LoteList lotes={lotes} onShow={handleShow} onEdit={handleEdit} onDelete={handleDelete} />
+    </>
   )
 }

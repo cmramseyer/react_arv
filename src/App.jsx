@@ -1,5 +1,5 @@
-import { React } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { React, useMemo } from 'react'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
 import { AppSidebar } from './components/AppSidebar'
@@ -21,6 +21,15 @@ import {
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth()
+  const location = useLocation()
+
+  const pageTitle = useMemo(() => {
+    if (location.pathname.startsWith('/lotes')) return 'Lotes'
+    if (location.pathname.startsWith('/estancias')) return 'Estancias'
+    if (location.pathname.startsWith('/ordenes')) return 'Ordenes'
+    if (location.pathname === '/' || location.pathname === '/home') return 'Inicio'
+    return 'Página'
+  }, [location.pathname])
 
   const authButton = isAuthenticated ? (
     <button onClick={logout} className="text-sm text-red-500 hover:text-red-700 ml-4">
@@ -43,12 +52,12 @@ export default function App() {
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
               <BreadcrumbLink href="#">
-                Building Your Application
+                ARV
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+              <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

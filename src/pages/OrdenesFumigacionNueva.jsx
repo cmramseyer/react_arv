@@ -1,5 +1,5 @@
   import React, { useEffect, useState } from 'react'
-  import { useForm, useFieldArray } from 'react-hook-form'
+  import { useForm, useFieldArray, useWatch } from 'react-hook-form'
   import { getEstancias } from '../services/estanciasService'
   import { getLotesPorEstancia } from '../services/lotesService'
   import { getProductos } from '../services/productosService'
@@ -45,6 +45,17 @@
         setLotes([])
       }
     }, [estanciaId])
+
+    const selectedLoteIds = watch('lote_ids') || []
+    const totalHectareasSeleccionadas = React.useMemo(() => {
+      if (!Array.isArray(selectedLoteIds)) return 0
+      return selectedLoteIds.reduce((sum, id) => {
+        const lote = lotes.find(l => String(l.id) === String(id))
+        const hect = parseFloat(lote?.hectareas ?? 0)
+        return sum + (isNaN(hect) ? 0 : hect)
+      }, 0)
+    }, [selectedLoteIds, lotes])
+
 
     const onSubmit = async (data) => {
       const formData = new FormData()
@@ -99,7 +110,7 @@
                 name="lote_ids"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lotes</FormLabel>
+                    <FormLabel>Lotes (uno o varios) <span className="ml-2 text-sm text-gray-600"> {totalHectareasSeleccionadas.toFixed(2)} ha</span></FormLabel>
                     <FormControl>
                       <select
                         {...field}
@@ -107,7 +118,7 @@
                         className="w-full border rounded p-2"
                         onChange={(e) => {
                           const selected = Array.from(e.target.selectedOptions).map(option => option.value)
-                          setValue('lote_ids', selected)
+                          field.onChange(selected)
                         }}
                       >
                         {lotes.map((lote) => (

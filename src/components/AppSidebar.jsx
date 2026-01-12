@@ -1,7 +1,5 @@
 import * as React from "react"
 
-import { SearchForm } from "./SearchForm"
-import { VersionSwitcher } from "./VersionSwitcher"
 import {
   Sidebar,
   SidebarContent,
@@ -17,10 +15,10 @@ import {
 
 // This is sample data.
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+  versions: [],
   navMain: [
     {
-      title: "Getting Started",
+      title: "Menu",
       url: "#",
       items: [
         {
@@ -36,26 +34,6 @@ const data = {
           url: "/ordenes_fumigacion",
         },
       ],
-    },
-    {
-      title: "Building Your Application",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
-        },
-        {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
-        },
-        {
-          title: "Rendering",
-          url: "#",
-        },
-        
-      ],
     }
   ],
 }
@@ -64,11 +42,7 @@ export function AppSidebar({...props}) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
-        />
-        <SearchForm />
+        Sistema ARV
       </SidebarHeader>
       <SidebarContent>
         {/* We create a SidebarGroup for each parent. */}
