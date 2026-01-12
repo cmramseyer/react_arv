@@ -1,12 +1,11 @@
-import { React } from 'react'
-import { useEffect, useState } from 'react'
-import { getEstancias, createEstancia, updateEstancia, deleteEstancia } from '../services/estanciasService'
-import EstanciaForm from '../components/EstanciaForm'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getEstancias, deleteEstancia } from '../services/estanciasService'
 import EstanciaList from '../components/EstanciaList'
 
 export default function Estancias() {
   const [estancias, setEstancias] = useState([])
-  const [selected, setSelected] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchEstancias()
@@ -17,18 +16,11 @@ export default function Estancias() {
     setEstancias(data)
   }
 
-  const handleSubmit = async (formData) => {
-    if (selected) {
-      await updateEstancia(selected.id, formData)
-    } else {
-      await createEstancia(formData)
-      reset()
-    }
-    setSelected(null)
-    fetchEstancias()
+  const handleEdit = (estancia) => {
+    // Si ya tenías edición en la misma pantalla, después podemos moverla a /estancias/:id/editar.
+    // Por ahora, dejo esto como placeholder.
+    console.log('edit', estancia)
   }
-
-  const handleEdit = (estancia) => setSelected(estancia)
 
   const handleDelete = async (id) => {
     await deleteEstancia(id)
@@ -37,9 +29,17 @@ export default function Estancias() {
 
   return (
     <div>
-      <h2>CRUD Estancias</h2>
-      <EstanciaForm onSubmit={handleSubmit} estancia={selected} />
-      <EstanciaList estancias={estancias} onEdit={handleEdit} onDelete={handleDelete} />
+      <h1>Listado de Estancias</h1>
+
+      <button onClick={() => navigate('/estancias/nueva')}>
+        Nueva Estancia
+      </button>
+
+      <EstanciaList
+        estancias={estancias}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   )
 }

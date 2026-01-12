@@ -14,6 +14,8 @@ import OrdenesFumigacionNueva from './pages/OrdenesFumigacionNueva'
 import OrdenFumigacionShow from './pages/OrdenFumigacionShow'
 import OrdenFumigacionEditar from './pages/OrdenFumigacionEditar'
 import OrdenFumigacionTerminar from './pages/OrdenFumigacionTerminar'
+import EstanciaNueva from './pages/EstanciaNueva'
+import EstanciaEditar from './pages/EstanciaEditar'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
@@ -24,6 +26,8 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/estancias" element={<Estancias />} />
+          <Route path="/estancias/nueva" element={<EstanciaNueva />} />
+          <Route path="/estancias/:id/editar" element={<EstanciaEditar />} />
           <Route path="/lotes" element={<Lotes />} />
           <Route path="/lotes/:id" element={<LoteShow />} />
           <Route path="/productos" element={<Productos />} />

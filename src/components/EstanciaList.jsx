@@ -1,19 +1,20 @@
-import { React } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
- 
+
 import { Button } from './ui/button'
 
-export default function EstanciaList({ estancias, onEdit, onDelete }) {
+export default function EstanciaList({ estancias, onDelete }) {
+  const navigate = useNavigate()
+
   return (
     <Table>
       <TableHeader>
@@ -25,6 +26,7 @@ export default function EstanciaList({ estancias, onEdit, onDelete }) {
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
+
       <TableBody>
         {estancias.map((e) => (
           <TableRow key={e.id}>
@@ -33,8 +35,12 @@ export default function EstanciaList({ estancias, onEdit, onDelete }) {
             <TableCell>{e.telefono}</TableCell>
             <TableCell>{e.email}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => onEdit(e)}>Editar</Button>
-              <Button variant="default" onClick={() => onDelete(e.id)}>Eliminar</Button>
+              <Button variant="default" onClick={() => navigate(`/estancias/${e.id}/editar`)}>
+                Editar
+              </Button>
+              <Button variant="default" onClick={() => onDelete(e.id)}>
+                Eliminar
+              </Button>
             </TableCell>
           </TableRow>
         ))}
@@ -45,6 +51,5 @@ export default function EstanciaList({ estancias, onEdit, onDelete }) {
 
 EstanciaList.propTypes = {
   estancias: PropTypes.array.isRequired,
-  onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 }
