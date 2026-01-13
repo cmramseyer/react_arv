@@ -30,6 +30,10 @@ const data = {
           url: "/lotes",
         },
         {
+          title: "Productos",
+          url: "/productos",
+        },
+        {
           title: "Ordenes",
           url: "/ordenes_fumigacion",
         },
