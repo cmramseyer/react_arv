@@ -11,6 +11,8 @@ import LoteNuevo from './pages/LoteNuevo'
 import LoteEditar from './pages/LoteEditar'
 import LoteShow from './pages/LoteShow'
 import Productos from './pages/Productos'
+import ProductoNuevo from './pages/ProductoNuevo'
+import ProductoEditar from './pages/ProductoEditar'
 import OrdenesFumigacion from './pages/OrdenesFumigacion'
 import OrdenesFumigacionNueva from './pages/OrdenesFumigacionNueva'
 import OrdenFumigacionShow from './pages/OrdenFumigacionShow'
@@ -35,6 +37,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="/lotes/nuevo" element={<LoteNuevo />} />
           <Route path="/lotes/:id/editar" element={<LoteEditar />} />
           <Route path="/productos" element={<Productos />} />
+          <Route path="/productos/nuevo" element={<ProductoNuevo />} />
+          <Route path="/productos/:id/editar" element={<ProductoEditar />} />
           <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
           <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
           <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
