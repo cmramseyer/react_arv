@@ -1,22 +1,18 @@
-import { React } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
- 
+
 import { Button } from './ui/button'
 
-
-
-export default function LoteList({ lotes, onShow, onEdit, onDelete }) {
+export default function LoteList({ lotes, onShow, onDelete }) {
   const navigate = useNavigate()
 
   return (
@@ -29,6 +25,7 @@ export default function LoteList({ lotes, onShow, onEdit, onDelete }) {
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
+
       <TableBody>
         {lotes.map((e) => (
           <TableRow key={e.id}>
@@ -37,7 +34,7 @@ export default function LoteList({ lotes, onShow, onEdit, onDelete }) {
             <TableCell>{e.hectareas}</TableCell>
             <TableCell>
               <Button variant="default" onClick={() => onShow(e)}>Ver</Button>
-              <Button variant="default" onClick={() => onEdit(e)}>Editar</Button>
+              <Button variant="default" onClick={() => navigate(`/lotes/${e.id}/editar`)}>Editar</Button>
               <Button variant="default" onClick={() => onDelete(e.id)}>Eliminar</Button>
             </TableCell>
           </TableRow>
@@ -49,6 +46,6 @@ export default function LoteList({ lotes, onShow, onEdit, onDelete }) {
 
 LoteList.propTypes = {
   lotes: PropTypes.array.isRequired,
-  onEdit: PropTypes.func.isRequired,
+  onShow: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 }

@@ -17,6 +17,14 @@ export const getEstancias = async () => {
   return await res.json()
 }
 
+export const getEstancia = async(id) => {
+  const res = await fetchWithAuth(`${API_URL}/${id}`, {
+    headers: getAuthHeaders(),
+  })
+  if (!res.ok) throw new Error('Error fetching estancia')
+  return res.json()
+}
+
 export const createEstancia = async (estancia) => {
   await fetchWithAuth(API_URL, {
     method: 'POST',
