@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 // Mockear los servicios
 jest.mock('../services/lotesService', () => ({
@@ -18,7 +18,7 @@ jest.mock('../services/estanciasService', () => ({
 import { getLotes, createLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
 
-import Lotes from './Lotes'
+import LoteNuevo from './LoteNuevo'
 
 const mockLotes = () => {
   getLotes.mockResolvedValueOnce([
@@ -39,69 +39,90 @@ const mockEstancias = () => {
   ])
 }
 
+function LocationDisplay() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname}</div>
+}
+
+let user
+
 describe('Lotes Form', () => {
   beforeEach(() => {
+    user = userEvent.setup()
     getLotes.mockClear()
     createLote.mockClear()
     getEstancias.mockClear()
     mockEstancias()
   })
 
-  it('renderiza el formulario correctamente', async () => {
+  it('renders the form', async () => {
     render(
       <MemoryRouter>
-        <Lotes />
+        <LoteNuevo />
       </MemoryRouter>
     )
 
     await waitFor(() => {
-      expect(getLotes).toHaveBeenCalled()
+      expect(getEstancias).toHaveBeenCalled()
     })
 
     expect(screen.getByPlaceholderText('Propietario')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Lat')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Long')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Link mapa')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Hectareas')).toBeInTheDocument()
     expect(screen.getByText('Crear')).toBeInTheDocument()
   })
 
-  it('puede crear un nuevo lote', async () => {
+  it('creates a new Lote', async () => {
 
     mockLotes()
 
     render(
-      <MemoryRouter>
-        <Lotes />
+      <MemoryRouter initialEntries={['/lotes/nuevo']}>
+        <Routes>
+          <Route path="/lotes" element={<div>Lotes Page</div>} />
+          <Route path="/lotes/nuevo" element={<LoteNuevo />} />
+        </Routes>
+        <LocationDisplay />
       </MemoryRouter>
     )
 
-    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Lote Tres')
-    await userEvent.type(screen.getByPlaceholderText('Lat'), '50')
-    await userEvent.type(screen.getByPlaceholderText('Long'), '60')
-    await userEvent.type(screen.getByPlaceholderText('Link mapa'), 'http://mapa3.com')
-    await userEvent.type(screen.getByPlaceholderText('Hectareas'), '15')
-    await userEvent.selectOptions(
+    await user.type(screen.getByPlaceholderText('Propietario'), 'Lote Tres')
+    await user.type(screen.getByPlaceholderText('Lat'), '50')
+    await user.type(screen.getByPlaceholderText('Long'), '60')
+    await user.type(screen.getByPlaceholderText('Link mapa'), 'http://mapa3.com')
+    await user.type(screen.getByPlaceholderText('Hectareas'), '15')
+    await user.selectOptions(
       screen.getByRole('combobox'),
       '1'
     )
 
     const botonCrear = screen.getByRole('button', { name: /crear/i })
 
-    await userEvent.click(botonCrear)
+    await user.click(botonCrear)
 
     await waitFor(() => {
       expect(createLote).toHaveBeenCalledTimes(1)
     })
 
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Nombre')).toHaveValue('')
-      expect(screen.getByPlaceholderText('Hectareas')).toHaveValue(null)
-    })
-    expect(await screen.findByText('Lote Tres')).toBeInTheDocument()
+    const [fd] = createLote.mock.lastCall
 
+    expect(fd).toBeInstanceOf(FormData)
+
+    expect(fd.get('lote[nombre]')).toBe('Lote Tres')
+    expect(fd.get('lote[lat]')).toBe('50')
+    expect(fd.get('lote[long]')).toBe('60')
+    expect(fd.get('lote[link_mapa]')).toBe('http://mapa3.com')
+    expect(fd.get('lote[hectareas]')).toBe('15')
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
   })
 
-  it('muestra errores si nombre y hectareas no se completan o son inválidas', async () => {
+  it('show errors if form is not complete', async () => {
     render(
       <MemoryRouter>
-        <Lotes />
+        <LoteNuevo />
       </MemoryRouter>
     )
       
@@ -112,52 +133,26 @@ describe('Lotes Form', () => {
     expect(await screen.findByText('Las hectáreas son obligatorias')).toBeInTheDocument()
   
     // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
-    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Propietario'), 'Lote Test')
     await userEvent.type(screen.getByPlaceholderText('Hectareas'), '0')
   
-    fireEvent.click(botonCrear)
+    user.click(botonCrear)
   
     expect(await screen.findByText('Debe ser mayor a 0')).toBeInTheDocument()
 
-    // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
-    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Propietario'), 'Lote Test')
     await userEvent.type(screen.getByPlaceholderText('Hectareas'), '10001')
   
-    fireEvent.click(botonCrear)
+    user.click(botonCrear)
   
     expect(await screen.findByText('Debe ser menor a 10000')).toBeInTheDocument()
   })
 
-  it('muestra lotes, permite editar uno y llena el formulario', async () => {
-    mockLotes()
-  
-    render(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-  
-    // Esperar que cargue el listado de lotes
-    expect(await screen.findByText('Lote Uno')).toBeInTheDocument()
-    expect(await screen.findByText('Lote Dos')).toBeInTheDocument()
-  
-    // Simulamos hacer click en el botón Editar del primer lote
-    fireEvent.click(screen.getAllByText('Editar')[0])
-  
-    // Verificamos que el formulario se llene con los datos correctos
-    expect(screen.getByPlaceholderText('Nombre')).toHaveValue('Lote Uno')
-    expect(screen.getByPlaceholderText('Lat')).toHaveValue(10)
-    expect(screen.getByPlaceholderText('Long')).toHaveValue(20)
-    expect(screen.getByPlaceholderText('Link mapa')).toHaveValue('http://mapa1.com')
-    expect(screen.getByPlaceholderText('Hectareas')).toHaveValue(5)
-    expect(screen.getByRole('combobox')).toHaveValue('1')
-  })
-
-  it('muestra estancias en el select del formulario', async () => {
+  it('completes the multiselect form Estancia', async () => {
 
     render(
       <MemoryRouter>
-        <Lotes />
+        <LoteNuevo />
       </MemoryRouter>
     )
 

@@ -38,7 +38,7 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
     <form onSubmit={handleSubmit(internalSubmit)} className="space-y-2 mb-6">
       <input
         {...register('nombre', { required: 'El nombre es obligatorio' })}
-        placeholder="Nombre"
+        placeholder="Propietario"
         className="block border p-1 w-full"
       />
       {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
