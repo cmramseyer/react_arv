@@ -62,3 +62,23 @@ export const imprimirOrdenFumigacion = async (id) => {
   })
   return await response.json()
 }
+
+export const getOrdenesPendientesFacturacion = async () => {
+  const response = await fetchWithAuth(`${API_URL}/pendiente_factura`, {
+    headers: getAuthHeaders(),
+  })
+  return await response.json()
+}
+
+export const facturarOrden = async (ordenFumigacionId) => {
+  const response = await fetchWithAuth('http://localhost:3000/orden_facturadas', {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ orden_facturada: { orden_fumigacion_id: ordenFumigacionId } }),
+  })
+
+  return response
+}
