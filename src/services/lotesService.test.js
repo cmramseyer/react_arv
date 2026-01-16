@@ -1,7 +1,7 @@
 import { getLotes, createLote, updateLote, deleteLote, getLote } from './lotesService'
 
 // Mockear fetch
-globalThis.fetch = jest.fn()
+globalThis.fetch = vi.fn()
 
 beforeEach(() => {
   fetch.mockClear()

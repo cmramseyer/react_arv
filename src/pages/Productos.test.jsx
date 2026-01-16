@@ -1,19 +1,28 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 
 // Mockear los servicios
-jest.mock('../services/productosService', () => ({
-  getProductos: jest.fn(() => Promise.resolve([])),
-  createProducto: jest.fn(() => Promise.resolve()),
-  updateProducto: jest.fn(() => Promise.resolve()),
-  deleteProducto: jest.fn(() => Promise.resolve())
+vi.mock('../services/productosService', () => ({
+  getProductos: vi.fn(() => Promise.resolve([])),
+  createProducto: vi.fn(() => Promise.resolve()),
+  updateProducto: vi.fn(() => Promise.resolve()),
+  deleteProducto: vi.fn(() => Promise.resolve())
 }))
 
-import { getProductos, createProducto } from '../services/productosService'
+import { getProductos, createProducto, getProducto } from '../services/productosService'
 
 import Productos from './Productos'
+import ProductoNuevo from './ProductoNuevo'
+import ProductoEditar from './ProductoEditar'
+
+function LocationDisplay() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname}</div>
+}
+
+let user
 
 const mockProductos = () => {
   getProductos.mockResolvedValueOnce([
@@ -21,14 +30,18 @@ const mockProductos = () => {
   ])
 }
 
-describe('Productos Form', () => {
+describe('Productos', () => {
   beforeEach(() => {
+    user = userEvent.setup()
     getProductos.mockClear()
     createProducto.mockClear()
     mockProductos()
   })
 
-  it('renderiza el formulario correctamente', async () => {
+  it('renders page', async () => {
+
+    mockProductos()
+
     render(
       <MemoryRouter>
         <Productos />
@@ -37,95 +50,55 @@ describe('Productos Form', () => {
 
     await waitFor(() => {
       expect(getProductos).toHaveBeenCalled()
-    })    
-
-    expect(screen.getByPlaceholderText('Nombre')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Tipo de producto')).toBeInTheDocument()
-    expect(screen.getByText('Crear')).toBeInTheDocument()
-  })
-
-  it('puede crear un nuevo Producto', async () => {
-
-    await waitFor(() => {
-      expect(getProductos).toHaveBeenCalledTimes(0)
     })
 
+    await screen.findByText('Glifosato')
+
+    expect(screen.getByText(/Tipo:/)).toBeInTheDocument()
+    expect(screen.getByText(/Unidad:/)).toBeInTheDocument()
+    expect(screen.getByText('Nuevo Producto')).toBeInTheDocument()
+  })
+
+  it('edit redirects to Edit page', async () => {
+
     render(
-      <MemoryRouter>
-        <Productos />
+      <MemoryRouter initialEntries={['/productos']}>
+        <Routes>
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/productos/:id/editar" element={<div />} />
+        </Routes>
+
+        <LocationDisplay />
       </MemoryRouter>
     )
 
-    await waitFor(() => {
-      expect(getProductos).toHaveBeenCalledTimes(1)
-    })
-
-    await userEvent.type(screen.getByPlaceholderText('Nombre'), 'Roundup')
-    await userEvent.type(screen.getByPlaceholderText('Tipo de producto'), 'Agroquimico')
-    await userEvent.selectOptions(
-      screen.getByRole('combobox'),
-      'kg'
-    )
-
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
-
-    getProductos.mockResolvedValueOnce([
-      { id: 1, nombre: 'Glifosato', tipo_producto: 'Agroquimico', unidad_medida: 'litros' },
-      { id: 2, nombre: 'Roundup', tipo_producto: 'Agroquimico', unidad_medida: 'kg' }
-    ])
-
-    await userEvent.click(botonCrear)
-
-    await waitFor(() => {
-      expect(createProducto).toHaveBeenCalledTimes(1)
-    })
-
-    await waitFor(() => {
-      expect(getProductos).toHaveBeenCalledTimes(2)
-    })
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText('Nombre')).toHaveValue('')
-      expect(screen.getByPlaceholderText('Tipo de producto')).toHaveValue('')
-    })
-    expect(await screen.findByText('Roundup')).toBeInTheDocument()
-
-  })
-
-  it('muestra errores si los campos no se completan', async () => {
-    render(
-      <MemoryRouter>
-        <Productos />
-      </MemoryRouter>
-    )
-      
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
-    fireEvent.click(botonCrear)
-  
-    expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
-    expect(await screen.findByText('El tipo de producto es obligatorio')).toBeInTheDocument()
-    expect(await screen.findByText('La unidad de medida es obligatoria')).toBeInTheDocument()
-  })
-
-  it('muestra Productos, permite editar uno y llena el formulario', async () => {
-    mockProductos()
-  
-    render(
-      <MemoryRouter>
-        <Productos />
-      </MemoryRouter>
-    )
-  
-    // Esperar que cargue el listado de Productos
     expect(await screen.findByText('Glifosato')).toBeInTheDocument()
-  
-    // Simulamos hacer click en el botón Editar del primer Producto
-    fireEvent.click(screen.getAllByText('Editar')[0])
-  
-    // Verificamos que el formulario se llene con los datos correctos
-    expect(screen.getByPlaceholderText('Nombre')).toHaveValue('Glifosato')
-    expect(screen.getByPlaceholderText('Tipo de producto')).toHaveValue('Agroquimico')
-    expect(screen.getByRole('combobox')).toHaveValue('litros')
+
+    await user.click(screen.getAllByText('Editar')[0])
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/1/editar')
+
+  })
+
+  it('new redirects to New page', async () => {
+
+    render(
+      <MemoryRouter initialEntries={['/productos']}>
+        <Routes>
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/productos/nuevo" element={<div />} />
+        </Routes>
+
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByText('Glifosato')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /nuevo producto/i }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/nuevo')
+
   })
 
 })
