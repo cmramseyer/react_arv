@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 // Mockear los servicios
-jest.mock('../services/productosService', () => ({
-  createProducto: jest.fn(() => Promise.resolve()),
+vi.mock('../services/productosService', () => ({
+  createProducto: vi.fn(() => Promise.resolve()),
 }))
 
 import { createProducto } from '../services/productosService'

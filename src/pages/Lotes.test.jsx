@@ -3,10 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
-const mockNavigate = jest.fn()
+const mockNavigate = vi.fn()
 
-jest.mock('react-router-dom', () => {
-  const actual = jest.requireActual('react-router-dom')
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -14,9 +14,9 @@ jest.mock('react-router-dom', () => {
 })
 
 // Mockear los servicios
-jest.mock('../services/lotesService', () => ({
-  getLotes: jest.fn(),
-  deleteLote: jest.fn(),
+vi.mock('../services/lotesService', () => ({
+  getLotes: vi.fn(),
+  deleteLote: vi.fn(),
 }))
 
 import { getLotes, deleteLote } from '../services/lotesService'

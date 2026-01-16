@@ -4,15 +4,15 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 // Mockear los servicios
-jest.mock('../services/lotesService', () => ({
-  getLotes: jest.fn(() => Promise.resolve([])),
-  createLote: jest.fn(() => Promise.resolve()),
-  updateLote: jest.fn(() => Promise.resolve()),
-  deleteLote: jest.fn(() => Promise.resolve())
+vi.mock('../services/lotesService', () => ({
+  getLotes: vi.fn(() => Promise.resolve([])),
+  createLote: vi.fn(() => Promise.resolve()),
+  updateLote: vi.fn(() => Promise.resolve()),
+  deleteLote: vi.fn(() => Promise.resolve())
 }))
 
-jest.mock('../services/estanciasService', () => ({
-  getEstancias: jest.fn(() => Promise.resolve([]))
+vi.mock('../services/estanciasService', () => ({
+  getEstancias: vi.fn(() => Promise.resolve([]))
 }))
 
 import { getLotes, createLote } from '../services/lotesService'

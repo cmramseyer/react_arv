@@ -3,13 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
-jest.mock('../services/lotesService', () => ({
-  getLote: jest.fn(),
-  updateLote: jest.fn(),
+vi.mock('../services/lotesService', () => ({
+  getLote: vi.fn(),
+  updateLote: vi.fn(),
 }))
 
-jest.mock('../services/estanciasService', () => ({
-  getEstancias: jest.fn(),
+vi.mock('../services/estanciasService', () => ({
+  getEstancias: vi.fn(),
 }))
 
 import { getLote, updateLote } from '../services/lotesService'
@@ -46,7 +46,7 @@ describe('LoteEditar', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('renders the form with fetched data', async () => {
