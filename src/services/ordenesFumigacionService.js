@@ -70,14 +70,14 @@ export const getOrdenesPendientesFacturacion = async () => {
   return await response.json()
 }
 
-export const facturarOrdenes = async (ordenFumigacionIds) => {
+export const facturarOrdenes = async (ordenesFumigacion) => {
   const response = await fetchWithAuth(`http://${import.meta.env.VITE_API_URL}/facturas`, {
     method: 'POST',
     headers: {
       ...getAuthHeaders(),
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ factura: { orden_fumigacion_ids: ordenFumigacionIds } }),
+    body: JSON.stringify({ ordenes_fumigacion: ordenesFumigacion }),
   })
 
   return response

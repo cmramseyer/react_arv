@@ -26,6 +26,7 @@ export default function FacturacionPendiente() {
   const [loading, setLoading] = useState(true)
   const [facturandoIds, setFacturandoIds] = useState(() => new Set())
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(() => new Set())
+  const [importesPorOrden, setImportesPorOrden] = useState({})
   const [modoPago, setModoPago] = useState(false)
   const [pagandoIds, setPagandoIds] = useState(() => new Set())
 
@@ -53,11 +54,24 @@ export default function FacturacionPendiente() {
     [ordenesSeleccionadas]
   )
 
+  const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe)
+
+  const tieneImportesInvalidos = useMemo(() => {
+    return Array.from(ordenesSeleccionadas).some((ordenId) => {
+      const importe = importesPorOrden[ordenId] ?? ''
+      return !importeEsValido(importe)
+    })
+  }, [ordenesSeleccionadas, importesPorOrden])
+
   const handleToggleOrden = (ordenId) => {
     setOrdenesSeleccionadas((prev) => {
       const next = new Set(prev)
       if (next.has(ordenId)) {
         next.delete(ordenId)
+        setImportesPorOrden((prevImportes) => {
+          const { [ordenId]: _removed, ...rest } = prevImportes
+          return rest
+        })
       } else {
         next.add(ordenId)
       }
@@ -65,13 +79,26 @@ export default function FacturacionPendiente() {
     })
   }
 
+  const handleImporteChange = (ordenId, value) => {
+    setImportesPorOrden((prev) => ({
+      ...prev,
+      [ordenId]: value,
+    }))
+  }
+
   const handleFacturar = async () => {
     const ordenesIds = Array.from(ordenesSeleccionadas)
     if (ordenesIds.length === 0) return
 
+    const ordenesPayload = ordenesIds.map((ordenId) => {
+      const importeTexto = importesPorOrden[ordenId] ?? '0,00'
+      const importe = Number(importeTexto.replace(',', '.'))
+      return { id: ordenId, importe }
+    })
+
     setFacturandoIds(new Set(ordenesIds))
     try {
-      const response = await facturarOrdenes(ordenesIds)
+      const response = await facturarOrdenes(ordenesPayload)
       if (!response?.ok) return
 
       setOrdenesPorEstancia((prev) =>
@@ -85,6 +112,7 @@ export default function FacturacionPendiente() {
           .filter(groupHasOrdenes)
       )
       setOrdenesSeleccionadas(new Set())
+      setImportesPorOrden({})
     } finally {
       setFacturandoIds(new Set())
     }
@@ -146,7 +174,7 @@ export default function FacturacionPendiente() {
               </div>
               <Button
                 onClick={handleFacturar}
-                disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0}
+                disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0 || tieneImportesInvalidos}
               >
                 {facturandoIds.size > 0 ? 'Facturando...' : 'Facturar'}
               </Button>
@@ -195,15 +223,35 @@ export default function FacturacionPendiente() {
                     >
                       <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
                         {!modoPago && (
-                          <label className="flex items-center gap-2 text-sm font-medium">
-                            <Checkbox
-                              checked={ordenesSeleccionadas.has(orden.orden_id)}
-                              onCheckedChange={() => handleToggleOrden(orden.orden_id)}
-                              disabled={facturandoIds.has(orden.orden_id)}
-                              aria-label={`Seleccionar orden ${orden.orden_id}`}
-                            />
-                            <span>Seleccionar</span>
-                          </label>
+                          <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
+                            <label className="flex items-center gap-2">
+                              <Checkbox
+                                checked={ordenesSeleccionadas.has(orden.orden_id)}
+                                onCheckedChange={() => handleToggleOrden(orden.orden_id)}
+                                disabled={facturandoIds.has(orden.orden_id)}
+                                aria-label={`Seleccionar orden ${orden.orden_id}`}
+                              />
+                              <span>Seleccionar</span>
+                            </label>
+                            {ordenesSeleccionadas.has(orden.orden_id) && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Importe</span>
+                                <input
+                                  type="text"
+                                  inputMode="decimal"
+                                  placeholder="0,00"
+                                  value={importesPorOrden[orden.orden_id] ?? ''}
+                                  onChange={(event) => handleImporteChange(orden.orden_id, event.target.value)}
+                                  className={`h-9 w-28 rounded-md border px-2 text-sm ${
+                                    importeEsValido(importesPorOrden[orden.orden_id] ?? '')
+                                      ? 'border-input'
+                                      : 'border-destructive'
+                                  }`}
+                                  aria-label={`Importe de orden ${orden.orden_id}`}
+                                />
+                              </div>
+                            )}
+                          </div>
                         )}
                         <div className="space-y-1">
                           <div className="font-semibold">
