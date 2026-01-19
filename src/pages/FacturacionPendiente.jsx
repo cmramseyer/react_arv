@@ -27,6 +27,8 @@ export default function FacturacionPendiente() {
   const [facturandoIds, setFacturandoIds] = useState(() => new Set())
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(() => new Set())
   const [importesPorOrden, setImportesPorOrden] = useState({})
+  const [nroOrdenClientePorOrden, setNroOrdenClientePorOrden] = useState({})
+  const [nroFactura, setNroFactura] = useState('')
   const [modoPago, setModoPago] = useState(false)
   const [pagandoIds, setPagandoIds] = useState(() => new Set())
 
@@ -72,6 +74,10 @@ export default function FacturacionPendiente() {
           const { [ordenId]: _removed, ...rest } = prevImportes
           return rest
         })
+        setNroOrdenClientePorOrden((prevOrdenes) => {
+          const { [ordenId]: _removed, ...rest } = prevOrdenes
+          return rest
+        })
       } else {
         next.add(ordenId)
       }
@@ -86,6 +92,13 @@ export default function FacturacionPendiente() {
     }))
   }
 
+  const handleNroOrdenClienteChange = (ordenId, value) => {
+    setNroOrdenClientePorOrden((prev) => ({
+      ...prev,
+      [ordenId]: value,
+    }))
+  }
+
   const handleFacturar = async () => {
     const ordenesIds = Array.from(ordenesSeleccionadas)
     if (ordenesIds.length === 0) return
@@ -93,12 +106,24 @@ export default function FacturacionPendiente() {
     const ordenesPayload = ordenesIds.map((ordenId) => {
       const importeTexto = importesPorOrden[ordenId] ?? '0,00'
       const importe = Number(importeTexto.replace(',', '.'))
-      return { id: ordenId, importe }
+      const nroOrdenCliente = (nroOrdenClientePorOrden[ordenId] ?? '').trim()
+      const payload = { id: ordenId, importe }
+
+      if (nroOrdenCliente) {
+        payload.nro_orden_cliente = nroOrdenCliente
+      }
+
+      return payload
     })
+
+    const nroFacturaPayload = nroFactura.trim()
 
     setFacturandoIds(new Set(ordenesIds))
     try {
-      const response = await facturarOrdenes(ordenesPayload)
+      const response = await facturarOrdenes({
+        ordenes_fumigacion: ordenesPayload,
+        nro_factura: nroFacturaPayload || undefined,
+      })
       if (!response?.ok) return
 
       setOrdenesPorEstancia((prev) =>
@@ -113,6 +138,8 @@ export default function FacturacionPendiente() {
       )
       setOrdenesSeleccionadas(new Set())
       setImportesPorOrden({})
+      setNroOrdenClientePorOrden({})
+      setNroFactura('')
     } finally {
       setFacturandoIds(new Set())
     }
@@ -204,12 +231,25 @@ export default function FacturacionPendiente() {
               <div className="text-sm text-muted-foreground">
                 {cantidadSeleccionadas} ordenes seleccionadas
               </div>
-              <Button
-                onClick={handleFacturar}
-                disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0 || tieneImportesInvalidos}
-              >
-                {facturandoIds.size > 0 ? 'Facturando...' : 'Facturar'}
-              </Button>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  onClick={handleFacturar}
+                  disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0 || tieneImportesInvalidos}
+                >
+                  {facturandoIds.size > 0 ? 'Facturando...' : 'Facturar'}
+                </Button>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Nro Factura</span>
+                  <input
+                    type="text"
+                    placeholder="Ej: FAC-2026-001"
+                    value={nroFactura}
+                    onChange={(event) => setNroFactura(event.target.value)}
+                    className="h-9 w-40 rounded-md border border-input px-2 text-sm"
+                    aria-label="Nro factura"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
@@ -249,6 +289,11 @@ export default function FacturacionPendiente() {
                         Importe total: {formatImporte(totalImporte)}
                       </div>
                     )}
+                    {modoPago && grupo.nro_factura && (
+                      <div className="text-sm text-muted-foreground">
+                        Nro factura: {grupo.nro_factura}
+                      </div>
+                    )}
                   </div>
                   {modoPago && (
                     <Button
@@ -278,21 +323,36 @@ export default function FacturacionPendiente() {
                               <span>Seleccionar</span>
                             </label>
                             {ordenesSeleccionadas.has(orden.orden_id) && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">Importe</span>
-                                <input
-                                  type="text"
-                                  inputMode="decimal"
-                                  placeholder="0,00"
-                                  value={importesPorOrden[orden.orden_id] ?? ''}
-                                  onChange={(event) => handleImporteChange(orden.orden_id, event.target.value)}
-                                  className={`h-9 w-28 rounded-md border px-2 text-sm ${
-                                    importeEsValido(importesPorOrden[orden.orden_id] ?? '')
-                                      ? 'border-input'
-                                      : 'border-destructive'
-                                  }`}
-                                  aria-label={`Importe de orden ${orden.orden_id}`}
-                                />
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">Importe</span>
+                                  <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="0,00"
+                                    value={importesPorOrden[orden.orden_id] ?? ''}
+                                    onChange={(event) => handleImporteChange(orden.orden_id, event.target.value)}
+                                    className={`h-9 w-28 rounded-md border px-2 text-sm ${
+                                      importeEsValido(importesPorOrden[orden.orden_id] ?? '')
+                                        ? 'border-input'
+                                        : 'border-destructive'
+                                    }`}
+                                    aria-label={`Importe de orden ${orden.orden_id}`}
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-muted-foreground">Nro Orden Cliente</span>
+                                  <input
+                                    type="text"
+                                    placeholder="Ej: ORD-100"
+                                    value={nroOrdenClientePorOrden[orden.orden_id] ?? ''}
+                                    onChange={(event) =>
+                                      handleNroOrdenClienteChange(orden.orden_id, event.target.value)
+                                    }
+                                    className="h-9 w-36 rounded-md border border-input px-2 text-sm"
+                                    aria-label={`Nro orden cliente ${orden.orden_id}`}
+                                  />
+                                </div>
                               </div>
                             )}
                           </div>
@@ -317,6 +377,11 @@ export default function FacturacionPendiente() {
                               <div className="text-sm text-muted-foreground">
                                 Importe: {formatImporte(orden.importe)}
                               </div>
+                              {orden.nro_orden_cliente && (
+                                <div className="text-sm text-muted-foreground">
+                                  Nro orden cliente: {orden.nro_orden_cliente}
+                                </div>
+                              )}
                             </>
                           )}
                         </div>
