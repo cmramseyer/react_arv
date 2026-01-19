@@ -140,6 +140,38 @@ export default function FacturacionPendiente() {
     ? 'No hay facturas pendientes de pago.'
     : 'No hay órdenes pendientes de facturación.'
 
+  const parseImporte = (importe) => {
+    if (importe === null || importe === undefined) return null
+    const raw = String(importe).trim()
+    if (raw === '') return null
+
+    let normalized = raw
+    if (raw.includes(',') && raw.includes('.')) {
+      normalized = raw.replace(/\./g, '').replace(',', '.')
+    } else if (raw.includes(',')) {
+      normalized = raw.replace(',', '.')
+    }
+
+    const numero = Number(normalized)
+    if (Number.isNaN(numero)) return null
+
+    return numero
+  }
+
+  const formatImporte = (importe) => {
+    const numero = parseImporte(importe)
+    if (numero === null) return ''
+
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+      .format(numero)
+      .replace(/\s/g, '')
+  }
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -190,6 +222,13 @@ export default function FacturacionPendiente() {
                 ? grupo.data
                 : []
 
+            const totalImporte = modoPago
+              ? datos.reduce((acc, orden) => {
+                  const valor = parseImporte(orden?.importe)
+                  return valor === null ? acc : acc + valor
+                }, 0)
+              : null
+
             return (
               <Card key={grupo.id ?? grupo.nombre ?? index} className="w-full">
                 <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -203,6 +242,11 @@ export default function FacturacionPendiente() {
                     {modoPago && grupo.fecha_factura && (
                       <div className="text-sm text-muted-foreground">
                         Fecha factura: {grupo.fecha_factura}
+                      </div>
+                    )}
+                    {modoPago && (
+                      <div className="text-sm text-muted-foreground">
+                        Importe total: {formatImporte(totalImporte)}
                       </div>
                     )}
                   </div>
@@ -266,9 +310,14 @@ export default function FacturacionPendiente() {
                             </>
                           )}
                           {modoPago && (
-                            <div className="text-sm text-muted-foreground">
-                              Estancia: {orden.nombre_estancia}
-                            </div>
+                            <>
+                              <div className="text-sm text-muted-foreground">
+                                Estancia: {orden.nombre_estancia}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                Importe: {formatImporte(orden.importe)}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
