@@ -56,8 +56,26 @@ export const deleteOrdenFumigacion = async (id) => {
   })
 }
 
-export const imprimirOrdenFumigacion = async (id) => {
-  const response = await fetchWithAuth(`${API_URL}/${id}/pdf`, {
+export const getAdjuntosOrden = async (ordenId) => {
+  const response = await fetchWithAuth(
+    `http://${import.meta.env.VITE_API_URL}/adjuntos?orden_fumigacion_id=${ordenId}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  )
+  return await response.json()
+}
+
+export const imprimirOrdenFumigacion = async (id, attachmentIds = []) => {
+  const url = new URL(`${API_URL}/${id}/pdf`)
+
+  if (attachmentIds.length > 0) {
+    attachmentIds.forEach((attachmentId) => {
+      url.searchParams.append('attachment_ids[]', attachmentId)
+    })
+  }
+
+  const response = await fetchWithAuth(url.toString(), {
     headers: getAuthHeaders(),
   })
   return await response.json()

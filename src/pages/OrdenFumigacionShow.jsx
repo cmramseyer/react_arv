@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getOrdenFumigacion, deleteOrdenFumigacion, imprimirOrdenFumigacion } from '../services/ordenesFumigacionService'
+import {
+  getOrdenFumigacion,
+  deleteOrdenFumigacion,
+  imprimirOrdenFumigacion,
+  getAdjuntosOrden,
+} from '../services/ordenesFumigacionService'
 
 import {
   Card,
@@ -11,6 +16,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 
 
 export default function OrdenFumigacionShow() {
@@ -22,6 +35,10 @@ export default function OrdenFumigacionShow() {
   const [fechaPdf, setFechaPdf] = useState(null)
   const [nombreLote, setNombreLote] = useState(null)
   const [hectareasLote, setHectareasLote] = useState(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [adjuntos, setAdjuntos] = useState([])
+  const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set())
+  const [isLoadingAdjuntos, setIsLoadingAdjuntos] = useState(false)
 
   useEffect(()=> {
     getOrdenFumigacion(id).then((data) => {
@@ -56,11 +73,39 @@ export default function OrdenFumigacionShow() {
     }
   }
 
+  const fetchAdjuntos = async () => {
+    setIsLoadingAdjuntos(true)
+    try {
+      const data = await getAdjuntosOrden(id)
+      setAdjuntos(Array.isArray(data) ? data : [])
+      setSelectedAdjuntos(new Set())
+    } finally {
+      setIsLoadingAdjuntos(false)
+    }
+  }
+
   const handleGenerarPdf = async () => {
-    imprimirOrdenFumigacion(id).then((data) => {
-      setPdfUrl(data.orden_url)
-      setFechaPdf(data.orden_pdf_fecha_creacion)
+    setIsDialogOpen(true)
+    fetchAdjuntos()
+  }
+
+  const handleToggleAdjunto = (adjuntoId) => {
+    setSelectedAdjuntos((prev) => {
+      const next = new Set(prev)
+      if (next.has(adjuntoId)) {
+        next.delete(adjuntoId)
+      } else {
+        next.add(adjuntoId)
+      }
+      return next
     })
+  }
+
+  const handleImprimir = async (attachmentIds) => {
+    const data = await imprimirOrdenFumigacion(id, attachmentIds)
+    setPdfUrl(data.orden_url)
+    setFechaPdf(data.orden_pdf_fecha_creacion)
+    setIsDialogOpen(false)
   }
 
   const handleVerPdf = async () => {
@@ -68,6 +113,11 @@ export default function OrdenFumigacionShow() {
   }
 
   const labelGenerarPdf = !!pdfUrl ? "Regenerar PDF" : "Generar PDF"
+  const hasAdjuntos = adjuntos.length > 0
+  const selectedAdjuntosArray = Array.from(selectedAdjuntos)
+  const labelImprimirSeleccion = selectedAdjuntosArray.length > 0
+    ? "Imprimir con planos"
+    : "Imprimir sin planos"
 
   const botonVerPdf = !!pdfUrl && (
     <Button onClick={handleVerPdf} variant="default">
@@ -113,6 +163,51 @@ export default function OrdenFumigacionShow() {
         </Button>
         {botonVerPdf}
       </CardFooter>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adjuntos para PDF</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {isLoadingAdjuntos && (
+              <div className="text-sm text-muted-foreground">Cargando adjuntos...</div>
+            )}
+            {!isLoadingAdjuntos && !hasAdjuntos && (
+              <div className="text-sm text-muted-foreground">No hay adjuntos disponibles.</div>
+            )}
+            {!isLoadingAdjuntos && hasAdjuntos && (
+              <div className="grid gap-3 max-h-[50vh] overflow-y-auto pr-1">
+                {adjuntos.map((adjunto) => (
+                  <label
+                    key={adjunto.id}
+                    className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/40">
+                    <Checkbox
+                      checked={selectedAdjuntos.has(adjunto.id)}
+                      onCheckedChange={() => handleToggleAdjunto(adjunto.id)}
+                    />
+                    <img
+                      src={adjunto.url}
+                      alt={adjunto.filename}
+                      className="h-16 w-20 rounded object-cover"
+                    />
+                    <span className="text-sm font-medium">{adjunto.filename}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cerrar
+            </Button>
+            <Button
+              onClick={() => handleImprimir(selectedAdjuntosArray)}
+            >
+              {labelImprimirSeleccion}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
 
   )
