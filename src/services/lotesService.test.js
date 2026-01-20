@@ -1,4 +1,4 @@
-import { getLotes, createLote, updateLote, deleteLote, getLote } from './lotesService'
+import { getLotes, getLotesPorEstancia, createLote, updateLote, deleteLote, getLote } from './lotesService'
 
 // Mockear fetch
 globalThis.fetch = vi.fn()
@@ -15,6 +15,18 @@ describe('loteService', () => {
     await getLotes()
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes', expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: expect.stringContaining('Bearer')
+      })
+    }))
+  })
+
+  it('getLotesPorEstancia realiza fetch con estancia_id', async () => {
+    fetch.mockResolvedValueOnce({ json: async () => ([]) })
+
+    await getLotesPorEstancia(4)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/lotes?estancia_id=4', expect.objectContaining({
       headers: expect.objectContaining({
         Authorization: expect.stringContaining('Bearer')
       })
