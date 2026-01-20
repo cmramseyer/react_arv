@@ -62,3 +62,23 @@ export const imprimirOrdenFumigacion = async (id) => {
   })
   return await response.json()
 }
+
+export const getOrdenesPendientesFacturacion = async () => {
+  const response = await fetchWithAuth(`${API_URL}/pendiente_factura`, {
+    headers: getAuthHeaders(),
+  })
+  return await response.json()
+}
+
+export const facturarOrdenes = async (payload) => {
+  const response = await fetchWithAuth(`http://${import.meta.env.VITE_API_URL}/facturas`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return response
+}
