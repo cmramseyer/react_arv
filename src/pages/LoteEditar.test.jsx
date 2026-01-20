@@ -83,7 +83,7 @@ describe('LoteEditar', () => {
 
     await screen.findByDisplayValue('Lote Uno')
 
-    const nombre = screen.getByPlaceholderText('Propietario')
+    const nombre = screen.getByPlaceholderText('Nombre del lote')
     await user.clear(nombre)
     await user.type(nombre, 'Lote Tres')
 

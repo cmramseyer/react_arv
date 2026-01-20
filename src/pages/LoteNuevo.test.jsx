@@ -66,7 +66,7 @@ describe('Lotes Form', () => {
       expect(getEstancias).toHaveBeenCalled()
     })
 
-    expect(screen.getByPlaceholderText('Propietario')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Nombre del lote')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Lat')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Long')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Link mapa')).toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('Lotes Form', () => {
       </MemoryRouter>
     )
 
-    await user.type(screen.getByPlaceholderText('Propietario'), 'Lote Tres')
+    await user.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Tres')
     await user.type(screen.getByPlaceholderText('Lat'), '50')
     await user.type(screen.getByPlaceholderText('Long'), '60')
     await user.type(screen.getByPlaceholderText('Link mapa'), 'http://mapa3.com')
@@ -133,14 +133,14 @@ describe('Lotes Form', () => {
     expect(await screen.findByText('Las hectáreas son obligatorias')).toBeInTheDocument()
   
     // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
-    await userEvent.type(screen.getByPlaceholderText('Propietario'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Test')
     await userEvent.type(screen.getByPlaceholderText('Hectareas'), '0')
   
     user.click(botonCrear)
   
     expect(await screen.findByText('Debe ser mayor a 0')).toBeInTheDocument()
 
-    await userEvent.type(screen.getByPlaceholderText('Propietario'), 'Lote Test')
+    await userEvent.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Test')
     await userEvent.type(screen.getByPlaceholderText('Hectareas'), '10001')
   
     user.click(botonCrear)

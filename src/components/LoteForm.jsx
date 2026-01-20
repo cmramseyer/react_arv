@@ -36,9 +36,23 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
 
   return (
     <form onSubmit={handleSubmit(internalSubmit)} className="space-y-2 mb-6">
+
+      <select
+        {...register('estancia_id', { required: 'La estancia es obligatoria' })}
+        className="block border p-1 w-full"
+      >
+        <option value="">Selecciona una estancia</option>
+        {estancias.map((estancia) => (
+          <option key={estancia.id} value={estancia.id}>
+            {estancia.nombre}
+          </option>
+        ))}
+      </select>
+      {errors.estancia_id && <p className="text-red-500">{errors.estancia_id.message}</p>}
+
       <input
         {...register('nombre', { required: 'El nombre es obligatorio' })}
-        placeholder="Propietario"
+        placeholder="Nombre del lote"
         className="block border p-1 w-full"
       />
       {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
@@ -60,19 +74,6 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
         className="block border p-1 w-full"
       />
       {errors.hectareas && <p className="text-red-500">{errors.hectareas.message}</p>}
-
-      <select
-        {...register('estancia_id', { required: 'La estancia es obligatoria' })}
-        className="block border p-1 w-full"
-      >
-        <option value="">Selecciona una estancia</option>
-        {estancias.map((estancia) => (
-          <option key={estancia.id} value={estancia.id}>
-            {estancia.nombre}
-          </option>
-        ))}
-      </select>
-      {errors.estancia_id && <p className="text-red-500">{errors.estancia_id.message}</p>}
 
       <input type="file" multiple {...register('adjuntos')} className="block" />
 
