@@ -131,9 +131,9 @@ export default function OrdenesFumigacion() {
                   <CardTitle className="text-lg">Orden #{orden.id}</CardTitle>
                   <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
                 </div>
-                <div className="text-sm text-muted-foreground md:hidden">
-                  Creado: {createdAtLabel} por: {orden.creado_por || 'Sin datos'}
-                </div>
+                 <div className="text-sm text-muted-foreground md:hidden">
+                   Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
+                 </div>
 
                 <div className="hidden items-center justify-between gap-4 md:flex">
                   <div className="flex flex-wrap items-center gap-4">
@@ -141,9 +141,9 @@ export default function OrdenesFumigacion() {
                     <span className="text-lg font-semibold">
                       {orden.nombre_estancia || 'Sin estancia'}
                     </span>
-                    <span className="text-sm text-muted-foreground">
-                      Creado: {createdAtLabel} por: {orden.creado_por || 'Sin datos'}
-                    </span>
+                     <span className="text-sm text-muted-foreground">
+                       Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
+                     </span>
                   </div>
                   <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
                 </div>

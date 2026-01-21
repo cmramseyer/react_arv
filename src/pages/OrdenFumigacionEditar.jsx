@@ -18,7 +18,7 @@ export default function OrdenFumigacionEditar() {
     defaultValues: {
       estancia_id: '',
       lotes: [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }],
-      creado_por: '',
+      creator: '',
       datos_clima: '',
       info_trabajo: '',
       fecha_trabajo: '',
@@ -75,7 +75,7 @@ export default function OrdenFumigacionEditar() {
         estancia_id: String(orden.estancia_id) || '',
         datos_clima: orden.datos_clima || '',
         info_trabajo: orden.info_trabajo || '',
-        creado_por: orden.creado_por || '',
+        creator: orden.creator || '',
         fecha_trabajo: orden.fecha_trabajo || '',
         maquinista: orden.maquinista || '',
         lotes: mappedLotes
@@ -211,9 +211,9 @@ export default function OrdenFumigacionEditar() {
             Agregar otro lote
           </Button>
 
-          <FormField
+           <FormField
             control={control}
-            name="creado_por"
+            name="creator"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Creado Por</FormLabel>

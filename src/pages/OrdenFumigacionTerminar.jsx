@@ -67,7 +67,7 @@ export default function OrdenFumigacionTerminar() {
         <div><strong>Estancia:</strong> {estanciaNombre}</div>
         <div><strong>Lote:</strong> {loteNombre}</div>
         <div><strong>Hectáreas:</strong> {loteHectareas}</div>
-        <div><strong>Creado Por:</strong> {orden.creado_por}</div>
+        <div><strong>Creado Por:</strong> {orden.creator}</div>
         <div><strong>Estado:</strong> {orden.estado_orden}</div>
         <div>
           <strong>Dosis:</strong>
