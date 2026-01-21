@@ -167,11 +167,11 @@ export default function OrdenesFumigacion() {
                         const dosisValue = `dosis-${orden.id}-${loteKey}`
 
                         return (
-                          <li key={loteKey} className="space-y-2">
-                            <div>
-                              Lote {lote.nombre || 'Sin nombre'}: {loteHectareas}
-                              {loteHectareas === 'Sin datos' ? '' : ' ha'}
-                            </div>
+                           <li key={loteKey} className="space-y-2">
+                             <div className="flex flex-wrap gap-2">
+                               <Badge variant="success">Lote: {lote.nombre || 'Sin nombre'}</Badge>
+                               <Badge variant="outline">{loteHectareas}{loteHectareas === 'Sin datos' ? '' : ' ha'}</Badge>
+                             </div>
                             <Accordion type="single" collapsible className="w-full">
                               <AccordionItem value={dosisValue} className="rounded-md border border-border">
                                 <AccordionTrigger className="group rounded-md bg-muted/40 px-3 py-2 text-sm hover:bg-muted/60">
@@ -204,16 +204,16 @@ export default function OrdenesFumigacion() {
                         )
                       })}
                     </ul>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">
-                      Lote {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}: {formatHectareas(orden.hectareas ?? orden.temp_hectareas)}
-                      {formatHectareas(orden.hectareas ?? orden.temp_hectareas) === 'Sin datos' ? '' : ' ha'}
-                    </div>
-                  )}
+                   ) : (
+                     <div className="flex flex-wrap gap-2">
+                       <Badge variant="success">Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}</Badge>
+                       <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.temp_hectareas)}{formatHectareas(orden.hectareas ?? orden.temp_hectareas) === 'Sin datos' ? '' : ' ha'}</Badge>
+                     </div>
+                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  <span>Total Hectareas: {hectareasLabel}</span>
+                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                   <Badge variant="outline">Total Hectareas: {hectareasLabel}</Badge>
                   {isTerminada ? (
                     <span>Terminado: {formatDate(orden.fecha_trabajo)}</span>
                   ) : null}
