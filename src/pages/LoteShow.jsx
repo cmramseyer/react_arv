@@ -2,10 +2,18 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getLote } from '../services/lotesService'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 export default function LoteShow() {
   const { id } = useParams()
   const [lote, setLote] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
 
   useEffect(() => {
     getLote(id).then(setLote)
@@ -27,11 +35,34 @@ export default function LoteShow() {
             {adj.url.endsWith('.pdf') ? (
               <a href={adj.url} className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">Ver PDF</a>
             ) : (
-              <img src={adj.url} alt="adjunto" className="w-32 mt-2" />
+              <img
+                src={adj.url}
+                alt="adjunto"
+                className="w-32 mt-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  setSelectedImage(adj)
+                  setModalOpen(true)
+                }}
+              />
             )}
           </li>
         ))}
       </ul>
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Imagen</DialogTitle>
+          </DialogHeader>
+          {selectedImage && (
+            <img
+              src={selectedImage.url}
+              alt={selectedImage.filename || 'adjunto'}
+              className="w-full h-auto max-h-[80vh] object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
