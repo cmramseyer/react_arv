@@ -26,6 +26,14 @@ const data = {
           url: "/estancias",
         },
         {
+          title: "Cultivos",
+          url: "/cultivos",
+        },
+        {
+          title: "Maquinistas",
+          url: "/maquinistas",
+        },
+        {
           title: "Lotes",
           url: "/lotes",
         },

@@ -26,6 +26,8 @@ export default function App() {
   const pageTitle = useMemo(() => {
     if (location.pathname.startsWith('/lotes')) return 'Lotes'
     if (location.pathname.startsWith('/estancias')) return 'Estancias'
+    if (location.pathname.startsWith('/cultivos')) return 'Cultivos'
+    if (location.pathname.startsWith('/maquinistas')) return 'Maquinistas'
     if (location.pathname.startsWith('/productos')) return 'Productos'
     if (location.pathname.startsWith('/ordenes')) return 'Ordenes'
     if (location.pathname === '/' || location.pathname === '/home') return 'Inicio'

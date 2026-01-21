@@ -21,6 +21,12 @@ import OrdenFumigacionTerminar from './pages/OrdenFumigacionTerminar'
 import FacturacionPendiente from './pages/FacturacionPendiente'
 import EstanciaNueva from './pages/EstanciaNueva'
 import EstanciaEditar from './pages/EstanciaEditar'
+import Cultivos from './pages/Cultivos'
+import CultivoNueva from './pages/CultivoNueva'
+import CultivoEditar from './pages/CultivoEditar'
+import Maquinistas from './pages/Maquinistas'
+import MaquinistaNueva from './pages/MaquinistaNueva'
+import MaquinistaEditar from './pages/MaquinistaEditar'
 import './index.css'
 
 createRoot(document.getElementById('root')).render(
@@ -33,6 +39,12 @@ createRoot(document.getElementById('root')).render(
           <Route path="/estancias" element={<Estancias />} />
           <Route path="/estancias/nueva" element={<EstanciaNueva />} />
           <Route path="/estancias/:id/editar" element={<EstanciaEditar />} />
+          <Route path="/cultivos" element={<Cultivos />} />
+          <Route path="/cultivos/nueva" element={<CultivoNueva />} />
+          <Route path="/cultivos/:id/editar" element={<CultivoEditar />} />
+          <Route path="/maquinistas" element={<Maquinistas />} />
+          <Route path="/maquinistas/nueva" element={<MaquinistaNueva />} />
+          <Route path="/maquinistas/:id/editar" element={<MaquinistaEditar />} />
           <Route path="/lotes" element={<Lotes />} />
           <Route path="/lotes/:id" element={<LoteShow />} />
           <Route path="/lotes/nuevo" element={<LoteNuevo />} />
