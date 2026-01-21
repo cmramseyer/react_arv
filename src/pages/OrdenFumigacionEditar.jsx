@@ -141,10 +141,6 @@ export default function OrdenFumigacionEditar() {
       ordenPayload.datos_clima = data.datos_clima
     }
 
-    if (data.creado_por) {
-      ordenPayload.creado_por = data.creado_por
-    }
-
     await updateOrdenFumigacion(id, { orden_fumigacion: ordenPayload })
     navigate('/ordenes_fumigacion')
   }
