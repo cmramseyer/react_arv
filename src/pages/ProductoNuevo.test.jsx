@@ -36,7 +36,7 @@ describe('Nuevo Producto', () => {
     )
 
     await user.click(screen.getByRole('combobox'))
-    await user.click(screen.getByText('Kilogramos'))
+    await user.click(screen.getByRole('option', { name: 'Kilogramos' }))
     await user.type(screen.getByLabelText('Nombre'), 'Roundup')
     await user.type(screen.getByLabelText('Tipo de producto'), 'Agroquimico')
 

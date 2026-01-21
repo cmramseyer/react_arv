@@ -88,25 +88,24 @@ describe('Lotes Form', () => {
       </MemoryRouter>
     )
 
-    await user.click(screen.getByRole('combobox'))
-    await user.click(screen.getByText('Estancia Uno'))
     await user.type(screen.getByLabelText('Nombre del lote'), 'Lote Tres')
     await user.type(screen.getByLabelText('Latitud'), '50')
     await user.type(screen.getByLabelText('Longitud'), '60')
     await user.type(screen.getByLabelText('Link mapa'), 'http://mapa3.com')
     await user.type(screen.getByLabelText('Hectareas'), '15')
-      
+
     const botonCrear = screen.getByRole('button', { name: /crear/i })
     fireEvent.click(botonCrear)
-  
-    expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
-    expect(await screen.findByText((content, element) => content.includes('Las hectáreas son obligatorias'))).toBeInTheDocument()
+
+    expect(await screen.findByText('La estancia es obligatoria')).toBeInTheDocument()
   
     // Ahora completamos nombre y select pero dejamos hectareas en cero para probar otra validación
-    await user.click(screen.getByRole('combobox'))
-    await user.click(screen.getByText('Estancia Uno'))
-    await userEvent.type(screen.getByLabelText('Nombre del lote'), 'Lote Test')
-    await userEvent.type(screen.getByLabelText('Hectareas'), '0')
+     await user.click(screen.getByRole('combobox'))
+     await user.click(screen.getByRole('option', { name: 'Estancia Uno' }))
+     await userEvent.clear(screen.getByLabelText('Nombre del lote'))
+     await userEvent.type(screen.getByLabelText('Nombre del lote'), 'Lote Test')
+     await userEvent.clear(screen.getByLabelText('Hectareas'))
+     await userEvent.type(screen.getByLabelText('Hectareas'), '0')
 
     user.click(botonCrear)
 

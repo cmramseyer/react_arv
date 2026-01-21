@@ -84,7 +84,7 @@ describe('LoteEditar', () => {
     await screen.findByDisplayValue('Lote Uno')
 
     await user.click(screen.getByRole('combobox'))
-    await user.click(screen.getByText('Estancia Uno'))
+    await user.click(screen.getByRole('option', { name: 'Estancia Uno' }))
 
     const nombre = screen.getByLabelText('Nombre del lote')
     await user.clear(nombre)

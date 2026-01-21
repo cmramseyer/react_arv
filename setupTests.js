@@ -10,6 +10,18 @@ if (typeof global.TextDecoder === 'undefined') {
   global.TextDecoder = TextDecoder
 }
 
+// Mock hasPointerCapture for jsdom compatibility with Radix UI
+Object.defineProperty(window.Element.prototype, 'hasPointerCapture', {
+  writable: true,
+  value: vi.fn().mockImplementation(() => false),
+})
+
+// Mock scrollIntoView for jsdom compatibility with Radix UI
+Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
+  writable: true,
+  value: vi.fn(),
+})
+
 globalThis.mockImportMetaEnv = (overrides = {}) => {
   const viteUrl = overrides.VITE_API_URL || import.meta.env?.VITE_API_URL || 'localhost:3000'
   if (!import.meta.env) {
