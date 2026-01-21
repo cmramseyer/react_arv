@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getEstancias } from '../services/estanciasService'
-import { getLote, updateLote, deleteAdjuntoLote } from '../services/lotesService'
+import { getLote, updateLote, deleteAdjuntoLote, uploadAdjuntoLote } from '../services/lotesService'
 import LoteForm from '../components/LoteForm'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +23,8 @@ export default function LoteEditar() {
   const [selectedImage, setSelectedImage] = useState(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [adjuntoToDelete, setAdjuntoToDelete] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -65,6 +67,24 @@ export default function LoteEditar() {
     }
   }
 
+  const handleUpload = async () => {
+    if (!selectedFile) return
+    setUploading(true)
+    try {
+      await uploadAdjuntoLote(id, selectedFile)
+      const updatedLote = await getLote(id)
+      setLote(updatedLote)
+      setSelectedFile(null)
+      // Reset input
+      document.getElementById('file-input').value = ''
+    } catch (error) {
+      alert('Error al subir adjunto')
+      console.error(error)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   if (loading) return <div className="p-4">Cargando...</div>
   if (!lote) return <div className="p-4">No se encontró el lote</div>
 
@@ -81,12 +101,13 @@ export default function LoteEditar() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Editar Lote</h2>
 
-      <LoteForm
-        estancias={estancias}
-        defaultValues={defaultValues}
-        onSubmit={handleUpdate}
-        submitLabel="Actualizar"
-      />
+       <LoteForm
+         estancias={estancias}
+         defaultValues={defaultValues}
+         onSubmit={handleUpdate}
+         submitLabel="Actualizar"
+         showAdjuntos={false}
+       />
 
       {lote && lote.adjuntos && lote.adjuntos.length > 0 && (
         <>
@@ -115,6 +136,21 @@ export default function LoteEditar() {
           </ul>
         </>
       )}
+
+      <input
+        type="file"
+        id="file-input"
+        style={{ display: 'none' }}
+        onChange={(e) => setSelectedFile(e.target.files[0])}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        onClick={selectedFile ? handleUpload : () => document.getElementById('file-input').click()}
+        disabled={uploading}
+      >
+        {uploading ? 'Subiendo...' : selectedFile ? 'Subir plano' : 'Agregar plano'}
+      </Button>
 
       <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
         Volver

@@ -62,3 +62,14 @@ export const deleteAdjuntoLote = async (loteId, adjuntoId) => {
     headers: getAuthHeaders(),
   })
 }
+
+export const uploadAdjuntoLote = async (loteId, file) => {
+  const formData = new FormData()
+  formData.append('adjunto', file)
+
+  await fetchWithAuth(`${API_URL}/${loteId}/adjuntos`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+}

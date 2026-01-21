@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import SelectField from './SelectField'
 
-export default function LoteForm({ estancias, onSubmit, defaultValues, submitLabel }) {
+export default function LoteForm({ estancias, onSubmit, defaultValues, submitLabel, showAdjuntos = true }) {
   const form = useForm({
     defaultValues: defaultValues || {}
   })
@@ -23,10 +23,12 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
 
     Object.keys(data).forEach((key) => {
       if (key === 'adjuntos') {
-        const files = data.adjuntos
-        if (files && files.length) {
-          for (let i = 0; i < files.length; i++) {
-            formData.append('lote[adjuntos][]', files[i])
+        if (showAdjuntos) {
+          const files = data.adjuntos
+          if (files && files.length) {
+            for (let i = 0; i < files.length; i++) {
+              formData.append('lote[adjuntos][]', files[i])
+            }
           }
         }
       } else {
@@ -144,25 +146,27 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
           )}
         />
 
-        <FormField
-          control={control}
-          name="adjuntos"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Adjuntos</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  multiple
-                  name={field.name}
-                  onBlur={field.onBlur}
-                  onChange={(event) => field.onChange(event.target.files)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {showAdjuntos && (
+          <FormField
+            control={control}
+            name="adjuntos"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Adjuntos</FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    multiple
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    onChange={(event) => field.onChange(event.target.files)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button type="submit">{submitLabel || 'Guardar'}</Button>
       </form>
@@ -175,4 +179,5 @@ LoteForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,       // recibe FormData ya armado
   defaultValues: PropTypes.object,
   submitLabel: PropTypes.string,
+  showAdjuntos: PropTypes.bool,
 }
