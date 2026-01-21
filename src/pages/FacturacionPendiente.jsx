@@ -298,7 +298,7 @@ export default function FacturacionPendiente() {
                       onClick={() => handleMarcarPagado(grupo.id)}
                       disabled={pagandoIds.has(grupo.id)}
                     >
-                      {pagandoIds.has(grupo.id) ? 'Marcando...' : 'Pagado'}
+                      {pagandoIds.has(grupo.id) ? 'Marcando...' : 'Marcar como pagado'}
                     </Button>
                   )}
                 </CardHeader>
@@ -370,9 +370,6 @@ export default function FacturacionPendiente() {
                              <>
                                <div className="text-sm text-muted-foreground">
                                  Estancia: {orden.nombre_estancia}
-                               </div>
-                               <div className="text-sm text-muted-foreground">
-                                 Importe: {formatImporte(orden.importe)}
                                </div>
                                {orden.nro_orden_cliente && (
                                  <div className="text-sm text-muted-foreground">
