@@ -55,3 +55,10 @@ export const deleteLote = async (id) => {
     headers: getAuthHeaders(),
   })
 }
+
+export const deleteAdjuntoLote = async (loteId, adjuntoId) => {
+  await fetchWithAuth(`${API_URL}/${loteId}/adjuntos/${adjuntoId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  })
+}
