@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,13 @@ export default function OrdenFumigacionShow() {
     ? orden.lotes
     : []
 
+  const formatDate = (value) => {
+    if (!value) return 'Sin fecha'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'Sin fecha'
+    return date.toLocaleDateString('es-AR')
+  }
+
   const formatHectareas = (value) => {
     if (value === null || value === undefined || value === '') return 'Sin datos'
     const numericValue = Number(value)
@@ -132,6 +140,13 @@ export default function OrdenFumigacionShow() {
     return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
   }
 
+  const getEstadoVariant = (estado) => {
+    const estadoNormalizado = (estado || '').toLowerCase()
+    if (estadoNormalizado === 'activa') return 'destructive'
+    if (estadoNormalizado === 'terminada') return 'success'
+    return 'secondary'
+  }
+
   const botonVerPdf = !!pdfUrl && (
     <Button onClick={handleVerPdf} variant="default">
       Ver Pdf
@@ -142,22 +157,50 @@ export default function OrdenFumigacionShow() {
     return <div className="p-4">Cargando...</div>
   }
 
+  const estadoOrden = (orden.estado_orden || '').toLowerCase()
+  const estadoLabel = estadoOrden
+    ? `${estadoOrden.charAt(0).toUpperCase()}${estadoOrden.slice(1)}`
+    : 'Sin estado'
+  const isTerminada = estadoOrden === 'terminada'
+  const totalHectareas = lotesOrden.length > 0
+    ? lotesOrden.reduce((acc, lote) => acc + Number(lote.hectareas ?? 0), 0)
+    : (orden.hectareas ?? orden.temp_hectareas)
+  const hectareasLabel = formatHectareas(totalHectareas)
+  const createdAtLabel = formatDate(orden.created_at)
+
   return (
 
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>#{orden.id}</CardTitle>
+      <CardHeader className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 md:hidden">
+          <CardTitle className="text-lg">Orden #{orden.id}</CardTitle>
+          <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
+        </div>
+        <div className="text-sm text-muted-foreground md:hidden">
+          Creado: {createdAtLabel} por: {orden.creado_por || 'Sin datos'}
+        </div>
+
+        <div className="hidden items-center justify-between gap-4 md:flex">
+          <div className="flex flex-wrap items-center gap-4">
+            <CardTitle className="text-lg">Orden #{orden.id}</CardTitle>
+            <span className="text-lg font-semibold">
+              {orden.nombre_estancia || 'Sin estancia'}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Creado: {createdAtLabel} por: {orden.creado_por || 'Sin datos'}
+            </span>
+          </div>
+          <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div>Estancia: {orden.nombre_estancia}</div>
-        <div>Estado: {orden.estado_orden}</div>
-        <div>Creado por: {orden.creado_por}</div>
-        <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
-        <p><strong>Fecha de Creación:</strong> {new Date(orden.created_at).toLocaleString()}</p>
-        <p><strong>Maquinista:</strong> {orden.maquinista}</p>
-        <p><strong>Info Trabajo:</strong> {orden.info_trabajo}</p>
-        <p><strong>Datos Clima:</strong> {orden.datos_clima}</p>
-        <p><strong>PDF creado:</strong> {fechaPdf || orden.orden_pdf_fecha_creacion}</p>
+      <CardContent className="space-y-4">
+        <div className="md:hidden">
+          <div className="text-sm font-medium">Estancia</div>
+          <div className="text-sm text-muted-foreground">
+            {orden.nombre_estancia || 'Sin estancia'}
+          </div>
+        </div>
+
         {lotesOrden.length > 0 ? (
           <ul className="space-y-1 text-sm text-muted-foreground">
             {lotesOrden.map((lote, loteIndex) => {
@@ -212,10 +255,27 @@ export default function OrdenFumigacionShow() {
             </div>
           </div>
         )}
+
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <span>Total Hectareas: {hectareasLabel}</span>
+        </div>
+
+        {isTerminada ? (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4">
+              <span>Fecha de trabajo: {formatDate(orden.fecha_trabajo)}</span>
+              <span>Trabajó: {orden.maquinista || 'Sin datos'}</span>
+            </div>
+            <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
+            <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>
+          </div>
+        ) : null}
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-wrap gap-2">
         <Button onClick={handleEditar} variant="default">Editar</Button>
-        <Button onClick={handleTerminar} variant="default">Terminar</Button>
+        {!isTerminada ? (
+          <Button onClick={handleTerminar} variant="default">Terminar</Button>
+        ) : null}
         <Button onClick={handleBorrar} variant="default">Borrar</Button>
         <Button onClick={handleGenerarPdf} variant="default">
           {labelGenerarPdf}
