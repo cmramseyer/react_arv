@@ -25,19 +25,25 @@ export const getOrdenFumigacion = async (id) => {
   return await res.json()
 }
 
-export const createOrdenFumigacion = async (data) => {
+export const createOrdenFumigacion = async (payload) => {
   await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthHeaders(),
-    body: data,
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   })
 }
 
-export const updateOrdenFumigacion = async (id, data) => {
+export const updateOrdenFumigacion = async (id, payload) => {
   await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: data,
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   })
 }
 

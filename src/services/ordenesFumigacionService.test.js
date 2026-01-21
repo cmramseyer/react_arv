@@ -42,30 +42,34 @@ describe('ordenesFumigacionService', () => {
   })
 
   it('createOrdenFumigacion realiza POST con data', async () => {
-    const formData = new FormData()
-    formData.append('orden[producto_id]', '1')
+    const payload = { orden_fumigacion: { estancia_id: 1, lotes: [] } }
 
     fetch.mockResolvedValueOnce({})
 
-    await createOrdenFumigacion(formData)
+    await createOrdenFumigacion(payload)
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/ordenes_fumigacion', expect.objectContaining({
       method: 'POST',
-      body: formData
+      body: JSON.stringify(payload),
+      headers: expect.objectContaining({
+        'Content-Type': 'application/json'
+      })
     }))
   })
 
   it('updateOrdenFumigacion realiza PATCH correctamente', async () => {
-    const formData = new FormData()
-    formData.append('orden[estado]', 'completada')
+    const payload = { orden_fumigacion: { lotes: [] } }
 
     fetch.mockResolvedValueOnce({})
 
-    await updateOrdenFumigacion(1, formData)
+    await updateOrdenFumigacion(1, payload)
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/ordenes_fumigacion/1', expect.objectContaining({
       method: 'PATCH',
-      body: formData
+      body: JSON.stringify(payload),
+      headers: expect.objectContaining({
+        'Content-Type': 'application/json'
+      })
     }))
   })
 

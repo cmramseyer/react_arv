@@ -10,7 +10,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -33,8 +32,6 @@ export default function OrdenFumigacionShow() {
   const [orden, setOrden] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [fechaPdf, setFechaPdf] = useState(null)
-  const [nombreLote, setNombreLote] = useState(null)
-  const [hectareasLote, setHectareasLote] = useState(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [adjuntos, setAdjuntos] = useState([])
   const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set())
@@ -44,15 +41,7 @@ export default function OrdenFumigacionShow() {
     getOrdenFumigacion(id).then((data) => {
       setOrden(data)
       setPdfUrl(data.orden_url)
-      setPdfUrl(data.orden_pdf_fecha_creacion)
-      console.log("data data")
-      console.log(data)
-      const lotePresent = (data.lotes_ids && data.lotes_ids.length > 0) === true
-      console.log(lotePresent)
-      const nombreLote = lotePresent ? data.nombre_lote : data.temp_lotes
-      const hectareasLote = lotePresent ? data.hectareas : data.temp_hectareas 
-      setNombreLote(nombreLote)
-      setHectareasLote(hectareasLote)
+      setFechaPdf(data.orden_pdf_fecha_creacion)
     })
   }, [id])
 
@@ -119,6 +108,10 @@ export default function OrdenFumigacionShow() {
     ? "Imprimir con planos"
     : "Imprimir sin planos"
 
+  const lotesOrden = Array.isArray(orden?.lotes) && orden.lotes.length > 0
+    ? orden.lotes
+    : []
+
   const botonVerPdf = !!pdfUrl && (
     <Button onClick={handleVerPdf} variant="default">
       Ver Pdf
@@ -137,9 +130,7 @@ export default function OrdenFumigacionShow() {
       </CardHeader>
       <CardContent>
         <div>Estancia: {orden.nombre_estancia}</div>
-        <div>Lote: {nombreLote}</div>
         <div>Estado: {orden.estado_orden}</div>
-        <div>Hectareas: {hectareasLote}</div>
         <div>Creado por: {orden.creado_por}</div>
         <div className="hidden md:block">Fecha trabajo: {orden.fecha_trabajo || 'Pendiente'}</div>
         <p><strong>Fecha de Creación:</strong> {new Date(orden.created_at).toLocaleString()}</p>
@@ -147,12 +138,32 @@ export default function OrdenFumigacionShow() {
         <p><strong>Info Trabajo:</strong> {orden.info_trabajo}</p>
         <p><strong>Datos Clima:</strong> {orden.datos_clima}</p>
         <p><strong>PDF creado:</strong> {fechaPdf || orden.orden_pdf_fecha_creacion}</p>
-        <h3 className="font-semibold mt-4">Dosis</h3>
-        <ul className="list-disc list-inside">
-          {orden.dosis.map((dosis, idx) => (
-            <li key={idx}>{dosis.producto} - {dosis.cantidad} - {dosis.unidad_medida}</li>
-          ))}
-        </ul>
+        <h3 className="font-semibold mt-4">Lotes</h3>
+        {lotesOrden.length > 0 ? (
+          <div className="space-y-4">
+            {lotesOrden.map((lote) => (
+              <div key={lote.id} className="rounded border p-3">
+                <div className="font-semibold">{lote.nombre} - {lote.hectareas} ha</div>
+                {Array.isArray(lote.dosis) && lote.dosis.length > 0 ? (
+                  <ul className="list-disc list-inside mt-2">
+                    {lote.dosis.map((dosis, idx) => (
+                      <li key={dosis.id ?? `${lote.id}-${idx}`}>
+                        {dosis.producto} - {dosis.cantidad} - {dosis.unidad_medida}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-sm text-muted-foreground mt-2">Sin dosis cargadas.</div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <div>Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}</div>
+            <div>Hectareas: {orden.hectareas || orden.temp_hectareas || 'Sin hectareas'}</div>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button onClick={handleEditar} variant="default">Editar</Button>

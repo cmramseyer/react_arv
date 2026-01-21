@@ -7,8 +7,6 @@ import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
 import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
@@ -18,137 +16,135 @@ export default function OrdenFumigacionEditar() {
   const form = useForm({
     defaultValues: {
       estancia_id: '',
-      lotes_ids: [],
-      temp_lotes: '',
-      temp_hectareas: '',
-      dosis: []
+      lotes: [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }],
+      creado_por: '',
+      datos_clima: '',
+      info_trabajo: '',
+      fecha_trabajo: '',
+      maquinista: ''
     }
   })
 
-  const { register, reset, handleSubmit, control, watch, setValue } = form
-  const { fields, append, remove } = useFieldArray({
+  const { register, reset, handleSubmit, control, watch } = form
+  const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
     control,
-    name: 'dosis'
+    name: 'lotes'
   })
 
   const [productos, setProductos] = useState([])
   const [estancias, setEstancias] = useState([])
   const [lotes, setLotes] = useState([])
-  const [loteCargado, setLoteCargado] = useState(false)
-
   const estanciaId = watch('estancia_id')
 
   useEffect(() => {
-    console.log('use1')
     getEstancias().then(setEstancias)
-    console.log(estancias)
     getProductos().then(setProductos)
   }, [])
 
   useEffect(() => {
-    console.log('use2')
     if (estanciaId) {
-      console.log(estanciaId)
       getLotesPorEstancia(estanciaId).then(setLotes)
     } else {
       setLotes([])
     }
   }, [estanciaId])
 
-  
   useEffect(() => {
-    console.log('use3')
     const fetchData = async () => {
       const orden = await getOrdenFumigacion(id)
-
-      console.log(orden)
 
       if (orden.estancia_id) {
         const lotesData = await getLotesPorEstancia(orden.estancia_id)
         setLotes(lotesData)
       }
 
-      const tieneLotes = (orden.lotes_ids && orden.lotes_ids.length > 0) === true
-      setLoteCargado(tieneLotes)
-
-      await getEstancias().then(setEstancias)
-
-      if (estanciaId) {
-        console.log(estanciaId)
-        await getLotesPorEstancia(estanciaId).then(setLotes)
-      } else {
-        setLotes([])
-      }
-
-      console.log('orden_lote_ids')
-      console.log((orden.lotes_ids || []).map(id => String(id)))
+      const mappedLotes = Array.isArray(orden.lotes) && orden.lotes.length > 0
+        ? orden.lotes.map(lote => ({
+          id: lote.id,
+          lote_id: lote.lote_id ? String(lote.lote_id) : '',
+          dosis: (lote.dosis || []).map(dosis => ({
+            id: dosis.id,
+            producto_id: dosis.producto_id ? String(dosis.producto_id) : '',
+            cantidad: dosis.cantidad ?? ''
+          }))
+        }))
+        : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
 
       reset({
         estancia_id: String(orden.estancia_id) || '',
-        lote_ids: (orden.lotes_ids || []).map(id => String(id)),
-        temp_lotes: orden.temp_lotes || '',
-        temp_hectareas: orden.temp_hectareas || '',
         datos_clima: orden.datos_clima || '',
         info_trabajo: orden.info_trabajo || '',
         creado_por: orden.creado_por || '',
         fecha_trabajo: orden.fecha_trabajo || '',
         maquinista: orden.maquinista || '',
-        dosis: orden.dosis?.map(d => ({
-          id: d.id,
-          producto_id: d.producto_id,
-          cantidad: d.cantidad
-        })) || []
+        lotes: mappedLotes
       })
     }
 
     fetchData()
-  }, [id, reset, setValue])
-
-  useEffect(() => {
-    console.log('use4')
-    console.log(loteCargado)
-    if (loteCargado === true) {
-      setValue('temp_lotes', '')
-      setValue('temp_hectareas', '')
-    } else {
-      setValue('lote_ids', [])
-    }
-  }, [loteCargado])
+  }, [id, reset])
 
 
   const onSubmit = async (data) => {
-    const formData = new FormData()
+    const lotesPayload = (data.lotes || [])
+      .filter(lote => lote.lote_id)
+      .map(lote => {
+        const dosisPayload = (lote.dosis || [])
+          .filter(dosis => dosis.producto_id && dosis.cantidad !== '' && dosis.cantidad !== null)
+          .map(dosis => {
+            const dosisData = {
+              producto_id: dosis.producto_id,
+              cantidad: dosis.cantidad
+            }
 
-    if (loteCargado) {
-      data.lote_ids.forEach(id => {
-        formData.append('orden_fumigacion[lote_ids][]', id)
+            if (dosis.id) {
+              dosisData.id = dosis.id
+            }
+
+            return dosisData
+          })
+
+        const loteData = {
+          lote_id: lote.lote_id,
+          dosis: dosisPayload
+        }
+
+        if (lote.id) {
+          loteData.id = lote.id
+        }
+
+        return loteData
       })
-    } else {
-      formData.append('orden_fumigacion[lote_ids][]', [])
-      formData.append('orden_fumigacion[temp_lotes]', data.temp_lotes)
-      formData.append('orden_fumigacion[temp_hectareas]', data.temp_hectareas)
+
+    const ordenPayload = {
+      lotes: lotesPayload
     }
 
-    formData.append('orden_fumigacion[creado_por]', data.creado_por)
-    formData.append('orden_fumigacion[datos_clima]', data.datos_clima || '')
-    formData.append('orden_fumigacion[info_trabajo]', data.info_trabajo || '')
-    formData.append('orden_fumigacion[fecha_trabajo]', data.fecha_trabajo || '')
-    formData.append('orden_fumigacion[maquinista]', data.maquinista || '')
+    if (data.estancia_id) {
+      ordenPayload.estancia_id = data.estancia_id
+    }
 
-    data.dosis.forEach((dosis, index) => {
-      if (dosis._destroy) {
-        formData.append(`orden_fumigacion[dosis_attributes][${index}][id]`, dosis.id)
-        formData.append(`orden_fumigacion[dosis_attributes][${index}][_destroy]`, '1')
-      } else {
-        if (dosis.id) {
-          formData.append(`orden_fumigacion[dosis_attributes][${index}][id]`, dosis.id)
-        }
-        formData.append(`orden_fumigacion[dosis_attributes][${index}][producto_id]`, dosis.producto_id)
-        formData.append(`orden_fumigacion[dosis_attributes][${index}][cantidad]`, dosis.cantidad)
-      }
-    })
+    if (data.maquinista) {
+      ordenPayload.maquinista = data.maquinista
+    }
 
-    await updateOrdenFumigacion(id, formData)
+    if (data.info_trabajo) {
+      ordenPayload.info_trabajo = data.info_trabajo
+    }
+
+    if (data.fecha_trabajo) {
+      ordenPayload.fecha_trabajo = data.fecha_trabajo
+    }
+
+    if (data.datos_clima) {
+      ordenPayload.datos_clima = data.datos_clima
+    }
+
+    if (data.creado_por) {
+      ordenPayload.creado_por = data.creado_por
+    }
+
+    await updateOrdenFumigacion(id, { orden_fumigacion: ordenPayload })
     navigate('/ordenes_fumigacion')
   }
 
@@ -158,89 +154,66 @@ export default function OrdenFumigacionEditar() {
 
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Switch id="lote-cargado" checked={loteCargado} onCheckedChange={setLoteCargado} />
-            <Label htmlFor="lote-cargado">Lote cargado</Label>
-          </div>
+          <FormField
+            control={control}
+            name="estancia_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estancia</FormLabel>
+                <FormControl>
+                  <SelectField field={field} label="estancia" options={estancias} register={register} control={control} />
+                </FormControl>
+                <FormDescription>Estancia desc.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          {loteCargado ? (
-            <>
-              <FormField
-                control={control}
-                name="estancia_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estancia</FormLabel>
-                    <FormControl>
-                      <SelectField field={field} label="estancia" options={estancias} register={register} control={control} />
-                    </FormControl>
-                    <FormDescription>Estancia desc.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
+          {loteFields.map((field, index) => (
+            <div key={field.id} className="space-y-4 rounded border p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Lote {index + 1}</h3>
+                {loteFields.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLote(index)}
+                    className="text-red-500"
+                  >
+                    Quitar Lote
+                  </button>
                 )}
-              />
+              </div>
 
               <FormField
                 control={control}
-                name="lote_ids"
+                name={`lotes.${index}.lote_id`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Lotes</FormLabel>
+                    <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <select
-                        {...field}
-                        multiple
-                        className="w-full border rounded p-2"
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions).map(option => option.value)
-                          setValue('lote_ids', selected)
-                        }}
-                        value={Array.isArray(field.value) ? field.value : []}
-                      >
-                        {lotes.map((lote) => (
-                          <option key={lote.id} value={String(lote.id)}>
-                            {lote.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormDescription>Puedes seleccionar uno o más lotes.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
-          ) : (
-            <>
-              <FormField
-                control={control}
-                name="temp_lotes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lote (texto libre)</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
+                      <SelectField field={field} label="lote" options={lotes} register={register} control={control} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
+              <DosisFields
                 control={control}
-                name="temp_hectareas"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Hectáreas (texto libre)</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                register={register}
+                productos={productos}
+                name={`lotes.${index}.dosis`}
               />
-            </>
-          )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => appendLote({ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] })}
+            className="text-green-500"
+          >
+            Agregar otro Lote
+          </button>
 
           <FormField
             control={control}
@@ -311,8 +284,6 @@ export default function OrdenFumigacionEditar() {
               </FormItem>
             )}
           />
-
-          <DosisFields control={control} register={register} productos={productos} fields={fields} append={append} remove={remove} watch={watch} setValue={setValue} />
 
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
             Guardar Cambios
