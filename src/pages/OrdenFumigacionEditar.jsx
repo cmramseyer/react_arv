@@ -238,47 +238,47 @@ export default function OrdenFumigacionEditar() {
             )}
           />
 
-          <FormField
-            control={control}
-            name="datos_clima"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Datos Clima</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="datos_clima"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Datos Clima</FormLabel>
+                 <FormControl>
+                   <Input {...field} value={field.value ?? ''} disabled={estadoOrden !== "terminada"} className={estadoOrden !== "terminada" ? "bg-gray-100" : ""} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
-          <FormField
-            control={control}
-            name="info_trabajo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Info Trabajo</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="info_trabajo"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Info Trabajo</FormLabel>
+                 <FormControl>
+                   <Input {...field} value={field.value ?? ''} disabled={estadoOrden !== "terminada"} className={estadoOrden !== "terminada" ? "bg-gray-100" : ""} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
-          <FormField
-            control={control}
-            name="fecha_trabajo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Fecha Trabajo</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="fecha_trabajo"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Fecha Trabajo</FormLabel>
+                 <FormControl>
+                   <Input {...field} type="date" value={field.value ?? ''} disabled={estadoOrden !== "terminada"} className={estadoOrden !== "terminada" ? "bg-gray-100" : ""} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
            <FormField
              control={control}
@@ -287,7 +287,7 @@ export default function OrdenFumigacionEditar() {
                <FormItem>
                  <FormLabel>Maquinista</FormLabel>
                  <FormControl>
-                   {estadoOrden === "Terminado" ? (
+                    {estadoOrden === "terminada" ? (
                      <Select onValueChange={field.onChange} value={field.value}>
                        <SelectTrigger className="w-full">
                          <SelectValue placeholder="Seleccionar..." />
