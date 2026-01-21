@@ -2,45 +2,111 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-
-import { Button } from './ui/button'
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 
 export default function LoteList({ lotes, onShow, onDelete }) {
   const navigate = useNavigate()
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Propietario</TableHead>
-          <TableHead>Nombre Lote</TableHead>
-          <TableHead>Hectareas</TableHead>
-          <TableHead>Acciones</TableHead>
-        </TableRow>
-      </TableHeader>
+  const formatHectareas = (value) => {
+    if (value === null || value === undefined || value === '') return 'Sin datos'
+    const numericValue = Number(value)
+    if (Number.isNaN(numericValue)) return 'Sin datos'
+    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
+  }
 
-      <TableBody>
-        {lotes.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell>{e.nombre_estancia}</TableCell>
-            <TableCell>{e.nombre}</TableCell>
-            <TableCell>{e.hectareas}</TableCell>
-            <TableCell>
-              <Button variant="default" onClick={() => onShow(e)}>Ver</Button>
-              <Button variant="default" onClick={() => navigate(`/lotes/${e.id}/editar`)}>Editar</Button>
-              <Button variant="default" onClick={() => onDelete(e.id)}>Eliminar</Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+  return (
+    <div className="space-y-4">
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Propietario</TableHead>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Hectareas</TableHead>
+              <TableHead>Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {lotes.map((lote) => {
+              const hectareasLabel = formatHectareas(lote.hectareas)
+              const hectareasDisplay = hectareasLabel === 'Sin datos'
+                ? hectareasLabel
+                : `${hectareasLabel} ha`
+
+              return (
+                <TableRow key={lote.id}>
+                  <TableCell>{lote.nombre_estancia}</TableCell>
+                  <TableCell>{lote.nombre}</TableCell>
+                  <TableCell>{hectareasDisplay}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" size="sm" onClick={() => onShow(lote)}>
+                        Ver
+                      </Button>
+                      <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/editar`)}>
+                        Editar
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => onDelete(lote.id)}>
+                        Eliminar
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="space-y-4 md:hidden">
+        {lotes.map((lote) => {
+          const hectareasLabel = formatHectareas(lote.hectareas)
+          const hectareasDisplay = hectareasLabel === 'Sin datos'
+            ? hectareasLabel
+            : `${hectareasLabel} ha`
+
+          return (
+            <Card key={lote.id}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-center">
+                  {lote.nombre_estancia || 'Sin estancia'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Lote {lote.nombre || 'Sin nombre'}</span>
+                <span>{hectareasDisplay}</span>
+              </CardContent>
+              <CardFooter className="flex flex-wrap items-center justify-center gap-2">
+                <Button variant="secondary" size="sm" onClick={() => onShow(lote)}>
+                  Ver
+                </Button>
+                <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/editar`)}>
+                  Editar
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => onDelete(lote.id)}>
+                  Eliminar
+                </Button>
+              </CardFooter>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getEstancias } from '../services/estanciasService'
 import { getLote, updateLote } from '../services/lotesService'
 import LoteForm from '../components/LoteForm'
+import { Button } from '@/components/ui/button'
 
 export default function LoteEditar() {
   const { id } = useParams()
@@ -57,9 +58,9 @@ export default function LoteEditar() {
         submitLabel="Actualizar"
       />
 
-      <button className="underline" onClick={() => navigate('/lotes')}>
+      <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
         Volver
-      </button>
+      </Button>
     </div>
   )
 }

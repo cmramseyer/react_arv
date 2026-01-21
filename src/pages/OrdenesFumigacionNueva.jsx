@@ -5,7 +5,8 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
-import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
@@ -20,7 +21,7 @@ import SelectField from '../components/SelectField'
       }
     })
 
-    const { register, handleSubmit, control, watch } = form
+    const { handleSubmit, control, watch } = form
     const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
       control,
       name: 'lotes'
@@ -78,7 +79,7 @@ import SelectField from '../components/SelectField'
               <FormItem>
                 <FormLabel>Estancia</FormLabel>
                 <FormControl>
-                  <SelectField field={field} label="estancia" options={estancias} register={register} control={control} />
+                  <SelectField field={field} label="Estancia" options={estancias} />
                 </FormControl>
                 <FormDescription>Estancia desc.</FormDescription>
                 <FormMessage />
@@ -91,13 +92,14 @@ import SelectField from '../components/SelectField'
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Lote {index + 1}</h3>
                 {loteFields.length > 1 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="destructive"
+                    size="sm"
                     onClick={() => removeLote(index)}
-                    className="text-red-500"
                   >
-                    Quitar Lote
-                  </button>
+                    Quitar lote
+                  </Button>
                 )}
               </div>
 
@@ -108,7 +110,7 @@ import SelectField from '../components/SelectField'
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <SelectField field={field} label="lote" options={lotes} register={register} control={control} />
+                      <SelectField field={field} label="Lote" options={lotes} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -117,24 +119,21 @@ import SelectField from '../components/SelectField'
 
               <DosisFields
                 control={control}
-                register={register}
                 productos={productos}
                 name={`lotes.${index}.dosis`}
               />
             </div>
           ))}
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => appendLote({ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] })}
-            className="text-green-500"
           >
-            Agregar otro Lote
-          </button>
+            Agregar otro lote
+          </Button>
 
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-            Crear Orden
-          </button>
+          <Button type="submit">Crear orden</Button>
         </form>
       </Form>
     )

@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { getLotes, getLotesPorEstancia, deleteLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
 import LoteList from '../components/LoteList'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -59,12 +60,7 @@ export default function Lotes() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Lotes</h2>
 
-        <button
-          className="bg-blue-500 text-white px-4 py-1 rounded"
-          onClick={() => navigate('/lotes/nuevo')}
-        >
-          Nuevo Lote
-        </button>
+        <Button onClick={() => navigate('/lotes/nuevo')}>Nuevo lote</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -84,14 +80,15 @@ export default function Lotes() {
             </SelectContent>
           </Select>
           {selectedEstanciaId && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={handleResetEstancia}
-              className="inline-flex items-center justify-center rounded-full border border-gray-300 p-1 text-gray-600 hover:bg-gray-100"
               aria-label="Limpiar filtro"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

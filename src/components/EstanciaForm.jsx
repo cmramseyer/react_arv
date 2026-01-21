@@ -1,14 +1,13 @@
-import { React } from 'react'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import PropTypes from 'prop-types'
 
-import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export default function EstanciaForm({ onSubmit, estancia }) {
-  const form =  useForm({
+  const form = useForm({
     defaultValues: {
       nombre: '',
       contacto: '',
@@ -17,7 +16,7 @@ export default function EstanciaForm({ onSubmit, estancia }) {
     }
   })
 
-  const { register, handleSubmit, control, reset, formState: { errors } } = form
+  const { handleSubmit, control, reset } = form
 
   useEffect(() => {
     if (estancia) reset(estancia)
@@ -25,17 +24,17 @@ export default function EstanciaForm({ onSubmit, estancia }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
-          render={(field) => (
+          rules={{ required: 'El nombre es requerido' }}
+          render={({ field }) => (
             <FormItem>
-              <FormLabel />
+              <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input {...register('nombre', { required: 'El nombre es requerido' })} type="text" placeholder="Nombre" />
+                <Input {...field} value={field.value ?? ''} type="text" />
               </FormControl>
-              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -44,28 +43,28 @@ export default function EstanciaForm({ onSubmit, estancia }) {
         <FormField
           control={control}
           name="contacto"
-          render={(field) => (
+          rules={{ required: 'El contacto es requerido' }}
+          render={({ field }) => (
             <FormItem>
-              <FormLabel />
+              <FormLabel>Contacto</FormLabel>
               <FormControl>
-                <Input {...register('contacto', { required: 'El contacto es requerido' })} type="text" placeholder="Contacto" />
+                <Input {...field} value={field.value ?? ''} type="text" />
               </FormControl>
-              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
         />
-          
+
         <FormField
           control={control}
           name="telefono"
-          render={(field) => (
+          rules={{ required: 'El telefono es requerido' }}
+          render={({ field }) => (
             <FormItem>
-              <FormLabel />
+              <FormLabel>Telefono</FormLabel>
               <FormControl>
-                <Input {...register('telefono', { required: 'El telefono es requerido' })} type="text" placeholder="Teléfono" />
+                <Input {...field} value={field.value ?? ''} type="tel" />
               </FormControl>
-              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -74,18 +73,19 @@ export default function EstanciaForm({ onSubmit, estancia }) {
         <FormField
           control={control}
           name="email"
-          render={(field) => (
+          rules={{
+            required: 'El email es requerido',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'El email no es valido'
+            }
+          }}
+          render={({ field }) => (
             <FormItem>
-              <FormLabel />
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...register('email', { 
-                  required: 'El email es requerido',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'El email no es válido'
-                  } })} type="email" placeholder="email@empresa.com" />
+                <Input {...field} value={field.value ?? ''} type="email" />
               </FormControl>
-              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -99,5 +99,5 @@ export default function EstanciaForm({ onSubmit, estancia }) {
 
 EstanciaForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  estancia: PropTypes.array.isRequired,
+  estancia: PropTypes.object,
 }

@@ -2,6 +2,18 @@ import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
 const unidadMedidaOptions = [
   { value: 'kg', label: 'Kilogramos' },
   { value: 'gramos', label: 'Gramos' },
@@ -10,45 +22,78 @@ const unidadMedidaOptions = [
 ]
 
 export default function ProductoForm({ onSubmit, defaultValues, submitLabel }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const form = useForm({
     defaultValues: defaultValues || {}
   })
+
+  const { control, handleSubmit, reset } = form
 
   useEffect(() => {
     reset(defaultValues || {})
   }, [defaultValues, reset])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 mb-6">
-      <input
-        {...register('nombre', { required: 'El nombre es obligatorio' })}
-        placeholder="Nombre"
-        className="block border p-1 w-full"
-      />
-      {errors.nombre && <p className="text-red-500">{errors.nombre.message}</p>}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={control}
+          name="nombre"
+          rules={{ required: 'El nombre es obligatorio' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value ?? ''} type="text" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <input
-        {...register('tipo_producto', { required: 'El tipo de producto es obligatorio' })}
-        placeholder="Tipo de producto"
-        className="block border p-1 w-full"
-      />
-      {errors.tipo_producto && <p className="text-red-500">{errors.tipo_producto.message}</p>}
+        <FormField
+          control={control}
+          name="tipo_producto"
+          rules={{ required: 'El tipo de producto es obligatorio' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo de producto</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value ?? ''} type="text" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <select
-        {...register('unidad_medida', { required: 'La unidad de medida es obligatoria' })}
-        className="block border p-1 w-full"
-      >
-        <option value="">Selecciona unidad de medida</option>
-        {unidadMedidaOptions.map(option => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
-      {errors.unidad_medida && <p className="text-red-500">{errors.unidad_medida.message}</p>}
+        <FormField
+          control={control}
+          name="unidad_medida"
+          rules={{ required: 'La unidad de medida es obligatoria' }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Unidad de medida</FormLabel>
+              <FormControl>
+                <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {unidadMedidaOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded">
-        {submitLabel || 'Guardar'}
-      </button>
-    </form>
+        <Button type="submit">{submitLabel || 'Guardar'}</Button>
+      </form>
+    </Form>
   )
 }
 

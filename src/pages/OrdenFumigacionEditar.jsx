@@ -5,8 +5,9 @@ import { getOrdenFumigacion, updateOrdenFumigacion } from '../services/ordenesFu
 import { getProductos } from '../services/productosService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { Form , FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 
@@ -25,7 +26,7 @@ export default function OrdenFumigacionEditar() {
     }
   })
 
-  const { register, reset, handleSubmit, control, watch } = form
+  const { reset, handleSubmit, control, watch } = form
   const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
     control,
     name: 'lotes'
@@ -161,9 +162,8 @@ export default function OrdenFumigacionEditar() {
               <FormItem>
                 <FormLabel>Estancia</FormLabel>
                 <FormControl>
-                  <SelectField field={field} label="estancia" options={estancias} register={register} control={control} />
+                  <SelectField field={field} label="Estancia" options={estancias} />
                 </FormControl>
-                <FormDescription>Estancia desc.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -174,13 +174,14 @@ export default function OrdenFumigacionEditar() {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Lote {index + 1}</h3>
                 {loteFields.length > 1 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="destructive"
+                    size="sm"
                     onClick={() => removeLote(index)}
-                    className="text-red-500"
                   >
-                    Quitar Lote
-                  </button>
+                    Quitar lote
+                  </Button>
                 )}
               </div>
 
@@ -191,29 +192,28 @@ export default function OrdenFumigacionEditar() {
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <SelectField field={field} label="lote" options={lotes} register={register} control={control} />
+                      <SelectField field={field} label="Lote" options={lotes} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <DosisFields
-                control={control}
-                register={register}
-                productos={productos}
-                name={`lotes.${index}.dosis`}
-              />
+            <DosisFields
+              control={control}
+              productos={productos}
+              name={`lotes.${index}.dosis`}
+            />
             </div>
           ))}
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => appendLote({ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] })}
-            className="text-green-500"
           >
-            Agregar otro Lote
-          </button>
+            Agregar otro lote
+          </Button>
 
           <FormField
             control={control}
@@ -285,9 +285,7 @@ export default function OrdenFumigacionEditar() {
             )}
           />
 
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-            Guardar Cambios
-          </button>
+          <Button type="submit">Guardar cambios</Button>
         </form>
       </Form>
     </div>
