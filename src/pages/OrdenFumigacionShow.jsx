@@ -23,6 +23,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 
 export default function OrdenFumigacionShow() {
@@ -112,6 +118,20 @@ export default function OrdenFumigacionShow() {
     ? orden.lotes
     : []
 
+  const formatHectareas = (value) => {
+    if (value === null || value === undefined || value === '') return 'Sin datos'
+    const numericValue = Number(value)
+    if (Number.isNaN(numericValue)) return 'Sin datos'
+    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
+  }
+
+  const formatCantidad = (value) => {
+    if (value === null || value === undefined || value === '') return 'Sin datos'
+    const numericValue = Number(value)
+    if (Number.isNaN(numericValue)) return 'Sin datos'
+    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
+  }
+
   const botonVerPdf = !!pdfUrl && (
     <Button onClick={handleVerPdf} variant="default">
       Ver Pdf
@@ -138,30 +158,58 @@ export default function OrdenFumigacionShow() {
         <p><strong>Info Trabajo:</strong> {orden.info_trabajo}</p>
         <p><strong>Datos Clima:</strong> {orden.datos_clima}</p>
         <p><strong>PDF creado:</strong> {fechaPdf || orden.orden_pdf_fecha_creacion}</p>
-        <h3 className="font-semibold mt-4">Lotes</h3>
         {lotesOrden.length > 0 ? (
-          <div className="space-y-4">
-            {lotesOrden.map((lote) => (
-              <div key={lote.id} className="rounded border p-3">
-                <div className="font-semibold">{lote.nombre} - {lote.hectareas} ha</div>
-                {Array.isArray(lote.dosis) && lote.dosis.length > 0 ? (
-                  <ul className="list-disc list-inside mt-2">
-                    {lote.dosis.map((dosis, idx) => (
-                      <li key={dosis.id ?? `${lote.id}-${idx}`}>
-                        {dosis.producto} - {dosis.cantidad} - {dosis.unidad_medida}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-muted-foreground mt-2">Sin dosis cargadas.</div>
-                )}
-              </div>
-            ))}
-          </div>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            {lotesOrden.map((lote, loteIndex) => {
+              const loteHectareas = formatHectareas(lote.hectareas)
+              const loteKey = lote.id ?? lote.lote_id ?? `${orden.id}-${loteIndex}`
+              const dosisList = Array.isArray(lote.dosis) ? lote.dosis : []
+              const dosisValue = `dosis-${orden.id}-${loteKey}`
+
+              return (
+                <li key={loteKey} className="space-y-2">
+                  <div>
+                    Lote {lote.nombre || 'Sin nombre'}: {loteHectareas}
+                    {loteHectareas === 'Sin datos' ? '' : ' ha'}
+                  </div>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value={dosisValue} className="rounded-md border border-border">
+                      <AccordionTrigger className="group rounded-md bg-muted/40 px-3 py-2 text-sm hover:bg-muted/60">
+                        <span className="group-data-[state=open]:hidden">Ver dosis</span>
+                        <span className="hidden group-data-[state=open]:inline">Ocultar dosis</span>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {dosisList.length > 0 ? (
+                          <ul className="space-y-1 text-sm text-muted-foreground">
+                            {dosisList.map((dosis, dosisIndex) => {
+                              const cantidadLabel = formatCantidad(dosis.cantidad)
+                              const unidadLabel = dosis.unidad_medida
+                                ? ` (${dosis.unidad_medida})`
+                                : ''
+
+                              return (
+                                <li key={dosis.id ?? `${loteKey}-dosis-${dosisIndex}`}>
+                                  {dosis.producto || 'Producto'}: {cantidadLabel}{unidadLabel}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">Sin dosis cargadas.</div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </li>
+              )
+            })}
+          </ul>
         ) : (
-          <div className="space-y-1">
-            <div>Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}</div>
-            <div>Hectareas: {orden.hectareas || orden.temp_hectareas || 'Sin hectareas'}</div>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <div>
+              Lote {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}: {formatHectareas(orden.hectareas || orden.temp_hectareas)}
+              {formatHectareas(orden.hectareas || orden.temp_hectareas) === 'Sin datos' ? '' : ' ha'}
+            </div>
           </div>
         )}
       </CardContent>
