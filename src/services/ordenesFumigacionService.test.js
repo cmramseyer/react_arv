@@ -74,16 +74,18 @@ describe('ordenesFumigacionService', () => {
   })
 
   it('terminarOrdenFumigacion realiza PATCH en /terminar', async () => {
-    const formData = new FormData()
-    formData.append('orden[notas]', 'Terminado')
+    const payload = { orden_fumigacion: { notas: 'Terminado' } }
 
     fetch.mockResolvedValueOnce({})
 
-    await terminarOrdenFumigacion(2, formData)
+    await terminarOrdenFumigacion(2, payload)
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/ordenes_fumigacion/2/terminar', expect.objectContaining({
       method: 'PATCH',
-      body: formData
+      body: JSON.stringify(payload),
+      headers: expect.objectContaining({
+        'Content-Type': 'application/json'
+      })
     }))
   })
 

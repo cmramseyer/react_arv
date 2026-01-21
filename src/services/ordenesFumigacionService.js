@@ -47,11 +47,14 @@ export const updateOrdenFumigacion = async (id, payload) => {
   })
 }
 
-export const terminarOrdenFumigacion = async (id, data) => {
+export const terminarOrdenFumigacion = async (id, payload) => {
   await fetchWithAuth(`${API_URL}/${id}/terminar`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: data,
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   })
 }
 
