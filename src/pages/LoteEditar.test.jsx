@@ -83,27 +83,28 @@ describe('LoteEditar', () => {
 
     await screen.findByDisplayValue('Lote Uno')
 
-    const nombre = screen.getByPlaceholderText('Nombre del lote')
+    await user.click(screen.getByRole('combobox'))
+    await user.click(screen.getByText('Estancia Uno'))
+
+    const nombre = screen.getByLabelText('Nombre del lote')
     await user.clear(nombre)
     await user.type(nombre, 'Lote Tres')
 
-    const lat = screen.getByPlaceholderText('Lat')
+    const lat = screen.getByLabelText('Latitud')
     await user.clear(lat)
     await user.type(lat, '50')
 
-    const long = screen.getByPlaceholderText('Long')
+    const long = screen.getByLabelText('Longitud')
     await user.clear(long)
     await user.type(long, '60')
 
-    const linkMapa = screen.getByPlaceholderText('Link mapa')
+    const linkMapa = screen.getByLabelText('Link mapa')
     await user.clear(linkMapa)
     await user.type(linkMapa, 'http://mapa3.com')
 
-    const hectareas = screen.getByPlaceholderText('Hectareas')
+    const hectareas = screen.getByLabelText('Hectareas')
     await user.clear(hectareas)
     await user.type(hectareas, '15')
-
-    await user.selectOptions(screen.getByRole('combobox'), '1')
 
     const botonActualizar = screen.getByRole('button', { name: /actualizar/i })
     await user.click(botonActualizar)

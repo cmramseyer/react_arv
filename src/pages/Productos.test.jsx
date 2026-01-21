@@ -56,7 +56,7 @@ describe('Productos', () => {
 
     expect(screen.getByText(/Tipo:/)).toBeInTheDocument()
     expect(screen.getByText(/Unidad:/)).toBeInTheDocument()
-    expect(screen.getByText('Nuevo Producto')).toBeInTheDocument()
+    expect(screen.getByText('Crear Producto')).toBeInTheDocument()
   })
 
   it('edit redirects to Edit page', async () => {
@@ -95,7 +95,7 @@ describe('Productos', () => {
 
     expect(await screen.findByText('Glifosato')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /nuevo producto/i }))
+    await user.click(screen.getByRole('button', { name: /crear producto/i }))
 
     expect(screen.getByTestId('location')).toHaveTextContent('/productos/nuevo')
 

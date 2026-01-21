@@ -35,12 +35,10 @@ describe('Nuevo Producto', () => {
       </MemoryRouter>
     )
 
-    await user.type(screen.getByPlaceholderText('Nombre'), 'Roundup')
-    await user.type(screen.getByPlaceholderText('Tipo de producto'), 'Agroquimico')
-    await user.selectOptions(
-      screen.getByRole('combobox'),
-      'kg'
-    )
+    await user.click(screen.getByRole('combobox'))
+    await user.click(screen.getByText('Kilogramos'))
+    await user.type(screen.getByLabelText('Nombre'), 'Roundup')
+    await user.type(screen.getByLabelText('Tipo de producto'), 'Agroquimico')
 
     const botonCrear = screen.getByRole('button', { name: /crear/i })
 

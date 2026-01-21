@@ -82,7 +82,7 @@ describe('Lotes list', () => {
     })
 
     expect(await screen.findByText('Lote Uno')).toBeInTheDocument()
-    expect(await screen.findByText('Estancia Uno')).toBeInTheDocument()
+    expect((await screen.findAllByText('Estancia Uno')).length).toBeGreaterThan(0)
     expect(await screen.findByText('Lote Dos')).toBeInTheDocument()
   })
 
@@ -100,7 +100,7 @@ describe('Lotes list', () => {
 
     await screen.findByText('Lote Uno')
 
-    await user.click(screen.getByRole('button', { name: /nuevo lote/i }))
+    await user.click(screen.getByRole('button', { name: /crear lote/i }))
 
     expect(mockNavigate).toHaveBeenCalledWith('/lotes/nuevo')
   })

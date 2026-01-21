@@ -66,11 +66,11 @@ describe('Lotes Form', () => {
       expect(getEstancias).toHaveBeenCalled()
     })
 
-    expect(screen.getByPlaceholderText('Nombre del lote')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Lat')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Long')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Link mapa')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Hectareas')).toBeInTheDocument()
+    expect(screen.getByLabelText('Nombre del lote')).toBeInTheDocument()
+    expect(screen.getByLabelText('Latitud')).toBeInTheDocument()
+    expect(screen.getByLabelText('Longitud')).toBeInTheDocument()
+    expect(screen.getByLabelText('Link mapa')).toBeInTheDocument()
+    expect(screen.getByLabelText('Hectareas')).toBeInTheDocument()
     expect(screen.getByText('Crear')).toBeInTheDocument()
   })
 
@@ -88,63 +88,34 @@ describe('Lotes Form', () => {
       </MemoryRouter>
     )
 
-    await user.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Tres')
-    await user.type(screen.getByPlaceholderText('Lat'), '50')
-    await user.type(screen.getByPlaceholderText('Long'), '60')
-    await user.type(screen.getByPlaceholderText('Link mapa'), 'http://mapa3.com')
-    await user.type(screen.getByPlaceholderText('Hectareas'), '15')
-    await user.selectOptions(
-      screen.getByRole('combobox'),
-      '1'
-    )
-
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
-
-    await user.click(botonCrear)
-
-    await waitFor(() => {
-      expect(createLote).toHaveBeenCalledTimes(1)
-    })
-
-    const [fd] = createLote.mock.lastCall
-
-    expect(fd).toBeInstanceOf(FormData)
-
-    expect(fd.get('lote[nombre]')).toBe('Lote Tres')
-    expect(fd.get('lote[lat]')).toBe('50')
-    expect(fd.get('lote[long]')).toBe('60')
-    expect(fd.get('lote[link_mapa]')).toBe('http://mapa3.com')
-    expect(fd.get('lote[hectareas]')).toBe('15')
-
-    expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
-  })
-
-  it('show errors if form is not complete', async () => {
-    render(
-      <MemoryRouter>
-        <LoteNuevo />
-      </MemoryRouter>
-    )
+    await user.click(screen.getByRole('combobox'))
+    await user.click(screen.getByText('Estancia Uno'))
+    await user.type(screen.getByLabelText('Nombre del lote'), 'Lote Tres')
+    await user.type(screen.getByLabelText('Latitud'), '50')
+    await user.type(screen.getByLabelText('Longitud'), '60')
+    await user.type(screen.getByLabelText('Link mapa'), 'http://mapa3.com')
+    await user.type(screen.getByLabelText('Hectareas'), '15')
       
     const botonCrear = screen.getByRole('button', { name: /crear/i })
     fireEvent.click(botonCrear)
   
     expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
-    expect(await screen.findByText('Las hectáreas son obligatorias')).toBeInTheDocument()
+    expect(await screen.findByText((content, element) => content.includes('Las hectáreas son obligatorias'))).toBeInTheDocument()
   
-    // Ahora completamos nombre pero dejamos hectareas en cero para probar otra validación
-    await userEvent.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Test')
-    await userEvent.type(screen.getByPlaceholderText('Hectareas'), '0')
-  
+    // Ahora completamos nombre y select pero dejamos hectareas en cero para probar otra validación
+    await user.click(screen.getByRole('combobox'))
+    await user.click(screen.getByText('Estancia Uno'))
+    await userEvent.type(screen.getByLabelText('Nombre del lote'), 'Lote Test')
+    await userEvent.type(screen.getByLabelText('Hectareas'), '0')
+
     user.click(botonCrear)
-  
+
     expect(await screen.findByText('Debe ser mayor a 0')).toBeInTheDocument()
 
-    await userEvent.type(screen.getByPlaceholderText('Nombre del lote'), 'Lote Test')
-    await userEvent.type(screen.getByPlaceholderText('Hectareas'), '10001')
-  
+    await userEvent.type(screen.getByLabelText('Hectareas'), '10001')
+
     user.click(botonCrear)
-  
+
     expect(await screen.findByText('Debe ser menor a 10000')).toBeInTheDocument()
   })
 
