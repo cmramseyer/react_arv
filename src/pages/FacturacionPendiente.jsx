@@ -231,25 +231,25 @@ export default function FacturacionPendiente() {
               <div className="text-sm text-muted-foreground">
                 {cantidadSeleccionadas} ordenes seleccionadas
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  onClick={handleFacturar}
-                  disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0 || tieneImportesInvalidos}
-                >
-                  {facturandoIds.size > 0 ? 'Facturando...' : 'Facturar'}
-                </Button>
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Nro Factura</span>
-                  <input
-                    type="text"
-                    placeholder="Ej: FAC-2026-001"
-                    value={nroFactura}
-                    onChange={(event) => setNroFactura(event.target.value)}
-                    className="h-9 w-40 rounded-md border border-input px-2 text-sm"
-                    aria-label="Nro factura"
-                  />
-                </div>
-              </div>
+               <div className="flex flex-wrap items-center gap-3">
+                 <div className="flex flex-wrap items-center gap-2 text-sm">
+                   <span className="text-muted-foreground">Nro Factura</span>
+                   <input
+                     type="text"
+                     placeholder="Ej: FAC-2026-001"
+                     value={nroFactura}
+                     onChange={(event) => setNroFactura(event.target.value)}
+                     className="h-9 w-40 rounded-md border border-input px-2 text-sm"
+                     aria-label="Nro factura"
+                   />
+                 </div>
+                 <Button
+                   onClick={handleFacturar}
+                   disabled={cantidadSeleccionadas === 0 || facturandoIds.size > 0 || tieneImportesInvalidos}
+                 >
+                   {facturandoIds.size > 0 ? 'Facturando...' : 'Facturar'}
+                 </Button>
+               </div>
             </div>
           )}
 
@@ -276,9 +276,7 @@ export default function FacturacionPendiente() {
                     <CardTitle>
                       {modoPago ? `Factura #${grupo.id}` : grupo.nombre}
                     </CardTitle>
-                    <CardDescription>
-                      {modoPago ? 'Facturas pendientes de pago' : 'Órdenes pendientes'}
-                    </CardDescription>
+                    
                     {modoPago && grupo.fecha_factura && (
                       <div className="text-sm text-muted-foreground">
                         Fecha factura: {grupo.fecha_factura}
@@ -320,7 +318,6 @@ export default function FacturacionPendiente() {
                                 disabled={facturandoIds.has(orden.orden_id)}
                                 aria-label={`Seleccionar orden ${orden.orden_id}`}
                               />
-                              <span>Seleccionar</span>
                             </label>
                             {ordenesSeleccionadas.has(orden.orden_id) && (
                               <div className="flex flex-wrap items-center gap-3">
@@ -357,34 +354,34 @@ export default function FacturacionPendiente() {
                             )}
                           </div>
                         )}
-                        <div className="space-y-1">
-                          <div className="font-semibold">
-                            {modoPago ? `Orden #${orden.id}` : `Orden #${orden.orden_id}`}
-                          </div>
-                          {!modoPago && (
-                            <>
-                              <div className="text-sm text-muted-foreground">Lote: {orden.lote_id}</div>
-                              <div className="text-sm text-muted-foreground">Hectáreas: {orden.hectareas}</div>
-                              <div className="text-sm text-muted-foreground">Fecha trabajo: {orden.fecha_trabajo}</div>
-                              <div className="text-sm text-muted-foreground">Maquinista: {orden.maquinista}</div>
-                            </>
-                          )}
-                          {modoPago && (
-                            <>
-                              <div className="text-sm text-muted-foreground">
-                                Estancia: {orden.nombre_estancia}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Importe: {formatImporte(orden.importe)}
-                              </div>
-                              {orden.nro_orden_cliente && (
-                                <div className="text-sm text-muted-foreground">
-                                  Nro orden cliente: {orden.nro_orden_cliente}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
+                         <div className="space-y-1">
+                           <div className="font-semibold">
+                             {modoPago ? `Orden #${orden.id}` : `Orden #${orden.orden_id}`}
+                           </div>
+                           {!modoPago && (
+                             <div className="flex flex-col gap-2 md:flex-row md:gap-4">
+                               <div className="text-sm text-muted-foreground">Lote: {orden.lote_id}</div>
+                               <div className="text-sm text-muted-foreground">Hectáreas: {orden.hectareas}</div>
+                               <div className="text-sm text-muted-foreground">Fecha trabajo: {orden.fecha_trabajo}</div>
+                               <div className="text-sm text-muted-foreground">Maquinista: {orden.maquinista}</div>
+                             </div>
+                           )}
+                           {modoPago && (
+                             <>
+                               <div className="text-sm text-muted-foreground">
+                                 Estancia: {orden.nombre_estancia}
+                               </div>
+                               <div className="text-sm text-muted-foreground">
+                                 Importe: {formatImporte(orden.importe)}
+                               </div>
+                               {orden.nro_orden_cliente && (
+                                 <div className="text-sm text-muted-foreground">
+                                   Nro orden cliente: {orden.nro_orden_cliente}
+                                 </div>
+                               )}
+                             </>
+                           )}
+                         </div>
                       </div>
                       {modoPago && Array.isArray(orden.lotes) && orden.lotes.length > 0 && (
                         <div className="rounded-md border bg-muted/40 p-3 text-sm">
