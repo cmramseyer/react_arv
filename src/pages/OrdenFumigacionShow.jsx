@@ -264,7 +264,7 @@ export default function OrdenFumigacionShow() {
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex flex-wrap items-center gap-4">
               <span>Fecha de trabajo: {formatDate(orden.fecha_trabajo)}</span>
-              <span>Trabajó: {orden.maquinista || 'Sin datos'}</span>
+               <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
             </div>
             <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
             <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>

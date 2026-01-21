@@ -8,8 +8,17 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Controller } from 'react-hook-form'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
+import { getMaquinistas } from '../services/maquinistasService'
 
 export default function OrdenFumigacionEditar() {
   const { id } = useParams()
@@ -22,7 +31,7 @@ export default function OrdenFumigacionEditar() {
       datos_clima: '',
       info_trabajo: '',
       fecha_trabajo: '',
-      maquinista: ''
+      maquinista_id: ''
     }
   })
 
@@ -32,15 +41,18 @@ export default function OrdenFumigacionEditar() {
     name: 'lotes'
   })
 
-  const [productos, setProductos] = useState([])
-  const [estancias, setEstancias] = useState([])
-  const [lotes, setLotes] = useState([])
-  const estanciaId = watch('estancia_id')
+   const [productos, setProductos] = useState([])
+   const [estancias, setEstancias] = useState([])
+   const [lotes, setLotes] = useState([])
+   const [maquinistas, setMaquinistas] = useState([])
+   const [estadoOrden, setEstadoOrden] = useState('')
+   const estanciaId = watch('estancia_id')
 
-  useEffect(() => {
-    getEstancias().then(setEstancias)
-    getProductos().then(setProductos)
-  }, [])
+   useEffect(() => {
+     getEstancias().then(setEstancias)
+     getProductos().then(setProductos)
+     getMaquinistas().then(setMaquinistas)
+   }, [])
 
   useEffect(() => {
     if (estanciaId) {
@@ -50,40 +62,41 @@ export default function OrdenFumigacionEditar() {
     }
   }, [estanciaId])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const orden = await getOrdenFumigacion(id)
+   useEffect(() => {
+     const fetchData = async () => {
+       const orden = await getOrdenFumigacion(id)
+       setEstadoOrden(orden.estado_orden)
 
-      if (orden.estancia_id) {
-        const lotesData = await getLotesPorEstancia(orden.estancia_id)
-        setLotes(lotesData)
-      }
+       if (orden.estancia_id) {
+         const lotesData = await getLotesPorEstancia(orden.estancia_id)
+         setLotes(lotesData)
+       }
 
-      const mappedLotes = Array.isArray(orden.lotes) && orden.lotes.length > 0
-        ? orden.lotes.map(lote => ({
-          id: lote.id,
-          lote_id: lote.lote_id ? String(lote.lote_id) : '',
-          dosis: (lote.dosis || []).map(dosis => ({
-            id: dosis.id,
-            producto_id: dosis.producto_id ? String(dosis.producto_id) : '',
-            cantidad: dosis.cantidad ?? ''
-          }))
-        }))
-        : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
+       const mappedLotes = Array.isArray(orden.lotes) && orden.lotes.length > 0
+         ? orden.lotes.map(lote => ({
+             id: lote.id,
+             lote_id: lote.lote_id ? String(lote.lote_id) : '',
+             dosis: (lote.dosis || []).map(dosis => ({
+               id: dosis.id,
+               producto_id: dosis.producto_id ? String(dosis.producto_id) : '',
+               cantidad: dosis.cantidad ?? ''
+             }))
+           }))
+         : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
 
-      reset({
-        estancia_id: String(orden.estancia_id) || '',
-        datos_clima: orden.datos_clima || '',
-        info_trabajo: orden.info_trabajo || '',
-        creator: orden.creator || '',
-        fecha_trabajo: orden.fecha_trabajo || '',
-        maquinista: orden.maquinista || '',
-        lotes: mappedLotes
-      })
-    }
+       reset({
+         estancia_id: String(orden.estancia_id) || '',
+         datos_clima: orden.datos_clima || '',
+         info_trabajo: orden.info_trabajo || '',
+         creator: orden.creator || '',
+         fecha_trabajo: orden.fecha_trabajo || '',
+         maquinista_id: orden.maquinista?.id || '',
+         lotes: mappedLotes
+       })
+     }
 
-    fetchData()
-  }, [id, reset])
+     fetchData()
+   }, [id, reset])
 
 
   const onSubmit = async (data) => {
@@ -125,9 +138,9 @@ export default function OrdenFumigacionEditar() {
       ordenPayload.estancia_id = data.estancia_id
     }
 
-    if (data.maquinista) {
-      ordenPayload.maquinista = data.maquinista
-    }
+     if (data.maquinista_id) {
+       ordenPayload.maquinista_id = data.maquinista_id
+     }
 
     if (data.info_trabajo) {
       ordenPayload.info_trabajo = data.info_trabajo
@@ -267,19 +280,38 @@ export default function OrdenFumigacionEditar() {
             )}
           />
 
-          <FormField
-            control={control}
-            name="maquinista"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Maquinista</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value ?? ''} disabled className="bg-gray-100" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="maquinista_id"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Maquinista</FormLabel>
+                 <FormControl>
+                   {estadoOrden === "Terminado" ? (
+                     <Select onValueChange={field.onChange} value={field.value}>
+                       <SelectTrigger className="w-full">
+                         <SelectValue placeholder="Seleccionar..." />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {maquinistas.map(m => (
+                           <SelectItem key={m.id} value={m.id}>
+                             {m.nombre}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   ) : (
+                     <Input
+                       value={maquinistas.find(m => m.id == field.value)?.nombre || 'No asignado'}
+                       disabled
+                       className="bg-gray-100"
+                     />
+                   )}
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
           <Button type="submit">Guardar cambios</Button>
         </form>

@@ -217,9 +217,9 @@ export default function OrdenesFumigacion() {
                   {isTerminada ? (
                     <span>Terminado: {formatDate(orden.fecha_trabajo)}</span>
                   ) : null}
-                  {isTerminada ? (
-                    <span>Trabajó: {orden.maquinista || 'Sin datos'}</span>
-                  ) : null}
+                   {isTerminada ? (
+                     <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
+                   ) : null}
                 </div>
               </CardContent>
 

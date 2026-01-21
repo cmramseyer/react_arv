@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getOrdenFumigacion, terminarOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
+import { getMaquinistas } from '../services/maquinistasService'
 import { Badge } from '@/components/ui/badge'
 import {
   Accordion,
@@ -12,17 +13,25 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function OrdenFumigacionTerminar() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { register, handleSubmit, reset } = useForm()
+  const { register, handleSubmit, reset, control } = useForm()
 
   const [orden, setOrden] = useState(null)
   const [estanciaNombre, setEstanciaNombre] = useState('')
   const [loteNombre, setLoteNombre] = useState('')
   const [loteHectareas, setLoteHectareas] = useState('')
-  const [productos, setProductos] = useState([])
+   const [productos, setProductos] = useState([])
+   const [maquinistas, setMaquinistas] = useState([])
 
   const formatCantidad = (value) => {
     if (value === null || value === undefined || value === '') return 'Sin datos'
@@ -50,9 +59,13 @@ export default function OrdenFumigacionTerminar() {
         setLoteHectareas(lote.hectareas)
       }
 
-      // Fetch productos para mostrar nombre en dosis
-      const productosData = await getProductos()
-      setProductos(productosData)
+       // Fetch productos para mostrar nombre en dosis
+       const productosData = await getProductos()
+       setProductos(productosData)
+
+       // Fetch maquinistas para el select
+       const maquinistasData = await getMaquinistas()
+       setMaquinistas(maquinistasData)
     }
     fetchData()
   }, [id, reset])
@@ -63,7 +76,7 @@ export default function OrdenFumigacionTerminar() {
         datos_clima: data.datos_clima || '',
         info_trabajo: data.info_trabajo || '',
         fecha_trabajo: data.fecha_trabajo || '',
-        maquinista: data.maquinista || '',
+        maquinista_id: data.maquinista_id || '',
       }
     }
 
@@ -151,10 +164,27 @@ export default function OrdenFumigacionTerminar() {
           <label>Fecha Trabajo</label>
           <input {...register('fecha_trabajo')} type="date" className="block w-full border p-2" />
         </div>
-        <div>
-          <label>Maquinista</label>
-          <input {...register('maquinista')} className="block w-full border p-2" />
-        </div>
+         <div>
+           <label>Maquinista</label>
+           <Controller
+             name="maquinista_id"
+             control={control}
+             render={({ field }) => (
+               <Select onValueChange={field.onChange} value={field.value}>
+                 <SelectTrigger className="w-full border p-2">
+                   <SelectValue placeholder="Seleccionar..." />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {maquinistas.map(m => (
+                     <SelectItem key={m.id} value={m.id}>
+                       {m.nombre}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             )}
+           />
+         </div>
 
         <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
           Confirmar Terminar
