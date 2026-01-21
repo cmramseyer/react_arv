@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getEstancias, deleteEstancia } from '../services/estanciasService'
 import EstanciaList from '../components/EstanciaList'
+import { Button } from '@/components/ui/button'
 
 export default function Estancias() {
   const [estancias, setEstancias] = useState([])
@@ -28,12 +29,11 @@ export default function Estancias() {
   }
 
   return (
-    <div>
-      <h1>Listado de Estancias</h1>
-
-      <button onClick={() => navigate('/estancias/nueva')}>
-        Nueva Estancia
-      </button>
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">Listado de Estancias</h1>
+        <Button onClick={() => navigate('/estancias/nueva')}>Crear Estancia</Button>
+      </div>
 
       <EstanciaList
         estancias={estancias}

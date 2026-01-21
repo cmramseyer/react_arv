@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProductos, deleteProducto } from '../services/productosService'
+import { Button } from '@/components/ui/button'
 
 export default function Productos() {
   const [productos, setProductos] = useState([])
@@ -25,12 +26,7 @@ export default function Productos() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Productos</h2>
 
-        <button
-          className="bg-blue-500 text-white px-4 py-1 rounded"
-          onClick={() => navigate('/productos/nuevo')}
-        >
-          Nuevo Producto
-        </button>
+        <Button onClick={() => navigate('/productos/nuevo')}>Crear Producto</Button>
       </div>
 
       <ul className="space-y-2">

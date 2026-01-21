@@ -60,7 +60,7 @@ export default function Lotes() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Lotes</h2>
 
-        <Button onClick={() => navigate('/lotes/nuevo')}>Nuevo lote</Button>
+        <Button onClick={() => navigate('/lotes/nuevo')}>Crear lote</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
