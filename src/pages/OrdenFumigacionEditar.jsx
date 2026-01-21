@@ -5,6 +5,7 @@ import { getOrdenFumigacion, updateOrdenFumigacion } from '../services/ordenesFu
 import { getProductos } from '../services/productosService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
+import { getCultivos } from '../services/cultivosService'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export default function OrdenFumigacionEditar() {
   const form = useForm({
     defaultValues: {
       estancia_id: '',
+      cultivo_id: '',
       lotes: [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }],
       creator: '',
       datos_clima: '',
@@ -41,18 +43,20 @@ export default function OrdenFumigacionEditar() {
     name: 'lotes'
   })
 
-   const [productos, setProductos] = useState([])
-   const [estancias, setEstancias] = useState([])
-   const [lotes, setLotes] = useState([])
-   const [maquinistas, setMaquinistas] = useState([])
-   const [estadoOrden, setEstadoOrden] = useState('')
-   const estanciaId = watch('estancia_id')
+    const [productos, setProductos] = useState([])
+    const [estancias, setEstancias] = useState([])
+    const [lotes, setLotes] = useState([])
+    const [maquinistas, setMaquinistas] = useState([])
+    const [cultivos, setCultivos] = useState([])
+    const [estadoOrden, setEstadoOrden] = useState('')
+    const estanciaId = watch('estancia_id')
 
-   useEffect(() => {
-     getEstancias().then(setEstancias)
-     getProductos().then(setProductos)
-     getMaquinistas().then(setMaquinistas)
-   }, [])
+    useEffect(() => {
+      getEstancias().then(setEstancias)
+      getProductos().then(setProductos)
+      getMaquinistas().then(setMaquinistas)
+      getCultivos().then(setCultivos)
+    }, [])
 
   useEffect(() => {
     if (estanciaId) {
@@ -84,15 +88,16 @@ export default function OrdenFumigacionEditar() {
            }))
          : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
 
-       reset({
-         estancia_id: String(orden.estancia_id) || '',
-         datos_clima: orden.datos_clima || '',
-         info_trabajo: orden.info_trabajo || '',
-         creator: orden.creator || '',
-         fecha_trabajo: orden.fecha_trabajo || '',
-         maquinista_id: orden.maquinista?.id || '',
-         lotes: mappedLotes
-       })
+        reset({
+          estancia_id: String(orden.estancia_id) || '',
+          cultivo_id: String(orden.cultivo?.id) || '',
+          datos_clima: orden.datos_clima || '',
+          info_trabajo: orden.info_trabajo || '',
+          creator: orden.creator || '',
+          fecha_trabajo: orden.fecha_trabajo || '',
+          maquinista_id: orden.maquinista?.id || '',
+          lotes: mappedLotes
+        })
      }
 
      fetchData()
@@ -138,6 +143,10 @@ export default function OrdenFumigacionEditar() {
       ordenPayload.estancia_id = data.estancia_id
     }
 
+    if (data.cultivo_id) {
+      ordenPayload.cultivo_id = data.cultivo_id
+    }
+
      if (data.maquinista_id) {
        ordenPayload.maquinista_id = data.maquinista_id
      }
@@ -164,19 +173,33 @@ export default function OrdenFumigacionEditar() {
 
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={control}
-            name="estancia_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estancia</FormLabel>
-                <FormControl>
-                  <SelectField field={field} label="Estancia" options={estancias} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="estancia_id"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Estancia</FormLabel>
+                 <FormControl>
+                   <SelectField field={field} label="Estancia" options={estancias} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
+
+           <FormField
+             control={control}
+             name="cultivo_id"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Cultivo</FormLabel>
+                 <FormControl>
+                   <SelectField field={field} label="Cultivo" options={cultivos} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
           {loteFields.map((field, index) => (
             <div key={field.id} className="space-y-4 rounded border p-4">

@@ -135,27 +135,37 @@ export default function OrdenesFumigacion() {
                    Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
                  </div>
 
-                <div className="hidden items-center justify-between gap-4 md:flex">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <CardTitle className="text-lg">#{orden.id}</CardTitle>
-                    <span className="text-lg font-semibold">
-                      {orden.nombre_estancia || 'Sin estancia'}
-                    </span>
-                     <span className="text-sm text-muted-foreground">
-                       Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
+                 <div className="hidden items-center justify-between gap-4 md:flex">
+                   <div className="flex flex-wrap items-center gap-4">
+                     <CardTitle className="text-lg">#{orden.id}</CardTitle>
+                     <span className="text-lg font-semibold">
+                       {orden.nombre_estancia || 'Sin estancia'}
                      </span>
-                  </div>
-                  <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
-                </div>
+                     {orden.cultivo && (
+                       <span className="text-sm font-medium">
+                         Cultivo: {orden.cultivo.nombre}
+                       </span>
+                     )}
+                      <span className="text-sm text-muted-foreground">
+                        Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
+                      </span>
+                   </div>
+                   <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
+                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <div className="md:hidden">
-                  <div className="text-sm font-medium">Estancia</div>
-                  <div className="text-sm text-muted-foreground">
-                    {orden.nombre_estancia || 'Sin estancia'}
-                  </div>
-                </div>
+                 <div className="md:hidden">
+                   <div className="text-sm font-medium">Estancia</div>
+                   <div className="text-sm text-muted-foreground">
+                     {orden.nombre_estancia || 'Sin estancia'}
+                   </div>
+                   {orden.cultivo && (
+                     <div className="text-sm text-muted-foreground">
+                       Cultivo: {orden.cultivo.nombre}
+                     </div>
+                   )}
+                 </div>
 
                 <div>
                   {lotesOrden.length > 0 ? (

@@ -3,6 +3,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
+import { getCultivos } from '../services/cultivosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -15,6 +16,7 @@ import SelectField from '../components/SelectField'
     const form = useForm({
       defaultValues: {
         estancia_id: '',
+        cultivo_id: '',
         lotes: [
           { lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }
         ]
@@ -30,6 +32,7 @@ import SelectField from '../components/SelectField'
     const [estancias, setEstancias] = useState([])
     const [lotes, setLotes] = useState([])
     const [productos, setProductos] = useState([])
+    const [cultivos, setCultivos] = useState([])
     const navigate = useNavigate()
 
     const estanciaId = watch('estancia_id')
@@ -37,6 +40,7 @@ import SelectField from '../components/SelectField'
     useEffect(() => {
       getEstancias().then(setEstancias)
       getProductos().then(setProductos)
+      getCultivos().then(setCultivos)
     }, [])
 
     useEffect(() => {
@@ -65,6 +69,10 @@ import SelectField from '../components/SelectField'
         }
       }
 
+      if (data.cultivo_id) {
+        payload.orden_fumigacion.cultivo_id = data.cultivo_id
+      }
+
       await createOrdenFumigacion(payload)
       navigate('/ordenes_fumigacion')
     }
@@ -72,20 +80,35 @@ import SelectField from '../components/SelectField'
     return (
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={control}
-            name="estancia_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estancia</FormLabel>
-                <FormControl>
-                  <SelectField field={field} label="Estancia" options={estancias} />
-                </FormControl>
-                <FormDescription>Estancia desc.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField
+             control={control}
+             name="estancia_id"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Estancia</FormLabel>
+                 <FormControl>
+                   <SelectField field={field} label="Estancia" options={estancias} />
+                 </FormControl>
+                 <FormDescription>Estancia desc.</FormDescription>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
+
+           <FormField
+             control={control}
+             name="cultivo_id"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Cultivo</FormLabel>
+                 <FormControl>
+                   <SelectField field={field} label="Cultivo" options={cultivos} />
+                 </FormControl>
+                 <FormDescription>Opcional</FormDescription>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
 
           {loteFields.map((field, index) => (
             <div key={field.id} className="space-y-4 rounded border p-4">
