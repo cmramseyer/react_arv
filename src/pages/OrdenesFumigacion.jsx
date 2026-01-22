@@ -122,7 +122,7 @@ export default function OrdenesFumigacion() {
             : (orden.hectareas ?? orden.temp_hectareas)
           const hectareasLabel = formatHectareas(totalHectareas)
           const isTerminada = estadoOrden === 'terminada'
-          const createdAtLabel = formatDate(orden.created_at)
+          const createdAtLabel = orden.created_at_locale || 'Sin fecha'
 
           return (
             <Card key={orden.id} className="w-full">
@@ -225,7 +225,7 @@ export default function OrdenesFumigacion() {
                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                    <Badge variant="outline">Total Hectareas: {hectareasLabel}</Badge>
                   {isTerminada ? (
-                    <span>Terminado: {formatDate(orden.fecha_trabajo)}</span>
+                    <span>Terminado: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
                   ) : null}
                    {isTerminada ? (
                      <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>

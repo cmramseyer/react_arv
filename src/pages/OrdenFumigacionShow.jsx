@@ -166,7 +166,7 @@ export default function OrdenFumigacionShow() {
     ? lotesOrden.reduce((acc, lote) => acc + Number(lote.hectareas ?? 0), 0)
     : (orden.hectareas ?? orden.temp_hectareas)
   const hectareasLabel = formatHectareas(totalHectareas)
-  const createdAtLabel = formatDate(orden.created_at)
+  const createdAtLabel = orden.created_at_locale || 'Sin fecha'
 
   return (
 
@@ -273,7 +273,7 @@ export default function OrdenFumigacionShow() {
         {isTerminada ? (
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex flex-wrap items-center gap-4">
-              <span>Fecha de trabajo: {formatDate(orden.fecha_trabajo)}</span>
+              <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
                <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
             </div>
             <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>

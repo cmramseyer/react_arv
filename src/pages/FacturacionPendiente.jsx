@@ -277,9 +277,9 @@ export default function FacturacionPendiente() {
                       {modoPago ? `Factura #${grupo.id}` : grupo.nombre}
                     </CardTitle>
                     
-                    {modoPago && grupo.fecha_factura && (
+                    {modoPago && (
                       <div className="text-sm text-muted-foreground">
-                        Fecha factura: {grupo.fecha_factura}
+                        Fecha factura: {grupo.fecha_factura_ddmmyyyy || 'Sin fecha'}
                       </div>
                     )}
                     {modoPago && (
@@ -362,7 +362,7 @@ export default function FacturacionPendiente() {
                              <div className="flex flex-col gap-2 md:flex-row md:gap-4">
                                <div className="text-sm text-muted-foreground">Lote: {orden.lote_id}</div>
                                <div className="text-sm text-muted-foreground">Hectáreas: {orden.hectareas}</div>
-                               <div className="text-sm text-muted-foreground">Fecha trabajo: {orden.fecha_trabajo}</div>
+                                <div className="text-sm text-muted-foreground">Fecha trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</div>
                                <div className="text-sm text-muted-foreground">Maquinista: {orden.maquinista}</div>
                              </div>
                            )}
