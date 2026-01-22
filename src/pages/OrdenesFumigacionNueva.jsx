@@ -8,6 +8,7 @@ import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import formatHectareas from '../utils/formatHectareas'
@@ -47,6 +48,8 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
       defaultValues: {
         estancia_id: '',
         cultivo_id: '',
+        sensible: false,
+        comentarios: '',
         lotes: [
           { lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }
         ]
@@ -87,6 +90,8 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
       const payload = {
         orden_fumigacion: {
           estancia_id: data.estancia_id,
+          sensible: data.sensible ?? false,
+          comentarios: data.comentarios ?? '',
           lotes: (data.lotes || [])
             .filter(lote => lote.lote_id)
             .map(lote => ({
@@ -125,22 +130,61 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
                  <FormMessage />
                </FormItem>
              )}
-           />
+            />
 
-           <FormField
-             control={control}
-             name="cultivo_id"
-             render={({ field }) => (
-               <FormItem>
-                 <FormLabel>Cultivo</FormLabel>
-                 <FormControl>
-                   <SelectField field={field} label="Cultivo" options={cultivos} />
-                 </FormControl>
-                 <FormDescription>Opcional</FormDescription>
-                 <FormMessage />
-               </FormItem>
-             )}
-           />
+            <FormField
+              control={control}
+              name="cultivo_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cultivo</FormLabel>
+                  <FormControl>
+                    <SelectField field={field} label="Cultivo" options={cultivos} />
+                  </FormControl>
+                  <FormDescription>Opcional</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="sensible"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                    />
+                  </FormControl>
+                  <div className="space-y-1">
+                    <FormLabel>Sensible</FormLabel>
+                    <FormDescription>Marcar si requiere atencion especial.</FormDescription>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="comentarios"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Comentarios</FormLabel>
+                  <FormControl>
+                    <textarea
+                      {...field}
+                      value={field.value ?? ''}
+                      className="min-h-[96px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      placeholder="Agregar comentarios"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
           {loteFields.map((field, index) => (
             <div key={field.id} className="space-y-4 rounded border p-4">

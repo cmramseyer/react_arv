@@ -9,6 +9,7 @@ import { getCultivos } from '../services/cultivosService'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -63,7 +64,9 @@ export default function OrdenFumigacionEditar() {
       datos_clima: '',
       info_trabajo: '',
       fecha_trabajo: '',
-      maquinista_id: ''
+      maquinista_id: '',
+      sensible: false,
+      comentarios: ''
     }
   })
 
@@ -120,17 +123,19 @@ export default function OrdenFumigacionEditar() {
            }))
          : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
 
-        reset({
-          estancia_id: String(orden.estancia_id) || '',
-          cultivo_id: String(orden.cultivo?.id) || '',
-          datos_clima: orden.datos_clima || '',
-          info_trabajo: orden.info_trabajo || '',
-          creator: orden.creator || '',
-          fecha_trabajo: orden.fecha_trabajo || '',
-          maquinista_id: orden.maquinista?.id || '',
-          lotes: mappedLotes
-        })
-     }
+         reset({
+           estancia_id: String(orden.estancia_id) || '',
+           cultivo_id: String(orden.cultivo?.id) || '',
+           datos_clima: orden.datos_clima || '',
+           info_trabajo: orden.info_trabajo || '',
+           creator: orden.creator || '',
+           fecha_trabajo: orden.fecha_trabajo || '',
+           maquinista_id: orden.maquinista?.id || '',
+           sensible: orden.sensible ?? false,
+           comentarios: orden.comentarios || '',
+           lotes: mappedLotes
+         })
+      }
 
      fetchData()
    }, [id, reset])
@@ -168,7 +173,9 @@ export default function OrdenFumigacionEditar() {
       })
 
     const ordenPayload = {
-      lotes: lotesPayload
+      lotes: lotesPayload,
+      sensible: data.sensible ?? false,
+      comentarios: data.comentarios ?? ''
     }
 
     if (data.estancia_id) {
@@ -227,6 +234,42 @@ export default function OrdenFumigacionEditar() {
                  <FormLabel>Cultivo</FormLabel>
                  <FormControl>
                    <SelectField field={field} label="Cultivo" options={cultivos} />
+                 </FormControl>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
+
+           <FormField
+             control={control}
+             name="sensible"
+             render={({ field }) => (
+               <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                 <FormControl>
+                   <Checkbox
+                     checked={!!field.value}
+                     onCheckedChange={(checked) => field.onChange(checked === true)}
+                   />
+                 </FormControl>
+                 <FormLabel>Sensible</FormLabel>
+                 <FormMessage />
+               </FormItem>
+             )}
+           />
+
+           <FormField
+             control={control}
+             name="comentarios"
+             render={({ field }) => (
+               <FormItem>
+                 <FormLabel>Comentarios</FormLabel>
+                 <FormControl>
+                   <textarea
+                     {...field}
+                     value={field.value ?? ''}
+                     className="min-h-[96px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                     placeholder="Agregar comentarios"
+                   />
                  </FormControl>
                  <FormMessage />
                </FormItem>

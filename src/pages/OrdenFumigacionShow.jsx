@@ -260,6 +260,10 @@ export default function OrdenFumigacionShow() {
 
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <span>Total Hectareas: {hectareasLabel}</span>
+          <span>Sensible: {orden.sensible ? 'Si' : 'No'}</span>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Comentarios: {orden.comentarios ? orden.comentarios : 'Sin comentarios'}
         </div>
 
         {isTerminada ? (
