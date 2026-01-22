@@ -217,7 +217,6 @@ export default function OrdenFumigacionShow() {
                 <li key={loteKey} className="space-y-2">
                   <div>
                     Lote {lote.nombre || 'Sin nombre'}: {loteHectareas}
-                    {loteHectareas === 'Sin datos' ? '' : ' ha'}
                   </div>
                   <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value={dosisValue} className="rounded-md border border-border">
@@ -255,7 +254,6 @@ export default function OrdenFumigacionShow() {
           <div className="space-y-1 text-sm text-muted-foreground">
             <div>
               Lote {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}: {formatHectareas(orden.hectareas || orden.temp_hectareas)}
-              {formatHectareas(orden.hectareas || orden.temp_hectareas) === 'Sin datos' ? '' : ' ha'}
             </div>
           </div>
         )}

@@ -37,10 +37,7 @@ export default function LoteList({ lotes, onShow, onDelete }) {
 
           <TableBody>
             {lotes.map((lote) => {
-              const hectareasLabel = formatHectareas(lote.hectareas)
-              const hectareasDisplay = hectareasLabel === 'Sin datos'
-                ? hectareasLabel
-                : `${hectareasLabel} ha`
+              const hectareasDisplay = formatHectareas(lote.hectareas)
 
               return (
                 <TableRow key={lote.id}>
@@ -69,10 +66,7 @@ export default function LoteList({ lotes, onShow, onDelete }) {
 
       <div className="space-y-4 md:hidden">
         {lotes.map((lote) => {
-          const hectareasLabel = formatHectareas(lote.hectareas)
-          const hectareasDisplay = hectareasLabel === 'Sin datos'
-            ? hectareasLabel
-            : `${hectareasLabel} ha`
+          const hectareasDisplay = formatHectareas(lote.hectareas)
 
           return (
             <Card key={lote.id}>

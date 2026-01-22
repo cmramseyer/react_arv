@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import formatHectareas from '../utils/formatHectareas'
 
 export default function LoteShow() {
   const { id } = useParams()
@@ -26,7 +27,7 @@ export default function LoteShow() {
       <h2 className="text-xl font-bold mb-4">{lote.nombre}</h2>
       <p>Lat: {lote.lat}</p>
       <p>Long: {lote.long}</p>
-      <p>Hectáreas: {lote.hectareas}</p>
+      <p>Hectáreas: {formatHectareas(lote.hectareas)}</p>
       <p>Link mapa: <a href={lote.link_mapa} className="text-blue-500 underline">{lote.link_mapa}</a></p>
       <h3 className="mt-4 font-semibold">Adjuntos:</h3>
       <ul className="list-disc pl-6">

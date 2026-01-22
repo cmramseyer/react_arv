@@ -174,7 +174,7 @@ export default function OrdenesFumigacion() {
                            <li key={loteKey} className="space-y-2">
                              <div className="flex flex-wrap gap-2">
                                <Badge variant="success">Lote: {lote.nombre || 'Sin nombre'}</Badge>
-                               <Badge variant="outline">{loteHectareas}{loteHectareas === 'Sin datos' ? '' : ' ha'}</Badge>
+                                <Badge variant="outline">{loteHectareas}</Badge>
                              </div>
                             <Accordion type="single" collapsible className="w-full">
                               <AccordionItem value={dosisValue} className="rounded-md border border-border">
@@ -211,7 +211,7 @@ export default function OrdenesFumigacion() {
                    ) : (
                      <div className="flex flex-wrap gap-2">
                        <Badge variant="success">Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}</Badge>
-                       <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.temp_hectareas)}{formatHectareas(orden.hectareas ?? orden.temp_hectareas) === 'Sin datos' ? '' : ' ha'}</Badge>
+                       <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.temp_hectareas)}</Badge>
                      </div>
                    )}
                 </div>

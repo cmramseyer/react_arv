@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import formatHectareas from '../utils/formatHectareas'
 
 export default function OrdenFumigacionTerminar() {
   const { id } = useParams()
@@ -29,7 +30,7 @@ export default function OrdenFumigacionTerminar() {
   const [orden, setOrden] = useState(null)
   const [estanciaNombre, setEstanciaNombre] = useState('')
   const [loteNombre, setLoteNombre] = useState('')
-  const [loteHectareas, setLoteHectareas] = useState('')
+    const [loteHectareas, setLoteHectareas] = useState('')
    const [productos, setProductos] = useState([])
    const [maquinistas, setMaquinistas] = useState([])
 
@@ -98,7 +99,7 @@ export default function OrdenFumigacionTerminar() {
       <div className="space-y-2 mb-6">
         <div><strong>Estancia:</strong> {estanciaNombre}</div>
         <div><strong>Lote:</strong> {loteNombre}</div>
-        <div><strong>Hectáreas:</strong> {loteHectareas}</div>
+        <div><strong>Hectáreas:</strong> {formatHectareas(loteHectareas)}</div>
         <div><strong>Creado Por:</strong> {orden.creator}</div>
         <div><strong>Estado:</strong> {orden.estado_orden}</div>
          {lotesOrden.length > 0 ? (
@@ -112,7 +113,7 @@ export default function OrdenFumigacionTerminar() {
                  <li key={loteKey} className="space-y-2">
                    <div className="flex flex-wrap gap-2">
                      <Badge variant="success">Lote: {lote.nombre || 'Sin nombre'}</Badge>
-                     <Badge variant="outline">{lote.hectareas ? `${lote.hectareas} ha` : 'Sin hectareas'}</Badge>
+                      <Badge variant="outline">{formatHectareas(lote.hectareas)}</Badge>
                    </div>
                    <Accordion type="single" collapsible className="w-full">
                      <AccordionItem value={dosisValue} className="rounded-md border border-border">

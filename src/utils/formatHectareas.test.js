@@ -10,19 +10,19 @@ describe('formatHectareas', () => {
   })
 
   it('formats integers without decimals', () => {
-    expect(formatHectareas(55)).toBe('55')
-    expect(formatHectareas(55.0)).toBe('55')
-    expect(formatHectareas('55')).toBe('55')
+    expect(formatHectareas(55)).toBe('55 ha')
+    expect(formatHectareas(55.0)).toBe('55 ha')
+    expect(formatHectareas('55')).toBe('55 ha')
   })
 
   it('formats decimals with two digits', () => {
-    expect(formatHectareas(55.5)).toBe('55,50')
-    expect(formatHectareas('55.5')).toBe('55,50')
-    expect(formatHectareas('55,5')).toBe('55,50')
+    expect(formatHectareas(55.5)).toBe('55,50 ha')
+    expect(formatHectareas('55.5')).toBe('55,50 ha')
+    expect(formatHectareas('55,5')).toBe('55,50 ha')
   })
 
   it('uses thousands separator for large numbers', () => {
-    expect(formatHectareas(1000)).toBe('1.000')
-    expect(formatHectareas(1000.2)).toBe('1.000,20')
+    expect(formatHectareas(1000)).toBe('1.000 ha')
+    expect(formatHectareas(1000.2)).toBe('1.000,20 ha')
   })
 })

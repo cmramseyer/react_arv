@@ -16,13 +16,13 @@ const parseHectareas = (value) => {
 const formatHectareas = (value) => {
   const numericValue = parseHectareas(value)
   if (numericValue === null) return 'Sin datos'
-  if (Number.isInteger(numericValue)) {
-    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 0 })
-  }
-  return numericValue.toLocaleString('es-AR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+  const formattedValue = Number.isInteger(numericValue)
+    ? numericValue.toLocaleString('es-AR', { maximumFractionDigits: 0 })
+    : numericValue.toLocaleString('es-AR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  return `${formattedValue} ha`
 }
 
 export default formatHectareas
