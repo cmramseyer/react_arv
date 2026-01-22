@@ -13,6 +13,35 @@ import SelectField from '../components/SelectField'
 import formatHectareas from '../utils/formatHectareas'
 
 
+const parseHectareasValue = (value) => {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) return null
+    const normalized = trimmed.includes(',') && !trimmed.includes('.')
+      ? trimmed.replace(',', '.')
+      : trimmed
+    const numericValue = Number(normalized)
+    return Number.isNaN(numericValue) ? null : numericValue
+  }
+  const numericValue = Number(value)
+  return Number.isNaN(numericValue) ? null : numericValue
+}
+
+const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
+  if (!Array.isArray(selectedLotes) || !Array.isArray(lotesDisponibles)) return 0
+  const lotesById = new Map(lotesDisponibles.map((lote) => [String(lote.id), lote]))
+
+  return selectedLotes.reduce((acc, lote) => {
+    if (!lote?.lote_id) return acc
+    const loteData = lotesById.get(String(lote.lote_id))
+    if (!loteData) return acc
+    const hectareasValue = parseHectareasValue(loteData.hectareas)
+    if (hectareasValue === null) return acc
+    return acc + hectareasValue
+  }, 0)
+}
+
   export default function OrdenFumigacionNueva() {
     const form = useForm({
       defaultValues: {
@@ -37,6 +66,8 @@ import formatHectareas from '../utils/formatHectareas'
     const navigate = useNavigate()
 
     const estanciaId = watch('estancia_id')
+    const selectedLotes = watch('lotes')
+    const totalHectareas = getTotalHectareas(selectedLotes, lotes)
 
     useEffect(() => {
       getEstancias().then(setEstancias)
@@ -165,7 +196,12 @@ import formatHectareas from '../utils/formatHectareas'
             Agregar otro lote
           </Button>
 
-          <Button type="submit">Crear orden</Button>
+          <div className="flex items-center gap-3">
+            <Button type="submit">Crear orden</Button>
+            <span className="text-sm text-muted-foreground">
+              Total ha: {totalHectareas === 0 ? '0' : formatHectareas(totalHectareas)}
+            </span>
+          </div>
         </form>
       </Form>
     )

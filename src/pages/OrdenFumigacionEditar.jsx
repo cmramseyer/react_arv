@@ -22,6 +22,35 @@ import SelectField from '../components/SelectField'
 import { getMaquinistas } from '../services/maquinistasService'
 import formatHectareas from '../utils/formatHectareas'
 
+const parseHectareasValue = (value) => {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) return null
+    const normalized = trimmed.includes(',') && !trimmed.includes('.')
+      ? trimmed.replace(',', '.')
+      : trimmed
+    const numericValue = Number(normalized)
+    return Number.isNaN(numericValue) ? null : numericValue
+  }
+  const numericValue = Number(value)
+  return Number.isNaN(numericValue) ? null : numericValue
+}
+
+const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
+  if (!Array.isArray(selectedLotes) || !Array.isArray(lotesDisponibles)) return 0
+  const lotesById = new Map(lotesDisponibles.map((lote) => [String(lote.id), lote]))
+
+  return selectedLotes.reduce((acc, lote) => {
+    if (!lote?.lote_id) return acc
+    const loteData = lotesById.get(String(lote.lote_id))
+    if (!loteData) return acc
+    const hectareasValue = parseHectareasValue(loteData.hectareas)
+    if (hectareasValue === null) return acc
+    return acc + hectareasValue
+  }, 0)
+}
+
 export default function OrdenFumigacionEditar() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -51,6 +80,8 @@ export default function OrdenFumigacionEditar() {
     const [cultivos, setCultivos] = useState([])
     const [estadoOrden, setEstadoOrden] = useState('')
     const estanciaId = watch('estancia_id')
+    const selectedLotes = watch('lotes')
+    const totalHectareas = getTotalHectareas(selectedLotes, lotes)
 
     useEffect(() => {
       getEstancias().then(setEstancias)
@@ -345,7 +376,12 @@ export default function OrdenFumigacionEditar() {
              )}
            />
 
-          <Button type="submit">Guardar cambios</Button>
+          <div className="flex items-center gap-3">
+            <Button type="submit">Guardar cambios</Button>
+            <span className="text-sm text-muted-foreground">
+              Total ha: {totalHectareas === 0 ? '0' : formatHectareas(totalHectareas)}
+            </span>
+          </div>
         </form>
       </Form>
     </div>
