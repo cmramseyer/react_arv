@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import formatHectareas from '../utils/formatHectareas'
 
 export default function OrdenesFumigacion() {
   const [ordenes, setOrdenes] = useState([])
@@ -52,13 +53,6 @@ export default function OrdenesFumigacion() {
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return 'Sin fecha'
     return date.toLocaleDateString('es-AR')
-  }
-
-  const formatHectareas = (value) => {
-    if (value === null || value === undefined || value === '') return 'Sin datos'
-    const numericValue = Number(value)
-    if (Number.isNaN(numericValue)) return 'Sin datos'
-    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
   }
 
   const formatCantidad = (value) => {

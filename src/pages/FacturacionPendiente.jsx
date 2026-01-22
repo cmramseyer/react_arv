@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import formatHectareas from '../utils/formatHectareas'
 
 const groupHasOrdenes = (grupo) => Array.isArray(grupo?.data) && grupo.data.length > 0
 
@@ -361,7 +362,7 @@ export default function FacturacionPendiente() {
                            {!modoPago && (
                              <div className="flex flex-col gap-2 md:flex-row md:gap-4">
                                <div className="text-sm text-muted-foreground">Lote: {orden.lote_id}</div>
-                               <div className="text-sm text-muted-foreground">Hectáreas: {orden.hectareas}</div>
+                                <div className="text-sm text-muted-foreground">Hectáreas: {formatHectareas(orden.hectareas)}</div>
                                 <div className="text-sm text-muted-foreground">Fecha trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</div>
                                <div className="text-sm text-muted-foreground">Maquinista: {orden.maquinista}</div>
                              </div>
@@ -386,11 +387,17 @@ export default function FacturacionPendiente() {
                           <div className="mt-2 space-y-2">
                             {orden.lotes.map((lote, loteIndex) => (
                               <div key={`${orden.id}-lote-${loteIndex}`} className="flex flex-col gap-1">
-                                {Object.entries(lote).map(([key, value]) => (
-                                  <div key={`${orden.id}-lote-${loteIndex}-${key}`} className="text-muted-foreground">
-                                    {key}: {value}
-                                  </div>
-                                ))}
+                                {Object.entries(lote).map(([key, value]) => {
+                                  const displayValue = key === 'hectareas'
+                                    ? formatHectareas(value)
+                                    : value
+
+                                  return (
+                                    <div key={`${orden.id}-lote-${loteIndex}-${key}`} className="text-muted-foreground">
+                                      {key}: {displayValue}
+                                    </div>
+                                  )
+                                })}
                               </div>
                             ))}
                           </div>

@@ -17,16 +17,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import formatHectareas from '../utils/formatHectareas'
 
 export default function LoteList({ lotes, onShow, onDelete }) {
   const navigate = useNavigate()
-
-  const formatHectareas = (value) => {
-    if (value === null || value === undefined || value === '') return 'Sin datos'
-    const numericValue = Number(value)
-    if (Number.isNaN(numericValue)) return 'Sin datos'
-    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
-  }
 
   return (
     <div className="space-y-4">
