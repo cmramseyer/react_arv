@@ -1,5 +1,6 @@
 import * as React from "react"
 import { ChevronDown } from "lucide-react"
+import { useLocation } from "react-router-dom"
 import {
   Collapsible,
   CollapsibleContent,
@@ -70,7 +71,31 @@ const data = {
 }
 
 export function AppSidebar({...props}) {
+  const location = useLocation()
+
+  const isItemActive = (url) => {
+    // For specific routes like pendiente_factura, use exact match
+    if (url === "/ordenes_fumigacion/pendiente_factura") {
+      return location.pathname === url
+    }
+    // For ordenes main list, exclude the pendiente_factura subroute
+    if (url === "/ordenes_fumigacion") {
+      return location.pathname.startsWith(url) && !location.pathname.startsWith("/ordenes_fumigacion/pendiente_factura")
+    }
+    // For others, use startsWith to cover subroutes
+    return location.pathname.startsWith(url)
+  }
+
+  const gestionItems = data.navMain.find(group => group.title === "Gestión")?.items || []
+  const isGestionActive = gestionItems.some(item => isItemActive(item.url))
+
   const [gestionOpen, setGestionOpen] = React.useState(true)
+
+  React.useEffect(() => {
+    if (isGestionActive) {
+      setGestionOpen(true)
+    }
+  }, [isGestionActive])
 
   return (
     <Sidebar {...props}>
@@ -89,7 +114,7 @@ export function AppSidebar({...props}) {
             >
               <SidebarGroup>
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="group/label cursor-pointer">
+                  <SidebarGroupLabel className={`group/label cursor-pointer ${isGestionActive ? 'font-bold' : ''}`}>
                     {item.title}
                     <ChevronDown className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                   </SidebarGroupLabel>
@@ -99,12 +124,12 @@ export function AppSidebar({...props}) {
                     <SidebarMenu>
                       <SidebarMenuSub>
                         {item.items.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton asChild>
-                              <a href={subItem.url}>{subItem.title}</a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                           <SidebarMenuSubItem key={subItem.title}>
+                             <SidebarMenuSubButton asChild isActive={isItemActive(subItem.url)} className={isItemActive(subItem.url) ? 'font-bold' : ''}>
+                               <a href={subItem.url}>{subItem.title}</a>
+                             </SidebarMenuSubButton>
+                           </SidebarMenuSubItem>
+                         ))}
                       </SidebarMenuSub>
                     </SidebarMenu>
                   </SidebarGroupContent>
@@ -118,7 +143,7 @@ export function AppSidebar({...props}) {
                 <SidebarMenu>
                   {item.items.map((subItem) => (
                     <SidebarMenuItem key={subItem.title}>
-                      <SidebarMenuButton asChild isActive={subItem.isActive}>
+                      <SidebarMenuButton asChild isActive={isItemActive(subItem.url)}>
                         <a href={subItem.url}>{subItem.title}</a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
