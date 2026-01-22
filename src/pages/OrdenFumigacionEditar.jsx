@@ -20,6 +20,7 @@ import { Controller } from 'react-hook-form'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import { getMaquinistas } from '../services/maquinistasService'
+import formatHectareas from '../utils/formatHectareas'
 
 export default function OrdenFumigacionEditar() {
   const { id } = useParams()
@@ -224,7 +225,15 @@ export default function OrdenFumigacionEditar() {
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <SelectField field={field} label="Lote" options={lotes} />
+                      <SelectField
+                        field={field}
+                        label="Lote"
+                        options={lotes}
+                        getOptionLabel={(lote) => {
+                          const nombre = lote.nombre_lote || lote.nombre || 'Sin nombre'
+                          return `${nombre} - ${formatHectareas(lote.hectareas)}`
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

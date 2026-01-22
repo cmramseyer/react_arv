@@ -10,6 +10,7 @@ import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, For
 import { Button } from '@/components/ui/button'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
+import formatHectareas from '../utils/formatHectareas'
 
 
   export default function OrdenFumigacionNueva() {
@@ -133,7 +134,15 @@ import SelectField from '../components/SelectField'
                   <FormItem>
                     <FormLabel>Lote</FormLabel>
                     <FormControl>
-                      <SelectField field={field} label="Lote" options={lotes} />
+                      <SelectField
+                        field={field}
+                        label="Lote"
+                        options={lotes}
+                        getOptionLabel={(lote) => {
+                          const nombre = lote.nombre_lote || lote.nombre || 'Sin nombre'
+                          return `${nombre} - ${formatHectareas(lote.hectareas)}`
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

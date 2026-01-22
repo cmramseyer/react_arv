@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/select"
 
 
-export default function SelectField({ field, label, options, className = '' }) {
+export default function SelectField({ field, label, options, className = '', getOptionLabel }) {
+  const getLabel = getOptionLabel || ((option) => option.nombre)
+
   return (
     <Select value={field.value ?? ''} onValueChange={field.onChange}>
       <SelectTrigger className={className}>
@@ -21,7 +23,7 @@ export default function SelectField({ field, label, options, className = '' }) {
         <SelectGroup>
           {label ? <SelectLabel>{label}</SelectLabel> : null}
           {options.map(option => (
-            <SelectItem key={String(option.id)} value={String(option.id)}>{option.nombre}</SelectItem>
+            <SelectItem key={String(option.id)} value={String(option.id)}>{getLabel(option)}</SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
