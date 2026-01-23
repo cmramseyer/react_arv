@@ -44,7 +44,7 @@ const data = {
           url: "/ordenes_fumigacion",
         },
         {
-          title: "Facturación Pendiente",
+          title: "Facturación",
           url: "/ordenes_fumigacion/pendiente_factura",
         },
       ],
@@ -123,13 +123,21 @@ export function AppSidebar({...props}) {
                   <SidebarGroupContent>
                     <SidebarMenu>
                       <SidebarMenuSub>
-                        {item.items.map((subItem) => (
-                           <SidebarMenuSubItem key={subItem.title}>
-                             <SidebarMenuSubButton asChild isActive={isItemActive(subItem.url)} className={isItemActive(subItem.url) ? 'font-bold' : ''}>
-                               <a href={subItem.url}>{subItem.title}</a>
-                             </SidebarMenuSubButton>
-                           </SidebarMenuSubItem>
-                         ))}
+                        {item.items.map((subItem) => {
+                          const isActive = isItemActive(subItem.url)
+
+                          return (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isActive}
+                                className={isActive ? "font-bold" : ""}
+                              >
+                                <a href={subItem.url}>{subItem.title}</a>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
                       </SidebarMenuSub>
                     </SidebarMenu>
                   </SidebarGroupContent>
@@ -141,13 +149,17 @@ export function AppSidebar({...props}) {
               <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {item.items.map((subItem) => (
-                    <SidebarMenuItem key={subItem.title}>
-                      <SidebarMenuButton asChild isActive={isItemActive(subItem.url)}>
-                        <a href={subItem.url}>{subItem.title}</a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {item.items.map((subItem) => {
+                    const isActive = isItemActive(subItem.url)
+
+                    return (
+                      <SidebarMenuItem key={subItem.title}>
+                        <SidebarMenuButton asChild isActive={isActive} className={isActive ? "font-bold" : ""}>
+                          <a href={subItem.url}>{subItem.title}</a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
