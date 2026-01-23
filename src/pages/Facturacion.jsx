@@ -3,6 +3,13 @@ import { getOrdenesPendientesFacturacion, facturarOrdenes } from '../services/or
 import { getFacturasPago, marcarFacturaPagada } from '../services/facturasService'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import {
   Card,
@@ -32,6 +39,8 @@ export default function Facturacion() {
   const [nroFactura, setNroFactura] = useState('')
   const [modoPago, setModoPago] = useState(false)
   const [pagandoIds, setPagandoIds] = useState(() => new Set())
+  const [dialogoEstanciaAbierto, setDialogoEstanciaAbierto] = useState(false)
+  const [estanciaSeleccionada, setEstanciaSeleccionada] = useState(null)
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -66,7 +75,7 @@ export default function Facturacion() {
     })
   }, [ordenesSeleccionadas, importesPorOrden])
 
-  const handleToggleOrden = (ordenId) => {
+  const handleToggleOrden = (ordenId, nombreEstancia) => {
     setOrdenesSeleccionadas((prev) => {
       const next = new Set(prev)
       if (next.has(ordenId)) {
@@ -79,8 +88,18 @@ export default function Facturacion() {
           const { [ordenId]: _removed, ...rest } = prevOrdenes
           return rest
         })
+        if (next.size === 0) {
+          setEstanciaSeleccionada(null)
+        }
       } else {
+        if (!modoPago && estanciaSeleccionada && estanciaSeleccionada !== nombreEstancia) {
+          setDialogoEstanciaAbierto(true)
+          return prev
+        }
         next.add(ordenId)
+        if (!modoPago && !estanciaSeleccionada) {
+          setEstanciaSeleccionada(nombreEstancia)
+        }
       }
       return next
     })
@@ -141,6 +160,7 @@ export default function Facturacion() {
       setImportesPorOrden({})
       setNroOrdenClientePorOrden({})
       setNroFactura('')
+      setEstanciaSeleccionada(null)
     } finally {
       setFacturandoIds(new Set())
     }
@@ -318,7 +338,12 @@ export default function Facturacion() {
                             <label className="flex items-center gap-2">
                               <Checkbox
                                 checked={ordenesSeleccionadas.has(orden.orden_id)}
-                                onCheckedChange={() => handleToggleOrden(orden.orden_id)}
+                                onCheckedChange={() =>
+                                  handleToggleOrden(
+                                    orden.orden_id,
+                                    orden.nombre_estancia ?? grupo.nombre
+                                  )
+                                }
                                 disabled={facturandoIds.has(orden.orden_id)}
                                 aria-label={`Seleccionar orden ${orden.orden_id}`}
                               />
@@ -414,6 +439,20 @@ export default function Facturacion() {
           })}
         </>
       )}
+      <Dialog open={dialogoEstanciaAbierto} onOpenChange={setDialogoEstanciaAbierto}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              No se puede crear una factura con órdenes de diferentes propietarios
+            </DialogTitle>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogoEstanciaAbierto(false)}>
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
