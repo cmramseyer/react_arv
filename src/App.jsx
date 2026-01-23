@@ -29,6 +29,7 @@ export default function App() {
     if (location.pathname.startsWith('/cultivos')) return 'Cultivos'
     if (location.pathname.startsWith('/maquinistas')) return 'Maquinistas'
     if (location.pathname.startsWith('/productos')) return 'Productos'
+    if (location.pathname.startsWith('/estadisticas')) return 'Estadisticas'
     if (location.pathname.startsWith('/ordenes')) return 'Ordenes'
     if (location.pathname === '/' || location.pathname === '/home') return 'Inicio'
     return 'Página'

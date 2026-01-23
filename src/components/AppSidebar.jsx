@@ -47,6 +47,10 @@ const data = {
           title: "Facturación",
           url: "/ordenes_fumigacion/pendiente_factura",
         },
+        {
+          title: "Estadisticas",
+          url: "/estadisticas",
+        },
       ],
     },
     {
