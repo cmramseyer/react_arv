@@ -204,13 +204,16 @@ export default function Facturacion() {
     <div className="p-4 space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-xl font-bold">Facturación Pendiente</h2>
-          <p className="text-sm text-muted-foreground">
-            {modoPago ? 'Facturas pendientes de pago' : 'Órdenes pendientes de facturación'}
-          </p>
+          <h2 className="text-xl font-bold">
+            {modoPago ? 'Facturas pendiente de pago' : 'Órdenes pendiente de facturar'}
+          </h2>
         </div>
         <label className="flex items-center gap-2 text-sm font-medium">
-          <span>Pago</span>
+          <span>
+            {modoPago
+              ? 'Ver ordenes pendiente de facturar'
+              : 'Ver facturas pendientes de pago'}
+          </span>
           <Switch checked={modoPago} onCheckedChange={setModoPago} aria-label="Cambiar modo" />
         </label>
       </div>
