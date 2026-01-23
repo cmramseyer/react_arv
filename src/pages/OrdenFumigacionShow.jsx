@@ -158,7 +158,7 @@ export default function OrdenFumigacionShow() {
   const isTerminada = estadoOrden === 'terminada'
   const totalHectareas = lotesOrden.length > 0
     ? lotesOrden.reduce((acc, lote) => acc + Number(lote.hectareas ?? 0), 0)
-    : (orden.hectareas ?? orden.temp_hectareas)
+    : (orden.hectareas ?? orden.hectareas_reales)
   const hectareasLabel = formatHectareas(totalHectareas)
   const createdAtLabel = orden.created_at_locale || 'Sin fecha'
 
@@ -253,7 +253,7 @@ export default function OrdenFumigacionShow() {
         ) : (
           <div className="space-y-1 text-sm text-muted-foreground">
             <div>
-              Lote {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}: {formatHectareas(orden.hectareas || orden.temp_hectareas)}
+              Lote {orden.nombre_lote || orden.temp_lotes || 'Sin lote'}: {formatHectareas(orden.hectareas || orden.hectareas_reales)}
             </div>
           </div>
         )}

@@ -113,7 +113,7 @@ export default function OrdenesFumigacion() {
           const lotesOrden = Array.isArray(orden.lotes) ? orden.lotes : []
           const totalHectareas = lotesOrden.length > 0
             ? lotesOrden.reduce((acc, lote) => acc + Number(lote.hectareas ?? 0), 0)
-            : (orden.hectareas ?? orden.temp_hectareas)
+            : (orden.hectareas ?? orden.hectareas_reales)
           const hectareasLabel = formatHectareas(totalHectareas)
           const isTerminada = estadoOrden === 'terminada'
           const createdAtLabel = orden.created_at_locale || 'Sin fecha'
@@ -211,7 +211,7 @@ export default function OrdenesFumigacion() {
                    ) : (
                      <div className="flex flex-wrap gap-2">
                        <Badge variant="success">Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}</Badge>
-                       <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.temp_hectareas)}</Badge>
+                       <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.hectareas_reales)}</Badge>
                      </div>
                    )}
                 </div>

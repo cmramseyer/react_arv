@@ -8,6 +8,7 @@ import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
@@ -35,6 +36,10 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
 
   return selectedLotes.reduce((acc, lote) => {
     if (!lote?.lote_id) return acc
+    const hectareasRealesValue = parseHectareasValue(lote.hectareas_reales)
+    if (hectareasRealesValue !== null) {
+      return acc + hectareasRealesValue
+    }
     const loteData = lotesById.get(String(lote.lote_id))
     if (!loteData) return acc
     const hectareasValue = parseHectareasValue(loteData.hectareas)
@@ -51,7 +56,7 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
         sensible: false,
         comentarios: '',
         lotes: [
-          { lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }
+          { lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] }
         ]
       }
     })
@@ -94,15 +99,23 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
           comentarios: data.comentarios ?? '',
           lotes: (data.lotes || [])
             .filter(lote => lote.lote_id)
-            .map(lote => ({
-              lote_id: lote.lote_id,
-              dosis: (lote.dosis || [])
+            .map(lote => {
+              const loteData = {
+                lote_id: lote.lote_id,
+                dosis: (lote.dosis || [])
                 .filter(dosis => dosis.producto_id && dosis.cantidad !== '' && dosis.cantidad !== null)
                 .map(dosis => ({
                   producto_id: dosis.producto_id,
                   cantidad: dosis.cantidad
                 }))
-            }))
+              }
+
+              if (lote.hectareas_reales !== '' && lote.hectareas_reales !== null && lote.hectareas_reales !== undefined) {
+                loteData.hectareas_reales = lote.hectareas_reales
+              }
+
+              return loteData
+            })
         }
       }
 
@@ -224,6 +237,25 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
                 )}
               />
 
+              <FormField
+                control={control}
+                name={`lotes.${index}.hectareas_reales`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ajuste Ha</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        step="any"
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <DosisFields
                 control={control}
                 productos={productos}
@@ -235,7 +267,7 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => appendLote({ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] })}
+            onClick={() => appendLote({ lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] })}
           >
             Agregar otro lote
           </Button>

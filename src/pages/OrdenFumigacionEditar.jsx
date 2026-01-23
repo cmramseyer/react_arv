@@ -44,6 +44,10 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
 
   return selectedLotes.reduce((acc, lote) => {
     if (!lote?.lote_id) return acc
+    const hectareasRealesValue = parseHectareasValue(lote.hectareas_reales)
+    if (hectareasRealesValue !== null) {
+      return acc + hectareasRealesValue
+    }
     const loteData = lotesById.get(String(lote.lote_id))
     if (!loteData) return acc
     const hectareasValue = parseHectareasValue(loteData.hectareas)
@@ -59,7 +63,7 @@ export default function OrdenFumigacionEditar() {
     defaultValues: {
       estancia_id: '',
       cultivo_id: '',
-      lotes: [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }],
+      lotes: [{ lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] }],
       creator: '',
       datos_clima: '',
       info_trabajo: '',
@@ -112,16 +116,17 @@ export default function OrdenFumigacionEditar() {
        }
 
        const mappedLotes = Array.isArray(orden.lotes) && orden.lotes.length > 0
-         ? orden.lotes.map(lote => ({
-             id: lote.id,
-             lote_id: lote.lote_id ? String(lote.lote_id) : '',
-             dosis: (lote.dosis || []).map(dosis => ({
-               id: dosis.id,
-               producto_id: dosis.producto_id ? String(dosis.producto_id) : '',
-               cantidad: dosis.cantidad ?? ''
-             }))
-           }))
-         : [{ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] }]
+          ? orden.lotes.map(lote => ({
+              id: lote.id,
+              lote_id: lote.lote_id ? String(lote.lote_id) : '',
+              hectareas_reales: lote.hectareas_reales ?? '',
+              dosis: (lote.dosis || []).map(dosis => ({
+                id: dosis.id,
+                producto_id: dosis.producto_id ? String(dosis.producto_id) : '',
+                cantidad: dosis.cantidad ?? ''
+              }))
+            }))
+          : [{ lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] }]
 
          reset({
            estancia_id: String(orden.estancia_id) || '',
@@ -163,6 +168,10 @@ export default function OrdenFumigacionEditar() {
         const loteData = {
           lote_id: lote.lote_id,
           dosis: dosisPayload
+        }
+
+        if (lote.hectareas_reales !== '' && lote.hectareas_reales !== null && lote.hectareas_reales !== undefined) {
+          loteData.hectareas_reales = lote.hectareas_reales
         }
 
         if (lote.id) {
@@ -314,6 +323,25 @@ export default function OrdenFumigacionEditar() {
                 )}
               />
 
+              <FormField
+                control={control}
+                name={`lotes.${index}.hectareas_reales`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ajuste Ha</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        step="any"
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
             <DosisFields
               control={control}
               productos={productos}
@@ -325,7 +353,7 @@ export default function OrdenFumigacionEditar() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => appendLote({ lote_id: '', dosis: [{ producto_id: '', cantidad: '' }] })}
+            onClick={() => appendLote({ lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] })}
           >
             Agregar otro lote
           </Button>
