@@ -22,7 +22,7 @@ const normalizarRespuesta = (data) => {
   return []
 }
 
-export default function FacturacionPendiente() {
+export default function Facturacion() {
   const [ordenesPorEstancia, setOrdenesPorEstancia] = useState([])
   const [loading, setLoading] = useState(true)
   const [facturandoIds, setFacturandoIds] = useState(() => new Set())
