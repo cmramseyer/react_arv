@@ -83,6 +83,16 @@ export default function BuscarOrden() {
     }
   }
 
+  const handleResetFiltros = () => {
+    setEstanciaId('')
+    setLoteId('')
+    setCultivoId('')
+    setMaquinistaId('')
+    setRange()
+    setOrdenes([])
+    setHasSearched(false)
+  }
+
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center justify-between">
@@ -196,6 +206,13 @@ export default function BuscarOrden() {
           <div className="flex flex-wrap gap-2">
             <Button onClick={handleBuscar} disabled={loading}>
               {loading ? 'Buscando...' : 'Buscar'}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleResetFiltros}
+              disabled={loading}
+            >
+              Borrar filtros
             </Button>
           </div>
         </CardContent>
