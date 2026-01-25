@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
@@ -36,6 +37,8 @@ export default function BuscarOrden() {
   const [loteId, setLoteId] = useState('')
   const [cultivoId, setCultivoId] = useState('')
   const [maquinistaId, setMaquinistaId] = useState('')
+  const [nroOrdenCliente, setNroOrdenCliente] = useState('')
+  const [nroFactura, setNroFactura] = useState('')
   const [range, setRange] = useState()
   const [ordenes, setOrdenes] = useState([])
   const [loading, setLoading] = useState(false)
@@ -68,6 +71,8 @@ export default function BuscarOrden() {
     if (loteId) filters.lote_id = loteId
     if (cultivoId) filters.cultivo_id = cultivoId
     if (maquinistaId) filters.maquinista_id = maquinistaId
+    if (nroOrdenCliente) filters.nro_orden_cliente = nroOrdenCliente
+    if (nroFactura) filters.nro_factura = nroFactura
     if (range?.from) filters.fecha_desde = formatApiDate(range.from)
     if (range?.to) filters.fecha_hasta = formatApiDate(range.to)
 
@@ -88,6 +93,8 @@ export default function BuscarOrden() {
     setLoteId('')
     setCultivoId('')
     setMaquinistaId('')
+    setNroOrdenCliente('')
+    setNroFactura('')
     setRange()
     setOrdenes([])
     setHasSearched(false)
@@ -171,6 +178,24 @@ export default function BuscarOrden() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Nro. Orden Cliente</span>
+              <Input
+                value={nroOrdenCliente}
+                onChange={(event) => setNroOrdenCliente(event.target.value)}
+                placeholder="Ingresar..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Nro. Factura</span>
+              <Input
+                value={nroFactura}
+                onChange={(event) => setNroFactura(event.target.value)}
+                placeholder="Ingresar..."
+              />
             </div>
 
             <div className="space-y-2 md:col-span-2 xl:col-span-1">

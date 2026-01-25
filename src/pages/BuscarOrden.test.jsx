@@ -70,6 +70,10 @@ describe('BuscarOrden', () => {
     await user.click(selects[3])
     await user.click(screen.getByText('Juan Perez'))
 
+    const inputs = screen.getAllByPlaceholderText('Ingresar...')
+    await user.type(inputs[0], 'OC-2024')
+    await user.type(inputs[1], 'FAC-900')
+
     await user.click(screen.getByRole('button', { name: 'Seleccionar rango' }))
     await user.click(screen.getAllByText('15')[0])
     await user.click(screen.getAllByText('20')[0])
@@ -86,6 +90,8 @@ describe('BuscarOrden', () => {
         lote_id: '10',
         cultivo_id: '2',
         maquinista_id: '3',
+        nro_orden_cliente: 'OC-2024',
+        nro_factura: 'FAC-900',
         fecha_desde: expectedFrom,
         fecha_hasta: expectedTo,
       })
