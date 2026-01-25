@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Tractor } from 'lucide-react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   getOrdenFumigacion,
@@ -17,7 +16,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import IconLabelBadge from '@/components/IconLabelBadge'
 import {
   Dialog,
   DialogContent,
@@ -294,15 +293,12 @@ export default function OrdenFumigacionShow() {
           <div className="space-y-2 text-sm text-muted-foreground">
              <div className="flex flex-wrap items-center gap-4">
                <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="inline-flex items-center gap-1.5">
-                      <Tractor className="h-3.5 w-3.5" aria-hidden="true" />
-                      {orden.maquinista?.nombre || 'Sin datos'}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>Trabajó</TooltipContent>
-                </Tooltip>
+                <IconLabelBadge
+                  iconName="Tractor"
+                  value={orden.maquinista?.nombre || 'Sin datos'}
+                  tooltip="Trabajó"
+                  variant="outline"
+                />
               </div>
             <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
             <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>

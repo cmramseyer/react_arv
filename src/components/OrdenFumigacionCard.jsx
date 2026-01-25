@@ -1,8 +1,7 @@
 import React from 'react'
-import { Tractor } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
+import IconLabelBadge from '@/components/IconLabelBadge'
 import {
   Accordion,
   AccordionContent,
@@ -157,15 +156,12 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
             <span>Terminado: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
           ) : null}
           {isTerminada ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="inline-flex items-center gap-1.5">
-                  <Tractor className="h-3.5 w-3.5" aria-hidden="true" />
-                  {orden.maquinista?.nombre || 'Sin datos'}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>Trabajó</TooltipContent>
-            </Tooltip>
+            <IconLabelBadge
+              iconName="Tractor"
+              value={orden.maquinista?.nombre || 'Sin datos'}
+              tooltip="Trabajó"
+              variant="outline"
+            />
           ) : null}
         </div>
 
