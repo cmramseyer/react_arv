@@ -1,4 +1,5 @@
 import React from 'react'
+import { FlaskConical } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import IconLabelBadge from '@/components/IconLabelBadge'
@@ -127,12 +128,18 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
                     <Accordion type="single" collapsible className="w-full">
                       <AccordionItem value={dosisValue} className="rounded-md border border-border">
                         <AccordionTrigger className="group rounded-md bg-muted/40 px-3 py-2 text-sm hover:bg-muted/60">
-                          <span className="group-data-[state=open]:hidden">Ver dosis</span>
-                          <span className="hidden group-data-[state=open]:inline">Ocultar dosis</span>
+                          <span className="inline-flex items-center gap-2 group-data-[state=open]:hidden">
+                            <FlaskConical className="h-4 w-4" aria-hidden="true" />
+                            Ver dosis
+                          </span>
+                          <span className="hidden items-center gap-2 group-data-[state=open]:inline-flex">
+                            <FlaskConical className="h-4 w-4" aria-hidden="true" />
+                            Ocultar dosis
+                          </span>
                         </AccordionTrigger>
                         <AccordionContent>
                           {dosisList.length > 0 ? (
-                            <ul className="space-y-1 text-sm text-muted-foreground">
+                            <ul className="space-y-1 pl-3 text-sm text-muted-foreground">
                               {dosisList.map((dosis, dosisIndex) => {
                                 const cantidadLabel = formatCantidad(dosis.cantidad)
                                 const unidadLabel = dosis.unidad_medida
