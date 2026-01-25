@@ -176,10 +176,39 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
         {facturasOrden.length > 0 ? (
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="text-sm font-medium text-foreground">Facturas</div>
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {facturasOrden.map((factura, facturaIndex) => (
                 <li key={`${orden.id}-factura-${facturaIndex}`}>
-                  {factura.nro_factura || 'Sin nro'} / {factura.nro_orden_cliente || 'Sin orden'} / {formatDate(factura.fecha_factura)}
+                  <div className="flex flex-wrap gap-2">
+                    <IconLabelBadge
+                      iconName="ReceiptText"
+                      value={factura.nro_factura || 'Sin datos'}
+                      tooltip="Nro. de factura"
+                      variant="outline"
+                      className="border-transparent bg-violet-200 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="Calendar"
+                      value={`Facturado: ${formatDate(factura.fecha_factura)}`}
+                      tooltip="Fecha de facturación"
+                      variant="outline"
+                      className="border-transparent bg-gray-300 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="CalendarCheck"
+                      value={`Cobrado: ${formatDate(factura.fecha_pago)}`}
+                      tooltip="Fecha de cobro"
+                      variant="outline"
+                      className="border-transparent bg-lime-500 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="File"
+                      value={factura.nro_orden_cliente || 'Sin datos'}
+                      tooltip="Nro. de orden del cliente"
+                      variant="outline"
+                      className="border-transparent bg-indigo-300 text-slate-900"
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
