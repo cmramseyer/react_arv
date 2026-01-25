@@ -38,6 +38,12 @@ const formatDate = (value) => {
   return date.toLocaleDateString('es-AR')
 }
 
+const joinWith = (string1, string2, separator) => {
+  const left = string1 ? String(string1) : 'Sin datos'
+  const right = string2 ? String(string2) : 'Sin datos'
+  return `${left} ${separator} ${right}`
+}
+
 export default function OrdenFumigacionCard({ orden, onVerOrden }) {
   const estadoOrden = (orden.estado_orden || '').toLowerCase()
   const estadoLabel = estadoOrden
@@ -161,13 +167,14 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
           <Badge variant="outline">Total Hectareas: {hectareasLabel}</Badge>
           {isTerminada ? (
-            <span>Terminado: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
-          ) : null}
-          {isTerminada ? (
             <IconLabelBadge
               iconName="Tractor"
-              value={orden.maquinista?.nombre || 'Sin datos'}
-              tooltip="Trabajó"
+              value={joinWith(
+                orden.maquinista?.nombre,
+                orden.fecha_trabajo_ddmmyyyy,
+                '-',
+              )}
+              tooltip="Maquinista y fecha de trabajo"
               variant="outline"
             />
           ) : null}
