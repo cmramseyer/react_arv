@@ -129,6 +129,12 @@ export default function OrdenFumigacionShow() {
     return date.toLocaleDateString('es-AR')
   }
 
+  const joinWith = (string1, string2, separator) => {
+    const left = string1 ? String(string1) : 'Sin datos'
+    const right = string2 ? String(string2) : 'Sin datos'
+    return `${left} ${separator} ${right}`
+  }
+
   const formatCantidad = (value) => {
     if (value === null || value === undefined || value === '') return 'Sin datos'
     const numericValue = Number(value)
@@ -279,13 +285,16 @@ export default function OrdenFumigacionShow() {
         {isTerminada ? (
           <div className="space-y-2 text-sm text-muted-foreground">
              <div className="flex flex-wrap items-center gap-4">
-               <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
-                <IconLabelBadge
-                  iconName="Tractor"
-                  value={orden.maquinista?.nombre || 'Sin datos'}
-                  tooltip="Trabajó"
-                  variant="outline"
-                />
+               <IconLabelBadge
+                 iconName="Tractor"
+                 value={joinWith(
+                   orden.maquinista?.nombre,
+                   orden.fecha_trabajo_ddmmyyyy,
+                   '-',
+                 )}
+                 tooltip="Maquinista y fecha de trabajo"
+                 variant="outline"
+               />
               </div>
             <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
             <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>
@@ -293,23 +302,44 @@ export default function OrdenFumigacionShow() {
         ) : null}
 
         {facturasOrden.length > 0 ? (
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Facturacion</div>
-            <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <div className="text-sm font-medium text-foreground">Facturacion</div>
+            <ul className="space-y-2">
               {facturasOrden.map((factura, facturaIndex) => (
-                <div
-                  key={`${orden.id}-factura-${facturaIndex}`}
-                  className="rounded-md border border-border p-3 text-sm text-muted-foreground"
-                >
-                  <div className="font-medium text-foreground">
-                    Factura: {factura.nro_factura || 'Sin nro'}
+                <li key={`${orden.id}-factura-${facturaIndex}`}>
+                  <div className="flex flex-wrap gap-2">
+                    <IconLabelBadge
+                      iconName="ReceiptText"
+                      value={factura.nro_factura || 'Sin datos'}
+                      tooltip="Nro. de factura"
+                      variant="outline"
+                      className="border-transparent bg-violet-200 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="Calendar"
+                      value={`Facturado: ${formatDate(factura.fecha_factura)}`}
+                      tooltip="Fecha de facturación"
+                      variant="outline"
+                      className="border-transparent bg-gray-300 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="CalendarCheck"
+                      value={`Cobrado: ${formatDate(factura.fecha_pago)}`}
+                      tooltip="Fecha de cobro"
+                      variant="outline"
+                      className="border-transparent bg-lime-500 text-slate-900"
+                    />
+                    <IconLabelBadge
+                      iconName="File"
+                      value={factura.nro_orden_cliente || 'Sin datos'}
+                      tooltip="Nro. de orden del cliente"
+                      variant="outline"
+                      className="border-transparent bg-indigo-300 text-slate-900"
+                    />
                   </div>
-                  <div>Orden cliente: {factura.nro_orden_cliente || 'Sin datos'}</div>
-                  <div>Fecha factura: {formatDate(factura.fecha_factura)}</div>
-                  <div>Fecha pago: {formatDate(factura.fecha_pago)}</div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         ) : null}
       </CardContent>
