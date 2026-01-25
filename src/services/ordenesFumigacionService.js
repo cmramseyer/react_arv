@@ -9,9 +9,21 @@ const getAuthHeaders = () => {
   }
 }
 
-export const getOrdenesFumigacion = async (estado = null) => {
+export const getOrdenesFumigacion = async (filters = {}) => {
   const url = new URL(API_URL)
-  url.searchParams.append('estado', estado)
+
+  if (typeof filters === 'string' || filters === null || filters === undefined) {
+    if (filters) {
+      url.searchParams.append('estado', filters)
+    }
+  } else {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        url.searchParams.append(key, value)
+      }
+    })
+  }
+
   const res = await fetchWithAuth(url.toString(), {
     headers: getAuthHeaders(),
   })

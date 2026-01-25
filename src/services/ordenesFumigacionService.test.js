@@ -20,7 +20,7 @@ describe('ordenesFumigacionService', () => {
   it('getOrdenesFumigacion realiza fetch a la URL correcta con headers', async () => {
     fetch.mockResolvedValueOnce({ json: async () => ([]) })
 
-    await getOrdenesFumigacion('pendiente')
+    await getOrdenesFumigacion({ estado: 'pendiente' })
 
     expect(fetch).toHaveBeenCalledWith('http://localhost:3000/ordenes_fumigacion?estado=pendiente', expect.objectContaining({
       headers: expect.objectContaining({

@@ -18,6 +18,7 @@ import OrdenesFumigacionNueva from './pages/OrdenesFumigacionNueva'
 import OrdenFumigacionShow from './pages/OrdenFumigacionShow'
 import OrdenFumigacionEditar from './pages/OrdenFumigacionEditar'
 import OrdenFumigacionTerminar from './pages/OrdenFumigacionTerminar'
+import BuscarOrden from './pages/BuscarOrden'
 import Facturacion from './pages/Facturacion'
 import Estadistica from './pages/Estadistica'
 import EstanciaNueva from './pages/EstanciaNueva'
@@ -55,6 +56,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/productos/:id/editar" element={<ProductoEditar />} />
           <Route path="/estadisticas" element={<Estadistica />} />
           <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
+          <Route path="/buscar_ordenes" element={<BuscarOrden />} />
           <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
           <Route path="/ordenes_fumigacion/pendiente_factura" element={<Facturacion />} />
           <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />

@@ -44,6 +44,10 @@ const data = {
           url: "/ordenes_fumigacion",
         },
         {
+          title: "Buscar órdenes",
+          url: "/buscar_ordenes",
+        },
+        {
           title: "Facturación",
           url: "/ordenes_fumigacion/pendiente_factura",
         },
