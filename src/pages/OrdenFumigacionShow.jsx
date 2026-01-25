@@ -119,6 +119,7 @@ export default function OrdenFumigacionShow() {
   const lotesOrden = Array.isArray(orden?.lotes) && orden.lotes.length > 0
     ? orden.lotes
     : []
+  const facturasOrden = Array.isArray(orden?.facturas) ? orden.facturas : []
 
   const formatDate = (value) => {
     if (!value) return 'Sin fecha'
@@ -266,12 +267,33 @@ export default function OrdenFumigacionShow() {
           Comentarios: {orden.comentarios ? orden.comentarios : 'Sin comentarios'}
         </div>
 
+        {facturasOrden.length > 0 ? (
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Facturacion</div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {facturasOrden.map((factura, facturaIndex) => (
+                <div
+                  key={`${orden.id}-factura-${facturaIndex}`}
+                  className="rounded-md border border-border p-3 text-sm text-muted-foreground"
+                >
+                  <div className="font-medium text-foreground">
+                    Factura: {factura.nro_factura || 'Sin nro'}
+                  </div>
+                  <div>Orden cliente: {factura.nro_orden_cliente || 'Sin datos'}</div>
+                  <div>Fecha factura: {formatDate(factura.fecha_factura)}</div>
+                  <div>Fecha pago: {formatDate(factura.fecha_pago)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {isTerminada ? (
           <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex flex-wrap items-center gap-4">
-              <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
-               <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
-            </div>
+             <div className="flex flex-wrap items-center gap-4">
+               <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
+                <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
+             </div>
             <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
             <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>
           </div>

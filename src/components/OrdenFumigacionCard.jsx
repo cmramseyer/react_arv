@@ -30,6 +30,13 @@ const getEstadoVariant = (estado) => {
   return 'secondary'
 }
 
+const formatDate = (value) => {
+  if (!value) return 'Sin fecha'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Sin fecha'
+  return date.toLocaleDateString('es-AR')
+}
+
 export default function OrdenFumigacionCard({ orden, onVerOrden }) {
   const estadoOrden = (orden.estado_orden || '').toLowerCase()
   const estadoLabel = estadoOrden
@@ -42,6 +49,7 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
   const hectareasLabel = formatHectareas(totalHectareas)
   const isTerminada = estadoOrden === 'terminada'
   const createdAtLabel = orden.created_at_locale || 'Sin fecha'
+  const facturasOrden = Array.isArray(orden.facturas) ? orden.facturas : []
 
   return (
     <Card className="w-full">
@@ -150,6 +158,19 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
             <span>Trabajó: {orden.maquinista?.nombre || 'Sin datos'}</span>
           ) : null}
         </div>
+
+        {facturasOrden.length > 0 ? (
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <div className="text-sm font-medium text-foreground">Facturas</div>
+            <ul className="space-y-1">
+              {facturasOrden.map((factura, facturaIndex) => (
+                <li key={`${orden.id}-factura-${facturaIndex}`}>
+                  {factura.nro_factura || 'Sin nro'} / {factura.nro_orden_cliente || 'Sin orden'} / {formatDate(factura.fecha_factura)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </CardContent>
 
       <CardFooter className="flex justify-end">
