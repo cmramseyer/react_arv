@@ -70,9 +70,13 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
               {orden.nombre_estancia || 'Sin estancia'}
             </span>
             {orden.cultivo && (
-              <span className="text-sm font-medium">
-                Cultivo: {orden.cultivo.nombre}
-              </span>
+              <IconLabelBadge
+                iconName="Sprout"
+                value={orden.cultivo.nombre}
+                tooltip="Cultivo"
+                variant="outline"
+                className="border-transparent bg-green-800 text-white"
+              />
             )}
             <span className="text-sm text-muted-foreground">
               Creado: {createdAtLabel} por: {orden.creator || 'Sin datos'}
@@ -89,9 +93,13 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
             {orden.nombre_estancia || 'Sin estancia'}
           </div>
           {orden.cultivo && (
-            <div className="text-sm text-muted-foreground">
-              Cultivo: {orden.cultivo.nombre}
-            </div>
+            <IconLabelBadge
+              iconName="Sprout"
+              value={orden.cultivo.nombre}
+              tooltip="Cultivo"
+              variant="outline"
+              className="border-transparent bg-green-800 text-white"
+            />
           )}
         </div>
 

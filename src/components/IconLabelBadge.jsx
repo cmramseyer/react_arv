@@ -1,10 +1,11 @@
 import React from 'react'
-import { Tractor } from 'lucide-react'
+import { Sprout, Tractor } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 const iconMap = {
+  Sprout,
   Tractor,
 }
 
