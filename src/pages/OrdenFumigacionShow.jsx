@@ -276,6 +276,22 @@ export default function OrdenFumigacionShow() {
           Comentarios: {orden.comentarios ? orden.comentarios : 'Sin comentarios'}
         </div>
 
+        {isTerminada ? (
+          <div className="space-y-2 text-sm text-muted-foreground">
+             <div className="flex flex-wrap items-center gap-4">
+               <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
+                <IconLabelBadge
+                  iconName="Tractor"
+                  value={orden.maquinista?.nombre || 'Sin datos'}
+                  tooltip="Trabajó"
+                  variant="outline"
+                />
+              </div>
+            <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
+            <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>
+          </div>
+        ) : null}
+
         {facturasOrden.length > 0 ? (
           <div className="space-y-2">
             <div className="text-sm font-medium">Facturacion</div>
@@ -294,22 +310,6 @@ export default function OrdenFumigacionShow() {
                 </div>
               ))}
             </div>
-          </div>
-        ) : null}
-
-        {isTerminada ? (
-          <div className="space-y-2 text-sm text-muted-foreground">
-             <div className="flex flex-wrap items-center gap-4">
-               <span>Fecha de trabajo: {orden.fecha_trabajo_ddmmyyyy || 'Sin fecha'}</span>
-                <IconLabelBadge
-                  iconName="Tractor"
-                  value={orden.maquinista?.nombre || 'Sin datos'}
-                  tooltip="Trabajó"
-                  variant="outline"
-                />
-              </div>
-            <div>Comentario de trabajo: {orden.info_trabajo || 'Sin datos'}</div>
-            <div>Datos del clima: {orden.datos_clima || 'Sin datos'}</div>
           </div>
         ) : null}
       </CardContent>
