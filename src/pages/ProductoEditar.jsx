@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getProducto, updateProducto } from '../services/productosService'
 import ProductoForm from '../components/ProductoForm'
+import { Button } from '@/components/ui/button'
 
 export default function ProductoEditar() {
   const { id } = useParams()
@@ -44,11 +45,12 @@ export default function ProductoEditar() {
         defaultValues={defaultValues}
         onSubmit={handleUpdate}
         submitLabel="Actualizar"
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/productos')}>
+            Volver
+          </Button>
+        )}
       />
-
-      <button className="underline" onClick={() => navigate('/productos')}>
-        Volver
-      </button>
     </div>
   )
 }

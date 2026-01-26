@@ -356,6 +356,9 @@ export default function OrdenFumigacionShow() {
           {labelGenerarPdf}
         </Button>
         {botonVerPdf}
+        <Button variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
+          Volver
+        </Button>
       </CardFooter>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>

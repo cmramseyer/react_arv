@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getLote } from '../services/lotesService'
 import {
   Dialog,
@@ -8,10 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import formatHectareas from '../utils/formatHectareas'
 
 export default function LoteShow() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [lote, setLote] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState(null)
@@ -64,6 +66,9 @@ export default function LoteShow() {
           )}
         </DialogContent>
       </Dialog>
+      <Button variant="secondary" onClick={() => navigate('/lotes')}>
+        Volver
+      </Button>
     </div>
   )
 }

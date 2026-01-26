@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function EstanciaForm({ onSubmit, estancia }) {
+export default function EstanciaForm({ onSubmit, estancia, actions }) {
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -91,7 +91,10 @@ export default function EstanciaForm({ onSubmit, estancia }) {
           )}
         />
 
-        <Button type="submit">{estancia ? 'Actualizar' : 'Crear'}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">{estancia ? 'Actualizar' : 'Crear'}</Button>
+          {actions}
+        </div>
       </form>
     </Form>
   )
@@ -100,4 +103,5 @@ export default function EstanciaForm({ onSubmit, estancia }) {
 EstanciaForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   estancia: PropTypes.object,
+  actions: PropTypes.node,
 }

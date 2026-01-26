@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { createLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
 import LoteForm from '../components/LoteForm'
+import { Button } from '@/components/ui/button'
 
 export default function LoteNuevo() {
   const [estancias, setEstancias] = useState([])
@@ -29,11 +30,12 @@ export default function LoteNuevo() {
         estancias={estancias}
         onSubmit={handleCreate}
         submitLabel="Crear"
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
+            Volver
+          </Button>
+        )}
       />
-
-      <button className="underline" onClick={() => navigate('/lotes')}>
-        Volver
-      </button>
     </div>
   )
 }

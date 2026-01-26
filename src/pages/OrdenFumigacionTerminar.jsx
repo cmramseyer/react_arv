@@ -7,6 +7,7 @@ import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '../services/productosService'
 import { getMaquinistas } from '../services/maquinistasService'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Accordion,
   AccordionContent,
@@ -187,9 +188,12 @@ export default function OrdenFumigacionTerminar() {
            />
          </div>
 
-        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-          Confirmar Terminar
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">Confirmar Terminar</Button>
+          <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
+            Volver
+          </Button>
+        </div>
       </form>
     </div>
   )

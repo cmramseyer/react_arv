@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function MaquinistaForm({ onSubmit, maquinista }) {
+export default function MaquinistaForm({ onSubmit, maquinista, actions }) {
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -37,7 +37,10 @@ export default function MaquinistaForm({ onSubmit, maquinista }) {
           )}
         />
 
-        <Button type="submit">{maquinista ? 'Actualizar' : 'Crear'}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">{maquinista ? 'Actualizar' : 'Crear'}</Button>
+          {actions}
+        </div>
       </form>
     </Form>
   )
@@ -46,4 +49,5 @@ export default function MaquinistaForm({ onSubmit, maquinista }) {
 MaquinistaForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   maquinista: PropTypes.object,
+  actions: PropTypes.node,
 }

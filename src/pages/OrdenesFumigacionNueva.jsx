@@ -272,8 +272,11 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
             Agregar otro lote
           </Button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button type="submit">Crear orden</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
+              Volver
+            </Button>
             <span className="text-sm text-muted-foreground">
               Total ha: {totalHectareas === 0 ? '0' : formatHectareas(totalHectareas)}
             </span>

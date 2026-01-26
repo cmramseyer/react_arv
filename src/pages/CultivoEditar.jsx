@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import CultivoForm from '../components/CultivoForm'
+import { Button } from '@/components/ui/button'
 import { getCultivo, updateCultivo } from '../services/cultivosService'
 
 export default function CultivoEditar() {
@@ -33,11 +34,15 @@ export default function CultivoEditar() {
     <div>
       <h2>Editar Cultivo</h2>
 
-      <CultivoForm onSubmit={handleSubmit} cultivo={cultivo} />
-
-      <button onClick={() => navigate('/cultivos')}>
-        Volver
-      </button>
+      <CultivoForm
+        onSubmit={handleSubmit}
+        cultivo={cultivo}
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/cultivos')}>
+            Volver
+          </Button>
+        )}
+      />
     </div>
   )
 }

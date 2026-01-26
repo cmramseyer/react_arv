@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import SelectField from './SelectField'
 
-export default function LoteForm({ estancias, onSubmit, defaultValues, submitLabel, showAdjuntos = true }) {
+export default function LoteForm({ estancias, onSubmit, defaultValues, submitLabel, showAdjuntos = true, actions }) {
   const form = useForm({
     defaultValues: defaultValues || {}
   })
@@ -168,7 +168,10 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
           />
         )}
 
-        <Button type="submit">{submitLabel || 'Guardar'}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">{submitLabel || 'Guardar'}</Button>
+          {actions}
+        </div>
       </form>
     </Form>
   )
@@ -180,4 +183,5 @@ LoteForm.propTypes = {
   defaultValues: PropTypes.object,
   submitLabel: PropTypes.string,
   showAdjuntos: PropTypes.bool,
+  actions: PropTypes.node,
 }

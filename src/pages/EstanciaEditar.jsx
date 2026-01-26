@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import EstanciaForm from '../components/EstanciaForm'
 import { getEstancia, updateEstancia } from '../services/estanciasService'
 
@@ -33,11 +34,15 @@ export default function EstanciaEditar() {
     <div>
       <h2>Editar Estancia</h2>
 
-      <EstanciaForm onSubmit={handleSubmit} estancia={estancia} />
-
-      <button onClick={() => navigate('/estancias')}>
-        Volver
-      </button>
+      <EstanciaForm
+        onSubmit={handleSubmit}
+        estancia={estancia}
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/estancias')}>
+            Volver
+          </Button>
+        )}
+      />
     </div>
   )
 }

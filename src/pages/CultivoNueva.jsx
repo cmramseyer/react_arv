@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createCultivo } from '../services/cultivosService'
+import { Button } from '@/components/ui/button'
 import CultivoForm from '../components/CultivoForm'
 
 export default function CultivoNueva() {
@@ -15,11 +16,14 @@ export default function CultivoNueva() {
     <div>
       <h2>Nuevo Cultivo</h2>
 
-      <CultivoForm onSubmit={handleSubmit} />
-
-      <button onClick={() => navigate('/cultivos')}>
-        Volver
-      </button>
+      <CultivoForm
+        onSubmit={handleSubmit}
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/cultivos')}>
+            Volver
+          </Button>
+        )}
+      />
     </div>
   )
 }

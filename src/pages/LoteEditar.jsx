@@ -101,13 +101,18 @@ export default function LoteEditar() {
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Editar Lote</h2>
 
-       <LoteForm
-         estancias={estancias}
-         defaultValues={defaultValues}
-         onSubmit={handleUpdate}
-         submitLabel="Actualizar"
-         showAdjuntos={false}
-       />
+        <LoteForm
+          estancias={estancias}
+          defaultValues={defaultValues}
+          onSubmit={handleUpdate}
+          submitLabel="Actualizar"
+          showAdjuntos={false}
+          actions={(
+            <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
+              Volver
+            </Button>
+          )}
+        />
 
       {lote && lote.adjuntos && lote.adjuntos.length > 0 && (
         <>
@@ -150,10 +155,6 @@ export default function LoteEditar() {
         disabled={uploading}
       >
         {uploading ? 'Subiendo...' : selectedFile ? 'Subir plano' : 'Agregar plano'}
-      </Button>
-
-      <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
-        Volver
       </Button>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>

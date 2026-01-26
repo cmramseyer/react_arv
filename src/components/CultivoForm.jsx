@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function CultivoForm({ onSubmit, cultivo }) {
+export default function CultivoForm({ onSubmit, cultivo, actions }) {
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -37,7 +37,10 @@ export default function CultivoForm({ onSubmit, cultivo }) {
           )}
         />
 
-        <Button type="submit">{cultivo ? 'Actualizar' : 'Crear'}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">{cultivo ? 'Actualizar' : 'Crear'}</Button>
+          {actions}
+        </div>
       </form>
     </Form>
   )
@@ -46,4 +49,5 @@ export default function CultivoForm({ onSubmit, cultivo }) {
 CultivoForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   cultivo: PropTypes.object,
+  actions: PropTypes.node,
 }

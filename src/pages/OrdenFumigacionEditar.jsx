@@ -447,8 +447,11 @@ export default function OrdenFumigacionEditar() {
              )}
            />
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button type="submit">Guardar cambios</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
+              Volver
+            </Button>
             <span className="text-sm text-muted-foreground">
               Total ha: {totalHectareas === 0 ? '0' : formatHectareas(totalHectareas)}
             </span>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import MaquinistaForm from '../components/MaquinistaForm'
+import { Button } from '@/components/ui/button'
 import { getMaquinista, updateMaquinista } from '../services/maquinistasService'
 
 export default function MaquinistaEditar() {
@@ -33,11 +34,15 @@ export default function MaquinistaEditar() {
     <div>
       <h2>Editar Maquinista</h2>
 
-      <MaquinistaForm onSubmit={handleSubmit} maquinista={maquinista} />
-
-      <button onClick={() => navigate('/maquinistas')}>
-        Volver
-      </button>
+      <MaquinistaForm
+        onSubmit={handleSubmit}
+        maquinista={maquinista}
+        actions={(
+          <Button type="button" variant="secondary" onClick={() => navigate('/maquinistas')}>
+            Volver
+          </Button>
+        )}
+      />
     </div>
   )
 }

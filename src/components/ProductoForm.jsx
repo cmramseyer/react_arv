@@ -21,7 +21,7 @@ const unidadMedidaOptions = [
   { value: 'ml', label: 'Mililitros' }
 ]
 
-export default function ProductoForm({ onSubmit, defaultValues, submitLabel }) {
+export default function ProductoForm({ onSubmit, defaultValues, submitLabel, actions }) {
   const form = useForm({
     defaultValues: defaultValues || {}
   })
@@ -91,7 +91,10 @@ export default function ProductoForm({ onSubmit, defaultValues, submitLabel }) {
           )}
         />
 
-        <Button type="submit">{submitLabel || 'Guardar'}</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit">{submitLabel || 'Guardar'}</Button>
+          {actions}
+        </div>
       </form>
     </Form>
   )
@@ -101,4 +104,5 @@ ProductoForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,     // (data) => Promise<void>
   defaultValues: PropTypes.object,
   submitLabel: PropTypes.string,
+  actions: PropTypes.node,
 }
