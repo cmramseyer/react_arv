@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { getOrdenesPendientesFacturacion, facturarOrdenes } from '../services/ordenesFumigacionService'
 import { getFacturasPago, marcarFacturaPagada } from '../services/facturasService'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -10,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import {
   Card,
@@ -18,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import formatHectareas from '../utils/formatHectareas'
 
 const groupHasOrdenes = (grupo) => Array.isArray(grupo?.data) && grupo.data.length > 0
@@ -28,6 +34,9 @@ const normalizarRespuesta = (data) => {
   if (Array.isArray(data?.data?.data)) return data.data.data
   return []
 }
+
+const formatApiDate = (date) => format(date, 'yyyy-MM-dd')
+const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')
 
 export default function Facturacion() {
   const [ordenesPorEstancia, setOrdenesPorEstancia] = useState([])
@@ -41,6 +50,9 @@ export default function Facturacion() {
   const [pagandoIds, setPagandoIds] = useState(() => new Set())
   const [dialogoEstanciaAbierto, setDialogoEstanciaAbierto] = useState(false)
   const [estanciaSeleccionada, setEstanciaSeleccionada] = useState(null)
+  const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false)
+  const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null)
+  const [fechaPago, setFechaPago] = useState()
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -166,15 +178,16 @@ export default function Facturacion() {
     }
   }
 
-  const handleMarcarPagado = async (facturaId) => {
-    if (pagandoIds.has(facturaId)) return
+  const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
+    if (pagandoIds.has(facturaId)) return false
 
     setPagandoIds((prev) => new Set(prev).add(facturaId))
     try {
-      const response = await marcarFacturaPagada(facturaId)
-      if (!response?.ok) return
+      const response = await marcarFacturaPagada(facturaId, fechaPagoSeleccionada)
+      if (!response?.ok) return false
 
       setOrdenesPorEstancia((prev) => prev.filter((grupo) => grupo.id !== facturaId))
+      return true
     } finally {
       setPagandoIds((prev) => {
         const next = new Set(prev)
@@ -184,9 +197,37 @@ export default function Facturacion() {
     }
   }
 
+  const handleAbrirDialogoPago = (facturaId) => {
+    setFacturaPagoSeleccionada(facturaId)
+    setFechaPago()
+    setDialogoPagoAbierto(true)
+  }
+
+  const handleCerrarDialogoPago = () => {
+    setDialogoPagoAbierto(false)
+    setFacturaPagoSeleccionada(null)
+    setFechaPago()
+  }
+
+  const handleConfirmarPago = async () => {
+    if (!facturaPagoSeleccionada || !fechaPago) return
+
+    const responseOk = await handleMarcarPagado(
+      facturaPagoSeleccionada,
+      formatApiDate(fechaPago)
+    )
+
+    if (responseOk) {
+      handleCerrarDialogoPago()
+    }
+  }
+
   const emptyMessage = modoPago
     ? 'No hay facturas pendientes de pago.'
     : 'No hay órdenes pendientes de facturación.'
+
+  const pagoEnProceso =
+    facturaPagoSeleccionada !== null && pagandoIds.has(facturaPagoSeleccionada)
 
   const parseImporte = (importe) => {
     if (importe === null || importe === undefined) return null
@@ -319,7 +360,7 @@ export default function Facturacion() {
                   </div>
                   {modoPago && (
                     <Button
-                      onClick={() => handleMarcarPagado(grupo.id)}
+                      onClick={() => handleAbrirDialogoPago(grupo.id)}
                       disabled={pagandoIds.has(grupo.id)}
                     >
                       {pagandoIds.has(grupo.id) ? 'Marcando...' : 'Marcar como pagado'}
@@ -439,6 +480,47 @@ export default function Facturacion() {
           })}
         </>
       )}
+      <Dialog open={dialogoPagoAbierto}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar pago</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <span className="text-sm font-medium">Fecha de pago</span>
+            <Popover modal>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-full justify-start text-left font-normal',
+                    !fechaPago && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {fechaPago ? formatDisplayDate(fechaPago) : 'Seleccionar fecha'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={fechaPago}
+                  onSelect={setFechaPago}
+                  locale={es}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={handleCerrarDialogoPago}>
+              Cerrar
+            </Button>
+            <Button onClick={handleConfirmarPago} disabled={!fechaPago || pagoEnProceso}>
+              {pagoEnProceso ? 'Marcando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={dialogoEstanciaAbierto} onOpenChange={setDialogoEstanciaAbierto}>
         <DialogContent className="max-w-md">
           <DialogHeader>
