@@ -124,9 +124,12 @@ export default function OrdenFumigacionShow() {
 
   const formatDate = (value) => {
     if (!value) return 'Sin fecha'
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) return 'Sin fecha'
-    return date.toLocaleDateString('es-AR')
+    const dateString = String(value)
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString
+    const isoMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!isoMatch) return 'Sin fecha'
+    const [, year, month, day] = isoMatch
+    return `${day}/${month}/${year}`
   }
 
   const joinWith = (string1, string2, separator) => {
