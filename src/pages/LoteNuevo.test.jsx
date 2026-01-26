@@ -133,5 +133,29 @@ describe('Lotes Form', () => {
     expect(await screen.findByText('Estancia Uno')).toBeInTheDocument()
     expect(await screen.findByText('Estancia Dos')).toBeInTheDocument()
   })
+
+  it('returns to Lotes without extra requests when clicking Volver', async () => {
+    render(
+      <MemoryRouter initialEntries={['/lotes', '/lotes/nuevo']} initialIndex={1}>
+        <Routes>
+          <Route path="/lotes" element={<div>Lotes Page</div>} />
+          <Route path="/lotes/nuevo" element={<LoteNuevo />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(getEstancias).toHaveBeenCalled()
+    })
+
+    const getEstanciasCalls = getEstancias.mock.calls.length
+
+    await user.click(screen.getByRole('button', { name: /volver/i }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
+    expect(createLote).not.toHaveBeenCalled()
+    expect(getEstancias).toHaveBeenCalledTimes(getEstanciasCalls)
+  })
 })
   

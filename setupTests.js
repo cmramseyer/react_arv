@@ -22,6 +22,14 @@ Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
   value: vi.fn(),
 })
 
+if (typeof window.ResizeObserver === 'undefined') {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 globalThis.mockImportMetaEnv = (overrides = {}) => {
   const viteUrl = overrides.VITE_API_URL || import.meta.env?.VITE_API_URL || 'localhost:3000'
   if (!import.meta.env) {

@@ -123,6 +123,32 @@ describe('LoteEditar', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
   })
 
+  it('returns to Lotes without extra requests when clicking Volver', async () => {
+    prepareMocks()
+
+    render(
+      <MemoryRouter initialEntries={['/lotes', '/lotes/1/editar']} initialIndex={1}>
+        <Routes>
+          <Route path="/lotes" element={<div>Lotes Page</div>} />
+          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    await screen.findByDisplayValue('Lote Uno')
+
+    const getLoteCalls = getLote.mock.calls.length
+    const getEstanciasCalls = getEstancias.mock.calls.length
+
+    await user.click(screen.getByRole('button', { name: /volver/i }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
+    expect(updateLote).not.toHaveBeenCalled()
+    expect(getLote).toHaveBeenCalledTimes(getLoteCalls)
+    expect(getEstancias).toHaveBeenCalledTimes(getEstanciasCalls)
+  })
+
   it('shows not found message when lote data is missing', async () => {
     getLote.mockResolvedValueOnce(null)
     getEstancias.mockResolvedValueOnce(estanciasFixture)

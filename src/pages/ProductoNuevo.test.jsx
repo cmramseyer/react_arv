@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 // Mockear los servicios
 vi.mock('../services/productosService', () => ({
@@ -14,6 +14,11 @@ import ProductoNuevo from './ProductoNuevo'
 
 function ProductosMock() {
   return <h1>Productos</h1>
+}
+
+function LocationDisplay() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname}</div>
 }
 
 let user
@@ -72,6 +77,23 @@ describe('Nuevo Producto', () => {
     expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
     expect(await screen.findByText('El tipo de producto es obligatorio')).toBeInTheDocument()
     expect(await screen.findByText('La unidad de medida es obligatoria')).toBeInTheDocument()
+  })
+
+  it('returns to Productos without extra requests when clicking Volver', async () => {
+    render(
+      <MemoryRouter initialEntries={['/productos', '/productos/nuevo']} initialIndex={1}>
+        <Routes>
+          <Route path="/productos" element={<ProductosMock />} />
+          <Route path="/productos/nuevo" element={<ProductoNuevo />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    await user.click(screen.getByRole('button', { name: /volver/i }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos')
+    expect(createProducto).not.toHaveBeenCalled()
   })
 
 })
