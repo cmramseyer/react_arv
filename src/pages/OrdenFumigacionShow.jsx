@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   getOrdenFumigacion,
@@ -47,6 +47,9 @@ const DEFAULT_TEXT_FONT_FAMILY = 'Helvetica, Arial, sans-serif'
 const DEFAULT_TEXT_FONT_SIZE = 1
 const DEFAULT_TEXT_FONT_STEP = 0.1
 const DEFAULT_TEXT_FONT_UNITS = 'rem'
+const MARKER_ZOOM_MIN = 0.25
+const MARKER_ZOOM_MAX = 4
+const MARKER_ZOOM_STEP = 0.2
 const TEXT_FONT_OPTIONS = [
   { label: 'Predeterminado', value: '' },
   { label: 'Georgia', value: 'Georgia, serif' },
@@ -140,6 +143,15 @@ const dataUrlToFile = (dataUrl, filename) => {
   return new File([bytes], filename, { type: mimeType })
 }
 
+const clampMarkerZoom = (zoomLevel) =>
+  Math.min(MARKER_ZOOM_MAX, Math.max(MARKER_ZOOM_MIN, zoomLevel))
+
+const getTouchDistance = (firstPoint, secondPoint) => {
+  const deltaX = firstPoint.x - secondPoint.x
+  const deltaY = firstPoint.y - secondPoint.y
+  return Math.hypot(deltaX, deltaY)
+}
+
 
 export default function OrdenFumigacionShow() {
   const { id } = useParams()
@@ -163,11 +175,25 @@ export default function OrdenFumigacionShow() {
   const [markerFontSize, setMarkerFontSize] = useState(DEFAULT_TEXT_FONT_SIZE)
   const [markerReady, setMarkerReady] = useState(false)
   const [markerError, setMarkerError] = useState('')
+  const [markerZoomLevel, setMarkerZoomLevel] = useState(1)
+  const markerZoomLevelRef = useRef(1)
   const editDialogRootRef = useRef(null)
   const [markerAreaContainer, setMarkerAreaContainer] = useState(null)
   const markerAreaRef = useRef(null)
   const markerTargetImageRef = useRef(null)
   const markerObjectUrlRef = useRef(null)
+  const pinchPointersRef = useRef(new Map())
+  const pinchStartDistanceRef = useRef(null)
+  const pinchStartZoomRef = useRef(1)
+
+  const applyMarkerZoom = useCallback((nextZoomLevel) => {
+    const markerArea = markerAreaRef.current
+    if (!markerArea) return
+    const normalizedZoomLevel = clampMarkerZoom(nextZoomLevel)
+    markerArea.zoomLevel = normalizedZoomLevel
+    markerZoomLevelRef.current = normalizedZoomLevel
+    setMarkerZoomLevel(normalizedZoomLevel)
+  }, [])
 
   const updateAdjuntosState = (nextAdjuntos, { preserveSelection = false } = {}) => {
     setAdjuntos(nextAdjuntos)
@@ -283,7 +309,33 @@ export default function OrdenFumigacionShow() {
       setAdjuntoEditando(null)
       setMarkerReady(false)
       setMarkerError('')
+      setMarkerZoomLevel(1)
+      markerZoomLevelRef.current = 1
+      pinchPointersRef.current.clear()
+      pinchStartDistanceRef.current = null
+      pinchStartZoomRef.current = 1
     }
+  }
+
+  const handleZoomIn = () => {
+    const markerArea = markerAreaRef.current
+    if (!markerArea) return
+    applyMarkerZoom(markerArea.zoomLevel + MARKER_ZOOM_STEP)
+  }
+
+  const handleZoomOut = () => {
+    const markerArea = markerAreaRef.current
+    if (!markerArea) return
+    applyMarkerZoom(markerArea.zoomLevel - MARKER_ZOOM_STEP)
+  }
+
+  const handleZoomReset = () => {
+    const markerArea = markerAreaRef.current
+    if (!markerArea) return
+    markerArea.autoZoom()
+    const normalizedZoomLevel = clampMarkerZoom(markerArea.zoomLevel)
+    markerZoomLevelRef.current = normalizedZoomLevel
+    setMarkerZoomLevel(normalizedZoomLevel)
   }
 
   const isTextMarkerEditor = (markerEditor) =>
@@ -468,6 +520,8 @@ export default function OrdenFumigacionShow() {
         markerObjectUrlRef.current = null
       }
       setMarkerReady(false)
+      setMarkerZoomLevel(1)
+      markerZoomLevelRef.current = 1
       return undefined
     }
 
@@ -480,7 +534,7 @@ export default function OrdenFumigacionShow() {
 
     const markerArea = new MarkerArea()
     markerArea.style.width = '100%'
-    markerArea.style.height = '70vh'
+    markerArea.style.height = '100%'
     markerArea.autoZoomIn = true
     markerArea.autoZoomOut = true
 
@@ -518,8 +572,18 @@ export default function OrdenFumigacionShow() {
           markerArea.targetWidth = targetImage.naturalWidth
           markerArea.targetHeight = targetImage.naturalHeight
           markerArea.targetImage = targetImage
+          const markerCanvasContainer = markerArea.shadowRoot?.querySelector('.canvas-container')
+          if (markerCanvasContainer instanceof HTMLElement) {
+            markerCanvasContainer.style.touchAction = 'none'
+          }
           markerTargetImageRef.current = targetImage
           setMarkerReady(true)
+          requestAnimationFrame(() => {
+            if (!isMounted) return
+            const normalizedZoomLevel = clampMarkerZoom(markerArea.zoomLevel)
+            markerZoomLevelRef.current = normalizedZoomLevel
+            setMarkerZoomLevel(normalizedZoomLevel)
+          })
         }
         targetImage.onerror = () => {
           if (!isMounted) return
@@ -550,8 +614,71 @@ export default function OrdenFumigacionShow() {
         markerObjectUrlRef.current = null
       }
       setMarkerReady(false)
+      setMarkerZoomLevel(1)
+      markerZoomLevelRef.current = 1
     }
   }, [isEditDialogOpen, adjuntoEditando?.id, markerAreaContainer])
+
+  useEffect(() => {
+    if (!isEditDialogOpen || !markerAreaContainer) return undefined
+
+    const activePointers = pinchPointersRef.current
+
+    const handlePointerDown = (event) => {
+      if (event.pointerType !== 'touch') return
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+
+      if (activePointers.size === 2) {
+        const [firstPoint, secondPoint] = Array.from(activePointers.values())
+        pinchStartDistanceRef.current = getTouchDistance(firstPoint, secondPoint)
+        pinchStartZoomRef.current = markerAreaRef.current?.zoomLevel ?? markerZoomLevelRef.current
+      }
+    }
+
+    const handlePointerMove = (event) => {
+      if (event.pointerType !== 'touch' || !activePointers.has(event.pointerId)) return
+
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+
+      if (activePointers.size !== 2 || !pinchStartDistanceRef.current) return
+
+      event.preventDefault()
+
+      const [firstPoint, secondPoint] = Array.from(activePointers.values())
+      const currentDistance = getTouchDistance(firstPoint, secondPoint)
+      if (currentDistance <= 0) return
+
+      const distanceRatio = currentDistance / pinchStartDistanceRef.current
+      applyMarkerZoom((pinchStartZoomRef.current || 1) * distanceRatio)
+    }
+
+    const handlePointerEnd = (event) => {
+      if (event.pointerType !== 'touch') return
+
+      activePointers.delete(event.pointerId)
+      if (activePointers.size < 2) {
+        pinchStartDistanceRef.current = null
+        pinchStartZoomRef.current = markerAreaRef.current?.zoomLevel ?? markerZoomLevelRef.current
+      }
+    }
+
+    markerAreaContainer.addEventListener('pointerdown', handlePointerDown)
+    markerAreaContainer.addEventListener('pointermove', handlePointerMove)
+    markerAreaContainer.addEventListener('pointerup', handlePointerEnd)
+    markerAreaContainer.addEventListener('pointercancel', handlePointerEnd)
+    markerAreaContainer.addEventListener('pointerleave', handlePointerEnd)
+
+    return () => {
+      markerAreaContainer.removeEventListener('pointerdown', handlePointerDown)
+      markerAreaContainer.removeEventListener('pointermove', handlePointerMove)
+      markerAreaContainer.removeEventListener('pointerup', handlePointerEnd)
+      markerAreaContainer.removeEventListener('pointercancel', handlePointerEnd)
+      markerAreaContainer.removeEventListener('pointerleave', handlePointerEnd)
+      activePointers.clear()
+      pinchStartDistanceRef.current = null
+      pinchStartZoomRef.current = 1
+    }
+  }, [applyMarkerZoom, isEditDialogOpen, markerAreaContainer])
 
   const handleImprimir = async (attachmentIds) => {
     const data = await imprimirOrdenFumigacion(id, attachmentIds)
@@ -884,60 +1011,67 @@ export default function OrdenFumigacionShow() {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>
-        <DialogContent className="max-w-6xl">
+        <DialogContent className="!left-0 !top-0 !flex !h-[100dvh] !w-screen !max-w-none !translate-x-0 !translate-y-0 !flex-col !gap-3 !overflow-hidden rounded-none p-3 sm:!left-[50%] sm:!top-[50%] sm:!h-[92dvh] sm:!w-[95vw] sm:!max-w-6xl sm:!translate-x-[-50%] sm:!translate-y-[-50%] sm:rounded-lg sm:p-6">
           <DialogHeader>
             <DialogTitle>Editar adjunto</DialogTitle>
             <DialogDescription>
               Marca la imagen y presiona Guardar para aplicar los cambios.
             </DialogDescription>
           </DialogHeader>
-          <div ref={editDialogRootRef} className="relative space-y-3">
-            <div className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/20 p-3">
+          <div ref={editDialogRootRef} className="relative flex min-h-0 flex-1 flex-col gap-3">
+            <div className="flex max-h-[22dvh] flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden rounded-md border bg-muted/20 p-2 sm:max-h-none sm:flex-wrap sm:gap-2 sm:overflow-y-auto sm:p-3">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon"
+                aria-label="Resaltador"
+                title="Resaltador"
+                className="size-7 shrink-0 sm:size-8"
                 onClick={handleCreateHighlighter}
                 disabled={!markerReady || !!markerError}
               >
                 <Highlighter className="h-4 w-4" aria-hidden="true" />
-                Resaltador
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon"
+                aria-label="Texto"
+                title="Texto"
+                className="size-7 shrink-0 sm:size-8"
                 onClick={handleCreateText}
                 disabled={!markerReady || !!markerError}
               >
                 <Type className="h-4 w-4" aria-hidden="true" />
-                Texto
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="icon"
+                aria-label="Seleccionar"
+                title="Seleccionar"
+                className="size-7 shrink-0 sm:size-8"
                 onClick={handleSelectMode}
                 disabled={!markerReady || !!markerError}
               >
                 <SquareDashed className="h-4 w-4" aria-hidden="true" />
-                Seleccionar
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="h-7 shrink-0 px-2 text-[11px] sm:h-8 sm:text-xs"
                 onClick={handleDeleteSelected}
                 disabled={!markerReady || !!markerError}
               >
                 Eliminar
               </Button>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Texto</span>
                 <input
                   type="text"
                   aria-label="Texto del marcador"
-                  className="h-8 w-40 rounded border bg-background px-2 text-sm text-foreground"
+                  className="h-7 w-28 rounded border bg-background px-2 text-xs text-foreground sm:h-8 sm:w-36 sm:text-sm"
                   placeholder="Escribe aqui"
                   value={markerText}
                   onChange={(event) => {
@@ -948,11 +1082,11 @@ export default function OrdenFumigacionShow() {
                   disabled={!markerReady || !!markerError}
                 />
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Fuente</span>
                 <select
                   aria-label="Fuente del texto"
-                  className="h-8 rounded border bg-background px-2 text-sm text-foreground"
+                  className="h-7 w-24 rounded border bg-background px-2 text-xs text-foreground sm:h-8 sm:w-auto sm:text-sm"
                   value={markerFontFamily}
                   onChange={(event) => {
                     const nextFontFamily = event.target.value
@@ -968,7 +1102,7 @@ export default function OrdenFumigacionShow() {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Tamano</span>
                 <input
                   type="range"
@@ -976,7 +1110,7 @@ export default function OrdenFumigacionShow() {
                   max="3"
                   step="0.1"
                   aria-label="Tamano de fuente"
-                  className="w-28"
+                  className="w-16 sm:w-20"
                   value={markerFontSize}
                   onChange={(event) => {
                     const nextFontSize = Number(event.target.value)
@@ -985,14 +1119,14 @@ export default function OrdenFumigacionShow() {
                   }}
                   disabled={!markerReady || !!markerError}
                 />
-                <span className="w-10 text-right">{markerFontSize.toFixed(1)}rem</span>
+                <span className="w-8 text-right">{markerFontSize.toFixed(1)}rem</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Color</span>
                 <input
                   type="color"
                   aria-label="Color del marcador"
-                  className="h-8 w-8 rounded border"
+                  className="h-7 w-7 rounded border sm:h-8 sm:w-8"
                   value={markerColor}
                   onChange={(event) => {
                     const nextColor = event.target.value
@@ -1002,7 +1136,7 @@ export default function OrdenFumigacionShow() {
                   disabled={!markerReady || !!markerError}
                 />
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Grosor</span>
                 <input
                   type="range"
@@ -1010,7 +1144,7 @@ export default function OrdenFumigacionShow() {
                   max="30"
                   step="1"
                   aria-label="Grosor del marcador"
-                  className="w-28"
+                  className="w-16 sm:w-20"
                   value={markerWidth}
                   onChange={(event) => {
                     const nextWidth = Number(event.target.value)
@@ -1019,9 +1153,9 @@ export default function OrdenFumigacionShow() {
                   }}
                   disabled={!markerReady || !!markerError}
                 />
-                <span className="w-6 text-right">{markerWidth}</span>
+                <span className="w-5 text-right">{markerWidth}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
                 <span>Opacidad</span>
                 <input
                   type="range"
@@ -1029,7 +1163,7 @@ export default function OrdenFumigacionShow() {
                   max="1"
                   step="0.05"
                   aria-label="Opacidad del marcador"
-                  className="w-28"
+                  className="w-16 sm:w-20"
                   value={markerOpacity}
                   onChange={(event) => {
                     const nextOpacity = Number(event.target.value)
@@ -1038,7 +1172,41 @@ export default function OrdenFumigacionShow() {
                   }}
                   disabled={!markerReady || !!markerError}
                 />
-                <span className="w-10 text-right">{Math.round(markerOpacity * 100)}%</span>
+                <span className="w-9 text-right">{Math.round(markerOpacity * 100)}%</span>
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground sm:gap-2 sm:text-xs">
+                <span>Zoom</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 shrink-0 px-2 sm:h-8"
+                  onClick={handleZoomOut}
+                  disabled={!markerReady || !!markerError}
+                >
+                  -
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 shrink-0 px-2 sm:h-8"
+                  onClick={handleZoomIn}
+                  disabled={!markerReady || !!markerError}
+                >
+                  +
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 shrink-0 px-2 sm:h-8"
+                  onClick={handleZoomReset}
+                  disabled={!markerReady || !!markerError}
+                >
+                  Ajustar
+                </Button>
+                <span className="w-10 text-right">{Math.round(markerZoomLevel * 100)}%</span>
               </div>
             </div>
             {markerError && (
@@ -1047,9 +1215,12 @@ export default function OrdenFumigacionShow() {
             {!markerReady && !markerError && (
               <div className="text-sm text-muted-foreground">Cargando editor...</div>
             )}
+            <div className="text-xs text-muted-foreground">
+              En mobile puedes usar dos dedos para acercar o alejar.
+            </div>
             <div
               ref={setMarkerAreaContainer}
-              className="h-[70vh] w-full rounded border bg-background"
+              className="min-h-[38dvh] flex-1 rounded border bg-background touch-none sm:min-h-[52vh]"
             />
           </div>
           <DialogFooter>
