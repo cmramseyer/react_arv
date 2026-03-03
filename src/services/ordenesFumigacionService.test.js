@@ -3,6 +3,7 @@ import {
   getOrdenFumigacion,
   createOrdenFumigacion,
   updateOrdenFumigacion,
+  updateAdjuntoOrdenFumigacion,
   terminarOrdenFumigacion,
   deleteOrdenFumigacion,
   imprimirOrdenFumigacion,
@@ -71,6 +72,25 @@ describe('ordenesFumigacionService', () => {
         'Content-Type': 'application/json'
       })
     }))
+  })
+
+  it('updateAdjuntoOrdenFumigacion realiza PATCH con FormData', async () => {
+    const file = new File(['contenido'], 'plano.png', { type: 'image/png' })
+
+    fetch.mockResolvedValueOnce({})
+
+    await updateAdjuntoOrdenFumigacion(6, file)
+
+    expect(fetch).toHaveBeenCalledWith('http://localhost:3000/ordenes_fumigacion/6', expect.objectContaining({
+      method: 'PATCH',
+      body: expect.any(FormData),
+      headers: expect.objectContaining({
+        Authorization: expect.stringContaining('Bearer')
+      })
+    }))
+
+    const [, requestOptions] = fetch.mock.calls.at(-1)
+    expect(requestOptions.body.get('orden_fumigacion[adjuntos][]')).toBe(file)
   })
 
   it('terminarOrdenFumigacion realiza PATCH en /terminar', async () => {

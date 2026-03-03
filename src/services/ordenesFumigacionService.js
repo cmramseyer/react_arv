@@ -59,6 +59,17 @@ export const updateOrdenFumigacion = async (id, payload) => {
   })
 }
 
+export const updateAdjuntoOrdenFumigacion = async (id, file) => {
+  const formData = new FormData()
+  formData.append('orden_fumigacion[adjuntos][]', file)
+
+  await fetchWithAuth(`${API_URL}/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: formData,
+  })
+}
+
 export const terminarOrdenFumigacion = async (id, payload) => {
   await fetchWithAuth(`${API_URL}/${id}/terminar`, {
     method: 'PATCH',
