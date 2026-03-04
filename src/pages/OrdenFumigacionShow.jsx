@@ -15,8 +15,11 @@ import {
   Renderer,
   TextMarker,
 } from '@markerjs/markerjs3'
+import Cropper from 'react-cropper'
+import 'cropperjs/dist/cropper.css'
 import {
   Check,
+  Crop,
   Hand,
   Highlighter,
   Maximize2,
@@ -209,6 +212,7 @@ const getSwatchCheckColor = (hexColor) =>
   getColorBrightness(hexColor) > 160 ? '#111111' : '#ffffff'
 
 
+
 export default function OrdenFumigacionShow() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -256,6 +260,11 @@ export default function OrdenFumigacionShow() {
   const [activeMarkerTool, setActiveMarkerTool] = useState('select')
   const [markerSelectionContext, setMarkerSelectionContext] = useState('none')
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false)
+  const [cropSource, setCropSource] = useState('')
+  const [isPreparingCrop, setIsPreparingCrop] = useState(false)
+  const [isApplyingCrop, setIsApplyingCrop] = useState(false)
+  const [editingImageDataUrl, setEditingImageDataUrl] = useState('')
   const markerZoomLevelRef = useRef(1)
   const editDialogRootRef = useRef(null)
   const [markerAreaContainer, setMarkerAreaContainer] = useState(null)
@@ -272,6 +281,7 @@ export default function OrdenFumigacionShow() {
   const pinchCenterRef = useRef(null)
   const singlePanPointerIdRef = useRef(null)
   const singlePanLastPointRef = useRef(null)
+  const cropperRef = useRef(null)
 
   const setMarkerTool = useCallback((nextTool) => {
     activeMarkerToolRef.current = nextTool
@@ -467,6 +477,7 @@ export default function OrdenFumigacionShow() {
     }
 
     setAdjuntoEditando(adjunto)
+    setEditingImageDataUrl('')
     setMarkerReady(false)
     setMarkerError('')
     setIsEditDialogOpen(true)
@@ -484,6 +495,10 @@ export default function OrdenFumigacionShow() {
       setCanUndo(false)
       setCanRedo(false)
       setShowColorPicker(false)
+      setIsCropDialogOpen(false)
+      setCropSource('')
+      setIsPreparingCrop(false)
+      setIsApplyingCrop(false)
       markerZoomLevelRef.current = 1
       pinchPointersRef.current.clear()
       pinchStartDistanceRef.current = null
@@ -811,6 +826,71 @@ export default function OrdenFumigacionShow() {
     }
   }
 
+  const handleCropMode = async () => {
+    const markerArea = markerAreaRef.current
+    const targetImage = markerTargetImageRef.current
+    if (!markerArea || !targetImage || isPreparingCrop) return
+
+    try {
+      setIsPreparingCrop(true)
+      setMarkerTool('crop')
+      markerArea.switchToSelectMode()
+      setMarkerSelectionContext('none')
+      syncUndoRedoAvailability(markerArea)
+
+      const renderer = new Renderer()
+      renderer.targetImage = targetImage
+      const rasterizedDataUrl = await renderer.rasterize(markerArea.getState())
+      setCropSource(rasterizedDataUrl)
+      setIsCropDialogOpen(true)
+    } catch (error) {
+      alert('No se pudo iniciar el recorte')
+      console.error(error)
+    } finally {
+      setIsPreparingCrop(false)
+    }
+  }
+
+  const handleApplyCrop = async () => {
+    const cropperInstance = cropperRef.current?.cropper
+    if (!cropperInstance) return
+
+    try {
+      setIsApplyingCrop(true)
+      const croppedCanvas = cropperInstance.getCroppedCanvas({
+        imageSmoothingQuality: 'high',
+      })
+
+      if (!croppedCanvas) return
+
+      const croppedDataUrl = croppedCanvas.toDataURL('image/png')
+      setEditingImageDataUrl(croppedDataUrl)
+      setIsCropDialogOpen(false)
+      setCropSource('')
+      setMarkerTool('select')
+      setMarkerSelectionContext('none')
+    } catch (error) {
+      alert('No se pudo aplicar el recorte')
+      console.error(error)
+    } finally {
+      setIsApplyingCrop(false)
+    }
+  }
+
+  const handleCloseCrop = () => {
+    setIsCropDialogOpen(false)
+    setCropSource('')
+    setIsPreparingCrop(false)
+    setIsApplyingCrop(false)
+    setMarkerTool('select')
+    const markerArea = markerAreaRef.current
+    if (markerArea) {
+      setMarkerSelectionContext(getSelectionContextFromArea(markerArea))
+    } else {
+      setMarkerSelectionContext('none')
+    }
+  }
+
   const handleSelectMode = () => {
     const markerArea = markerAreaRef.current
     if (!markerArea) return
@@ -877,9 +957,9 @@ export default function OrdenFumigacionShow() {
       setAdjuntoEnEdicion(normalizedId)
       const renderer = new Renderer()
       renderer.targetImage = markerTargetImageRef.current
-      const dataUrl = await renderer.rasterize(markerAreaRef.current.getState())
+      const finalDataUrl = await renderer.rasterize(markerAreaRef.current.getState())
       const editedFile = dataUrlToFile(
-        dataUrl,
+        finalDataUrl,
         buildEditedAdjuntoFilename(adjuntoEditando.filename)
       )
 
@@ -925,6 +1005,10 @@ export default function OrdenFumigacionShow() {
       setCanUndo(false)
       setCanRedo(false)
       setShowColorPicker(false)
+      setIsCropDialogOpen(false)
+      setCropSource('')
+      setIsPreparingCrop(false)
+      setIsApplyingCrop(false)
       markerZoomLevelRef.current = 1
       pinchPointersRef.current.clear()
       pinchStartDistanceRef.current = null
@@ -945,6 +1029,10 @@ export default function OrdenFumigacionShow() {
     setCanUndo(false)
     setCanRedo(false)
     setShowColorPicker(false)
+    setIsCropDialogOpen(false)
+    setCropSource('')
+    setIsPreparingCrop(false)
+    setIsApplyingCrop(false)
     pinchPointersRef.current.clear()
     pinchStartDistanceRef.current = null
     pinchCenterRef.current = null
@@ -1029,14 +1117,6 @@ export default function OrdenFumigacionShow() {
 
     const loadTargetImage = async () => {
       try {
-        const response = await fetchWithAuth(adjuntoEditando.url)
-        if (!response.ok) {
-          throw new Error('No se pudo cargar la imagen para editar')
-        }
-        const blob = await response.blob()
-        const objectUrl = URL.createObjectURL(blob)
-        markerObjectUrlRef.current = objectUrl
-
         const targetImage = new Image()
         targetImage.onload = () => {
           if (!isMounted) return
@@ -1062,6 +1142,25 @@ export default function OrdenFumigacionShow() {
           setMarkerError('No se pudo cargar la imagen para editar')
           setMarkerReady(false)
         }
+
+        if (editingImageDataUrl) {
+          if (markerObjectUrlRef.current) {
+            if (typeof URL.revokeObjectURL === 'function') {
+              URL.revokeObjectURL(markerObjectUrlRef.current)
+            }
+            markerObjectUrlRef.current = null
+          }
+          targetImage.src = editingImageDataUrl
+          return
+        }
+
+        const response = await fetchWithAuth(adjuntoEditando.url)
+        if (!response.ok) {
+          throw new Error('No se pudo cargar la imagen para editar')
+        }
+        const blob = await response.blob()
+        const objectUrl = URL.createObjectURL(blob)
+        markerObjectUrlRef.current = objectUrl
         targetImage.src = objectUrl
       } catch (error) {
         if (!isMounted) return
@@ -1098,6 +1197,10 @@ export default function OrdenFumigacionShow() {
       setCanUndo(false)
       setCanRedo(false)
       setShowColorPicker(false)
+      setIsCropDialogOpen(false)
+      setCropSource('')
+      setIsPreparingCrop(false)
+      setIsApplyingCrop(false)
       markerZoomLevelRef.current = 1
       pinchPointersRef.current.clear()
       pinchStartDistanceRef.current = null
@@ -1105,7 +1208,7 @@ export default function OrdenFumigacionShow() {
       singlePanPointerIdRef.current = null
       singlePanLastPointRef.current = null
     }
-  }, [isEditDialogOpen, adjuntoEditando?.id, markerAreaContainer, setMarkerTool])
+  }, [isEditDialogOpen, adjuntoEditando?.id, markerAreaContainer, setMarkerTool, editingImageDataUrl])
 
   useEffect(() => {
     if (!isEditDialogOpen || !markerAreaContainer) return undefined
@@ -1730,6 +1833,18 @@ export default function OrdenFumigacionShow() {
                 </Button>
                 <Button
                   type="button"
+                  variant={activeMarkerTool === 'crop' ? 'default' : 'outline'}
+                  size="icon"
+                  aria-label="Recortar"
+                  title="Recortar"
+                  className="size-10 shrink-0"
+                  onClick={handleCropMode}
+                  disabled={markerToolsDisabled || isPreparingCrop}
+                >
+                  <Crop className="h-4 w-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
                   variant={activeMarkerTool === 'pan' ? 'default' : 'outline'}
                   size="icon"
                   aria-label="Desplazar"
@@ -1869,6 +1984,18 @@ export default function OrdenFumigacionShow() {
                   disabled={markerToolsDisabled}
                 >
                   <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={activeMarkerTool === 'crop' ? 'default' : 'outline'}
+                  size="icon"
+                  aria-label="Recortar"
+                  title="Recortar"
+                  className="size-8 shrink-0"
+                  onClick={handleCropMode}
+                  disabled={markerToolsDisabled || isPreparingCrop}
+                >
+                  <Crop className="h-4 w-4" aria-hidden="true" />
                 </Button>
                 <Button
                   type="button"
@@ -2131,10 +2258,52 @@ export default function OrdenFumigacionShow() {
             {!markerReady && !markerError && (
               <div className="text-sm text-muted-foreground">Cargando editor...</div>
             )}
-            <div
-              ref={setMarkerAreaContainer}
-              className="min-h-[38dvh] flex-1 rounded border bg-background touch-none sm:min-h-[52vh]"
-            />
+            <div className="relative min-h-[38dvh] flex-1 sm:min-h-[52vh]">
+              <div
+                ref={setMarkerAreaContainer}
+                className="h-full w-full rounded border bg-background touch-none"
+              />
+              {isCropDialogOpen && (
+                <div className="absolute inset-0 z-30 flex flex-col bg-background/95">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
+                    <span className="text-sm font-medium">Recortar imagen</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCloseCrop}
+                        disabled={isApplyingCrop}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        onClick={handleApplyCrop}
+                        disabled={isApplyingCrop}
+                      >
+                        {isApplyingCrop ? 'Aplicando recorte...' : 'Aplicar recorte'}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex-1 p-3">
+                    <Cropper
+                      ref={cropperRef}
+                      src={cropSource}
+                      style={{ height: '100%', width: '100%' }}
+                      viewMode={1}
+                      dragMode="move"
+                      responsive
+                      autoCropArea={0.9}
+                      guides
+                      background={false}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
