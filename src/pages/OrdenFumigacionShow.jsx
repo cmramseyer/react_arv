@@ -154,11 +154,20 @@ const isPdfAdjunto = (adjunto) => {
 const isImageAdjunto = (adjunto) => !isPdfAdjunto(adjunto)
 
 const buildEditedAdjuntoFilename = (originalFilename) => {
-  const fallbackName = 'adjunto-editado.png'
-  if (!originalFilename || typeof originalFilename !== 'string') return fallbackName
-  const filenameWithoutExtension = originalFilename.replace(/\.[^/.]+$/, '')
-  if (!filenameWithoutExtension) return fallbackName
-  return `${filenameWithoutExtension}-editado.png`
+  const now = new Date(Date.now())
+  const year = String(now.getFullYear())
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  const timestamp = `${year}${month}${day}_${hours}${minutes}${seconds}`
+
+  const filenameString = typeof originalFilename === 'string' ? originalFilename : ''
+  const filenameWithoutExtension = filenameString.replace(/\.[^/.]+$/, '')
+  const baseName = filenameWithoutExtension || 'adjunto'
+
+  return `${baseName}_${timestamp}.png`
 }
 
 const dataUrlToFile = (dataUrl, filename) => {

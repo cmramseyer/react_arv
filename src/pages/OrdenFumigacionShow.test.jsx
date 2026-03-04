@@ -205,53 +205,60 @@ describe('OrdenFumigacionShow', () => {
   })
 
   it('edits an adjunto image and uploads it as adjunto', async () => {
-    getOrdenFumigacion
-      .mockResolvedValueOnce(ordenFixture)
-      .mockResolvedValueOnce({ ...ordenFixture, adjuntos: [adjuntoFixture] })
-    getAdjuntosOrden.mockResolvedValueOnce([adjuntoFixture])
-    updateAdjuntoOrdenFumigacion.mockResolvedValueOnce()
+    const fixedDate = new Date(2026, 9, 10, 19, 7, 1)
+    const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(fixedDate.getTime())
 
-    render(
-      <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
-        <Routes>
-          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
-        </Routes>
-      </MemoryRouter>
-    )
+    try {
+      getOrdenFumigacion
+        .mockResolvedValueOnce(ordenFixture)
+        .mockResolvedValueOnce({ ...ordenFixture, adjuntos: [adjuntoFixture] })
+      getAdjuntosOrden.mockResolvedValueOnce([adjuntoFixture])
+      updateAdjuntoOrdenFumigacion.mockResolvedValueOnce()
 
-    const ordenLabels = await screen.findAllByText('Orden #1')
-    expect(ordenLabels.length).toBeGreaterThan(0)
+      render(
+        <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
+          <Routes>
+            <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+          </Routes>
+        </MemoryRouter>
+      )
 
-    await user.click(screen.getByRole('button', { name: /generar pdf/i }))
+      const ordenLabels = await screen.findAllByText('Orden #1')
+      expect(ordenLabels.length).toBeGreaterThan(0)
 
-    const adjuntoName = await screen.findByText('plano-lote.png')
-    const actionsContainer = adjuntoName.closest('div')
-    expect(actionsContainer).not.toBeNull()
+      await user.click(screen.getByRole('button', { name: /generar pdf/i }))
 
-    await user.click(within(actionsContainer).getByRole('button', { name: /^editar$/i }))
+      const adjuntoName = await screen.findByText('plano-lote.png')
+      const actionsContainer = adjuntoName.closest('div')
+      expect(actionsContainer).not.toBeNull()
 
-    const dialogs = await screen.findAllByRole('dialog')
-    const editDialog = dialogs.find((dialog) => within(dialog).queryByText('Editar adjunto'))
-    expect(editDialog).toBeTruthy()
+      await user.click(within(actionsContainer).getByRole('button', { name: /^editar$/i }))
 
-    const saveButton = within(editDialog).getByRole('button', { name: /guardar/i })
+      const dialogs = await screen.findAllByRole('dialog')
+      const editDialog = dialogs.find((dialog) => within(dialog).queryByText('Editar adjunto'))
+      expect(editDialog).toBeTruthy()
 
-    await waitFor(() => {
-      expect(saveButton).toBeEnabled()
-    })
+      const saveButton = within(editDialog).getByRole('button', { name: /guardar/i })
 
-    await user.click(saveButton)
+      await waitFor(() => {
+        expect(saveButton).toBeEnabled()
+      })
 
-    await waitFor(() => {
-      expect(updateAdjuntoOrdenFumigacion).toHaveBeenCalledTimes(1)
-    })
+      await user.click(saveButton)
 
-    const [ordenIdArg, fileArg] = updateAdjuntoOrdenFumigacion.mock.lastCall
-    expect(ordenIdArg).toBe('1')
-    expect(fileArg).toBeInstanceOf(File)
-    expect(fileArg.name).toContain('plano-lote-editado')
+      await waitFor(() => {
+        expect(updateAdjuntoOrdenFumigacion).toHaveBeenCalledTimes(1)
+      })
 
-    expect(getAdjuntosOrden).toHaveBeenCalledTimes(1)
+      const [ordenIdArg, fileArg] = updateAdjuntoOrdenFumigacion.mock.lastCall
+      expect(ordenIdArg).toBe('1')
+      expect(fileArg).toBeInstanceOf(File)
+      expect(fileArg.name).toBe('plano-lote_20261010_190701.png')
+
+      expect(getAdjuntosOrden).toHaveBeenCalledTimes(1)
+    } finally {
+      dateNowSpy.mockRestore()
+    }
   })
 
   it('shows contextual marker controls based on active tool', async () => {
