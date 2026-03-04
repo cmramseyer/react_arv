@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
@@ -10,7 +10,12 @@ const markerjsState = vi.hoisted(() => ({
 }))
 
 vi.mock('@markerjs/markerjs3', () => ({
-  HighlighterMarker: class HighlighterMarker {},
+  FreehandMarker: class FreehandMarker {
+    static typeName = 'FreehandMarker'
+  },
+  HighlighterMarker: class HighlighterMarker {
+    static typeName = 'HighlighterMarker'
+  },
   TextMarker: class TextMarker {
     static typeName = 'TextMarker'
   },
@@ -23,9 +28,13 @@ vi.mock('@markerjs/markerjs3', () => ({
       strokeWidth: 10,
       opacity: 0.33,
     })
+    element.undo = vi.fn()
+    element.redo = vi.fn()
     element.switchToSelectMode = vi.fn()
     element.deleteSelectedMarkers = vi.fn()
     element.getState = vi.fn().mockReturnValue({ version: 3, markers: [] })
+    element.isUndoPossible = true
+    element.isRedoPossible = true
     element.selectedMarkerEditors = []
     element.currentMarkerEditor = null
     markerjsState.markerAreaInstances.push(element)
@@ -222,5 +231,160 @@ describe('OrdenFumigacionShow', () => {
     expect(fileArg.name).toContain('plano-lote-editado')
 
     expect(getAdjuntosOrden).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows contextual marker controls based on active tool', async () => {
+    getOrdenFumigacion
+      .mockResolvedValueOnce(ordenFixture)
+      .mockResolvedValueOnce({ ...ordenFixture, adjuntos: [adjuntoFixture] })
+    getAdjuntosOrden.mockResolvedValueOnce([adjuntoFixture])
+
+    render(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const ordenLabels = await screen.findAllByText('Orden #1')
+    expect(ordenLabels.length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('button', { name: /generar pdf/i }))
+    await user.click(screen.getByRole('button', { name: /^editar$/i }))
+
+    const dialogs = await screen.findAllByRole('dialog')
+    const editDialog = dialogs.find((dialog) => within(dialog).queryByText('Editar adjunto'))
+    expect(editDialog).toBeTruthy()
+
+    await waitFor(() => {
+      expect(within(editDialog).getByRole('button', { name: /guardar/i })).toBeEnabled()
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /resaltador/i }))
+
+    expect(within(editDialog).getByLabelText('Grosor del marcador')).toBeInTheDocument()
+    expect(within(editDialog).queryByLabelText('Opacidad del marcador')).not.toBeInTheDocument()
+    expect(within(editDialog).queryByLabelText('Fuente del texto')).not.toBeInTheDocument()
+    expect(within(editDialog).queryByLabelText('Tamano de fuente')).not.toBeInTheDocument()
+
+    await user.click(within(editDialog).getByRole('button', { name: /texto/i }))
+
+    expect(within(editDialog).getByLabelText('Fuente del texto')).toBeInTheDocument()
+    expect(within(editDialog).getByLabelText('Tamano de fuente')).toBeInTheDocument()
+    expect(within(editDialog).queryByLabelText('Opacidad del marcador')).not.toBeInTheDocument()
+    expect(within(editDialog).queryByLabelText('Grosor del marcador')).not.toBeInTheDocument()
+
+    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
+  })
+
+  it('triggers undo and redo from icon toolbar', async () => {
+    getOrdenFumigacion
+      .mockResolvedValueOnce(ordenFixture)
+      .mockResolvedValueOnce({ ...ordenFixture, adjuntos: [adjuntoFixture] })
+    getAdjuntosOrden.mockResolvedValueOnce([adjuntoFixture])
+
+    render(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await screen.findAllByText('Orden #1')
+    await user.click(screen.getByRole('button', { name: /generar pdf/i }))
+    await user.click(screen.getByRole('button', { name: /^editar$/i }))
+
+    const dialogs = await screen.findAllByRole('dialog')
+    const editDialog = dialogs.find((dialog) => within(dialog).queryByText('Editar adjunto'))
+    expect(editDialog).toBeTruthy()
+
+    await waitFor(() => {
+      expect(within(editDialog).getByRole('button', { name: /guardar/i })).toBeEnabled()
+    })
+
+    const markerArea = markerjsState.markerAreaInstances.at(-1)
+    expect(markerArea).toBeTruthy()
+
+    await user.click(within(editDialog).getByRole('button', { name: /deshacer/i }))
+    await user.click(within(editDialog).getByRole('button', { name: /rehacer/i }))
+
+    expect(markerArea.undo).toHaveBeenCalledTimes(1)
+    expect(markerArea.redo).toHaveBeenCalledTimes(1)
+
+    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
+  })
+
+  it('keeps independent presets for highlighter, freehand and text styles', async () => {
+    getOrdenFumigacion
+      .mockResolvedValueOnce(ordenFixture)
+      .mockResolvedValueOnce({ ...ordenFixture, adjuntos: [adjuntoFixture] })
+    getAdjuntosOrden.mockResolvedValueOnce([adjuntoFixture])
+
+    render(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await screen.findAllByText('Orden #1')
+    await user.click(screen.getByRole('button', { name: /generar pdf/i }))
+    await user.click(screen.getByRole('button', { name: /^editar$/i }))
+
+    const dialogs = await screen.findAllByRole('dialog')
+    const editDialog = dialogs.find((dialog) => within(dialog).queryByText('Editar adjunto'))
+    expect(editDialog).toBeTruthy()
+
+    await waitFor(() => {
+      expect(within(editDialog).getByRole('button', { name: /guardar/i })).toBeEnabled()
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /resaltador/i }))
+
+    fireEvent.change(within(editDialog).getByLabelText('Grosor del marcador'), {
+      target: { value: '14' },
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /abrir selector de color/i }))
+    fireEvent.change(within(editDialog).getByLabelText('Color personalizado'), {
+      target: { value: '#ff0000' },
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /dibujo libre/i }))
+
+    fireEvent.change(within(editDialog).getByLabelText('Grosor del marcador'), {
+      target: { value: '6' },
+    })
+
+    if (!within(editDialog).queryByLabelText('Color personalizado')) {
+      await user.click(within(editDialog).getByRole('button', { name: /abrir selector de color/i }))
+    }
+    fireEvent.change(within(editDialog).getByLabelText('Color personalizado'), {
+      target: { value: '#00ff00' },
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /texto/i }))
+
+    if (!within(editDialog).queryByLabelText('Color personalizado')) {
+      await user.click(within(editDialog).getByRole('button', { name: /abrir selector de color/i }))
+    }
+    fireEvent.change(within(editDialog).getByLabelText('Color personalizado'), {
+      target: { value: '#0000ff' },
+    })
+
+    await user.click(within(editDialog).getByRole('button', { name: /resaltador/i }))
+
+    expect(within(editDialog).getByLabelText('Grosor del marcador')).toHaveValue('14')
+    expect(within(editDialog).queryByLabelText('Opacidad del marcador')).not.toBeInTheDocument()
+    expect(within(editDialog).getByLabelText('Color personalizado')).toHaveValue('#ff0000')
+
+    await user.click(within(editDialog).getByRole('button', { name: /dibujo libre/i }))
+
+    expect(within(editDialog).getByLabelText('Grosor del marcador')).toHaveValue('6')
+    expect(within(editDialog).getByLabelText('Color personalizado')).toHaveValue('#00ff00')
+
+    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
   })
 })
