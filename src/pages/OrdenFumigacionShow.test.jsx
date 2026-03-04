@@ -45,6 +45,27 @@ vi.mock('@markerjs/markerjs3', () => ({
   })),
 }))
 
+vi.mock('react-cropper', () => ({
+  __esModule: true,
+  default: (() => {
+    const MockCropper = React.forwardRef((props, ref) => {
+      React.useImperativeHandle(ref, () => ({
+        cropper: {
+          getCroppedCanvas: () => ({
+            toDataURL: () =>
+              'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO6K4n8AAAAASUVORK5CYII=',
+          }),
+        },
+      }))
+      return <div data-testid="cropper" />
+    })
+    MockCropper.displayName = 'MockCropper'
+    return MockCropper
+  })(),
+}))
+
+vi.mock('cropperjs/dist/cropper.css', () => ({}))
+
 vi.mock('../services/ordenesFumigacionService', () => ({
   getOrdenFumigacion: vi.fn(),
   deleteOrdenFumigacion: vi.fn(),
@@ -274,7 +295,11 @@ describe('OrdenFumigacionShow', () => {
     expect(within(editDialog).queryByLabelText('Opacidad del marcador')).not.toBeInTheDocument()
     expect(within(editDialog).queryByLabelText('Grosor del marcador')).not.toBeInTheDocument()
 
-    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
+    await user.click(within(editDialog).getByRole('button', { name: /recortar/i }))
+    await within(editDialog).findByRole('button', { name: /aplicar recorte/i })
+
+    const cancelButtons = within(editDialog).getAllByRole('button', { name: /cancelar/i })
+    await user.click(cancelButtons[cancelButtons.length - 1])
   })
 
   it('triggers undo and redo from icon toolbar', async () => {
@@ -312,7 +337,8 @@ describe('OrdenFumigacionShow', () => {
     expect(markerArea.undo).toHaveBeenCalledTimes(1)
     expect(markerArea.redo).toHaveBeenCalledTimes(1)
 
-    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
+    const cancelButtons = within(editDialog).getAllByRole('button', { name: /cancelar/i })
+    await user.click(cancelButtons[cancelButtons.length - 1])
   })
 
   it('keeps independent presets for highlighter, freehand and text styles', async () => {
@@ -385,6 +411,7 @@ describe('OrdenFumigacionShow', () => {
     expect(within(editDialog).getByLabelText('Grosor del marcador')).toHaveValue('6')
     expect(within(editDialog).getByLabelText('Color personalizado')).toHaveValue('#00ff00')
 
-    await user.click(within(editDialog).getByRole('button', { name: /cancelar/i }))
+    const cancelButtons = within(editDialog).getAllByRole('button', { name: /cancelar/i })
+    await user.click(cancelButtons[cancelButtons.length - 1])
   })
 })
