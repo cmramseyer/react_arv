@@ -11,7 +11,7 @@ vi.mock('../services/productosService', () => ({
   deleteProducto: vi.fn(() => Promise.resolve())
 }))
 
-import { getProductos, createProducto, getProducto } from '../services/productosService'
+import { getProductos, createProducto } from '../services/productosService'
 
 import Productos from './Productos'
 import ProductoNuevo from './ProductoNuevo'
@@ -54,8 +54,8 @@ describe('Productos', () => {
 
     await screen.findByText('Glifosato')
 
-    expect(screen.getByText(/Tipo:/)).toBeInTheDocument()
-    expect(screen.getByText(/Unidad:/)).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'Tipo' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'Unidad' })).toBeInTheDocument()
     expect(screen.getByText('Crear Producto')).toBeInTheDocument()
   })
 

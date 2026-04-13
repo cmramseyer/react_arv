@@ -1,20 +1,19 @@
 // src/components/DosisFields.jsx
 import React from 'react'
 import { useFieldArray, useWatch } from 'react-hook-form'
+import Select, { createFilter } from 'react-select'
 
 import { Button } from '@/components/ui/button'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
-export default function DosisFields({ control, productos, name = 'dosis' }) {
+export default function DosisFields({
+  control,
+  productos,
+  name = 'dosis',
+  showNuevoProductoButton = false,
+  onNuevoProducto,
+}) {
   const { fields, append, remove } = useFieldArray({
     control,
     name
@@ -24,6 +23,11 @@ export default function DosisFields({ control, productos, name = 'dosis' }) {
     control,
     name,
   })
+
+  const productoOptions = productos.map((producto) => ({
+    value: String(producto.id),
+    label: producto.nombre,
+  }))
 
   return (
     <div className="space-y-3">
@@ -40,23 +44,39 @@ export default function DosisFields({ control, productos, name = 'dosis' }) {
               name={`${name}.${index}.producto_id`}
               rules={{ required: 'El producto es obligatorio' }}
               render={({ field }) => (
-                <FormItem className="min-w-[200px] flex-1">
-                  <FormLabel>Producto</FormLabel>
+                <FormItem className="min-w-[260px] flex-1">
+                  {showNuevoProductoButton && index === 0 && typeof onNuevoProducto === 'function' ? (
+                    <div className="flex">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={onNuevoProducto}
+                      >
+                        Nuevo producto
+                      </Button>
+                    </div>
+                  ) : null}
+                  <FormLabel htmlFor={`${name}-${index}-producto`}>Producto</FormLabel>
                   <FormControl>
-                    <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {productos.map(producto => (
-                            <SelectItem key={producto.id} value={String(producto.id)}>
-                              {producto.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <Select
+                      inputId={`${name}-${index}-producto`}
+                      value={productoOptions.find((option) => option.value === String(field.value ?? '')) ?? null}
+                      options={productoOptions}
+                      onChange={(option) => field.onChange(option?.value ?? '')}
+                      onBlur={field.onBlur}
+                      placeholder="Seleccionar..."
+                      isSearchable
+                      isClearable
+                      noOptionsMessage={() => 'Sin resultados'}
+                      filterOption={createFilter({
+                        matchFrom: 'any',
+                        ignoreAccents: true,
+                        ignoreCase: true,
+                        trim: true,
+                      })}
+                      classNamePrefix="react-select"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
