@@ -131,7 +131,33 @@ describe('OrdenesFumigacionNueva', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
 
-    await user.click(screen.getAllByRole('combobox').at(-1))
+    await user.click(screen.getByLabelText('Producto'))
     expect(await screen.findByRole('option', { name: 'Roundup' })).toBeInTheDocument()
+  })
+
+  it('filters product options by search text in product select', async () => {
+    getProductos.mockResolvedValueOnce([
+      { id: 1, nombre: 'Producto Base', unidad_medida: 'litros' },
+      { id: 2, nombre: 'Coadyuvante', unidad_medida: 'kg' },
+      { id: 3, nombre: 'Super Prod Mix', unidad_medida: 'ml' },
+    ])
+
+    render(
+      <MemoryRouter>
+        <OrdenesFumigacionNueva />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(getProductos).toHaveBeenCalledTimes(1)
+    })
+
+    const productSearchInput = screen.getByLabelText('Producto')
+    await user.click(productSearchInput)
+    await user.type(productSearchInput, 'prod')
+
+    expect(await screen.findByRole('option', { name: 'Producto Base' })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: 'Super Prod Mix' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Coadyuvante' })).not.toBeInTheDocument()
   })
 })
