@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
@@ -13,6 +13,7 @@ vi.mock('../services/lotesService', () => ({
 
 vi.mock('../services/productosService', () => ({
   getProductos: vi.fn(),
+  createProducto: vi.fn(),
 }))
 
 vi.mock('../services/cultivosService', () => ({
@@ -25,7 +26,7 @@ vi.mock('../services/ordenesFumigacionService', () => ({
 
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { getProductos } from '../services/productosService'
+import { createProducto, getProductos } from '../services/productosService'
 import { getCultivos } from '../services/cultivosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import OrdenesFumigacionNueva from './OrdenesFumigacionNueva'
@@ -42,7 +43,8 @@ describe('OrdenesFumigacionNueva', () => {
     user = userEvent.setup()
     vi.clearAllMocks()
     getEstancias.mockResolvedValueOnce([])
-    getProductos.mockResolvedValueOnce([])
+    getProductos.mockResolvedValue([])
+    createProducto.mockResolvedValue()
     getCultivos.mockResolvedValueOnce([])
     getLotesPorEstancia.mockResolvedValue([])
   })
@@ -77,5 +79,59 @@ describe('OrdenesFumigacionNueva', () => {
     expect(getProductos).toHaveBeenCalledTimes(getProductosCalls)
     expect(getCultivos).toHaveBeenCalledTimes(getCultivosCalls)
     expect(getLotesPorEstancia).toHaveBeenCalledTimes(getLotesCalls)
+  })
+
+  it('allows creating a product from modal and refreshes product options', async () => {
+    getProductos
+      .mockResolvedValueOnce([
+        { id: 1, nombre: '2,4D', unidad_medida: 'litros' },
+      ])
+      .mockResolvedValueOnce([
+        { id: 1, nombre: '2,4D', unidad_medida: 'litros' },
+        { id: 2, nombre: 'Roundup', unidad_medida: 'kg' },
+      ])
+
+    render(
+      <MemoryRouter>
+        <OrdenesFumigacionNueva />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(getProductos).toHaveBeenCalledTimes(1)
+    })
+
+    await user.click(screen.getByRole('button', { name: /nuevo producto/i }))
+
+    const dialog = await screen.findByRole('dialog')
+
+    await user.type(within(dialog).getByLabelText('Nombre'), 'Roundup')
+    await user.type(within(dialog).getByLabelText('Tipo de producto'), 'Agroquimico')
+
+    await user.click(within(dialog).getByRole('combobox'))
+    await user.click(await screen.findByRole('option', { name: 'Kilogramos' }))
+
+    await user.click(within(dialog).getByRole('button', { name: /^crear$/i }))
+
+    await waitFor(() => {
+      expect(createProducto).toHaveBeenCalledTimes(1)
+    })
+
+    expect(createProducto).toHaveBeenCalledWith({
+      nombre: 'Roundup',
+      tipo_producto: 'Agroquimico',
+      unidad_medida: 'kg',
+    })
+
+    await waitFor(() => {
+      expect(getProductos).toHaveBeenCalledTimes(2)
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    await user.click(screen.getAllByRole('combobox').at(-1))
+    expect(await screen.findByRole('option', { name: 'Roundup' })).toBeInTheDocument()
   })
 })

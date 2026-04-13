@@ -14,7 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-export default function DosisFields({ control, productos, name = 'dosis' }) {
+export default function DosisFields({
+  control,
+  productos,
+  name = 'dosis',
+  showNuevoProductoButton = false,
+  onNuevoProducto,
+}) {
   const { fields, append, remove } = useFieldArray({
     control,
     name
@@ -41,7 +47,19 @@ export default function DosisFields({ control, productos, name = 'dosis' }) {
               rules={{ required: 'El producto es obligatorio' }}
               render={({ field }) => (
                 <FormItem className="min-w-[200px] flex-1">
-                  <FormLabel>Producto</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Producto</FormLabel>
+                    {showNuevoProductoButton && index === 0 && typeof onNuevoProducto === 'function' ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={onNuevoProducto}
+                      >
+                        Nuevo producto
+                      </Button>
+                    ) : null}
+                  </div>
                   <FormControl>
                     <Select value={field.value ?? ''} onValueChange={field.onChange}>
                       <SelectTrigger>

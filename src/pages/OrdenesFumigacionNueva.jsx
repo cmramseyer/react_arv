@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { getProductos } from '../services/productosService'
+import { createProducto, getProductos } from '../services/productosService'
 import { getCultivos } from '../services/cultivosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +10,9 @@ import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, For
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DosisFields from '../components/DosisFields'
+import ProductoForm from '../components/ProductoForm'
 import SelectField from '../components/SelectField'
 import formatHectareas from '../utils/formatHectareas'
 
@@ -71,17 +73,23 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
     const [lotes, setLotes] = useState([])
     const [productos, setProductos] = useState([])
     const [cultivos, setCultivos] = useState([])
+    const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
     const navigate = useNavigate()
 
     const estanciaId = watch('estancia_id')
     const selectedLotes = watch('lotes')
     const totalHectareas = getTotalHectareas(selectedLotes, lotes)
 
+    const loadProductos = useCallback(async () => {
+      const data = await getProductos()
+      setProductos(data)
+    }, [])
+
     useEffect(() => {
       getEstancias().then(setEstancias)
-      getProductos().then(setProductos)
+      loadProductos()
       getCultivos().then(setCultivos)
-    }, [])
+    }, [loadProductos])
 
     useEffect(() => {
       if (estanciaId) {
@@ -125,6 +133,12 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
 
       await createOrdenFumigacion(payload)
       navigate('/ordenes_fumigacion')
+    }
+
+    const handleCreateProducto = async (data) => {
+      await createProducto(data)
+      await loadProductos()
+      setIsNuevoProductoOpen(false)
     }
 
     return (
@@ -260,6 +274,8 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
                 control={control}
                 productos={productos}
                 name={`lotes.${index}.dosis`}
+                showNuevoProductoButton
+                onNuevoProducto={() => setIsNuevoProductoOpen(true)}
               />
             </div>
           ))}
@@ -282,6 +298,27 @@ const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
             </span>
           </div>
         </form>
+
+        <Dialog open={isNuevoProductoOpen} onOpenChange={setIsNuevoProductoOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nuevo Producto</DialogTitle>
+              <DialogDescription className="sr-only">
+                Formulario para crear un nuevo producto sin salir de la orden.
+              </DialogDescription>
+            </DialogHeader>
+
+            <ProductoForm
+              onSubmit={handleCreateProducto}
+              submitLabel="Crear"
+              actions={(
+                <Button type="button" variant="secondary" onClick={() => setIsNuevoProductoOpen(false)}>
+                  Cancelar
+                </Button>
+              )}
+            />
+          </DialogContent>
+        </Dialog>
       </Form>
     )
   }
