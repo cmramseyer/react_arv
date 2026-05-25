@@ -44,136 +44,141 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={handleSubmit(internalSubmit)} className="space-y-4">
-        <FormField
-          control={control}
-          name="estancia_id"
-          rules={{ required: 'La estancia es obligatoria' }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estancia</FormLabel>
-              <FormControl>
-                <SelectField field={field} label="Estancia" options={estancias} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="nombre"
-          rules={{ required: 'El nombre es obligatorio' }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre del lote</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value ?? ''} type="text" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="lat"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Latitud</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value ?? ''} type="number" step="any" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="long"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Longitud</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value ?? ''} type="number" step="any" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="link_mapa"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Link mapa</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value ?? ''} type="url" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="hectareas"
-          rules={{
-            required: 'Las hectareas son obligatorias',
-            min: { value: 0.01, message: 'Debe ser mayor a 0' },
-            max: { value: 10000, message: 'Debe ser menor a 10000' }
-          }}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Hectareas</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  value={field.value ?? ''}
-                  type="number"
-                  step="0.01"
-                  onChange={(event) => {
-                    const value = event.target.value
-                    field.onChange(value === '' ? '' : Number(value))
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {showAdjuntos && (
+    <>
+      <Form {...form}>
+        <form onSubmit={handleSubmit(internalSubmit)} className="space-y-4">
           <FormField
             control={control}
-            name="adjuntos"
+            name="estancia_id"
+            rules={{ required: 'La estancia es obligatoria' }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Adjuntos</FormLabel>
+                <FormLabel>Estancia</FormLabel>
+                <FormControl>
+                  <SelectField field={field} label="Estancia" options={estancias} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="nombre"
+            rules={{ required: 'El nombre es obligatorio' }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nombre del lote</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} type="text" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="lat"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Latitud</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} type="number" step="any" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="long"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Longitud</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} type="number" step="any" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="link_mapa"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link mapa</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} type="url" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="hectareas"
+            rules={{
+              required: 'Las hectareas son obligatorias',
+              min: { value: 0.01, message: 'Debe ser mayor a 0' },
+              max: { value: 10000, message: 'Debe ser menor a 10000' }
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Hectareas</FormLabel>
                 <FormControl>
                   <Input
-                    type="file"
-                    multiple
-                    name={field.name}
-                    onBlur={field.onBlur}
-                    onChange={(event) => field.onChange(event.target.files)}
+                    {...field}
+                    value={field.value ?? ''}
+                    type="number"
+                    step="0.01"
+                    onChange={(event) => {
+                      const value = event.target.value
+                      field.onChange(value === '' ? '' : Number(value))
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{submitLabel || 'Guardar'}</Button>
-          {actions}
-        </div>
-      </form>
-    </Form>
+          {showAdjuntos && (
+            <FormField
+              control={control}
+              name="adjuntos"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Adjuntos</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      multiple
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      onChange={(event) => field.onChange(event.target.files)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="submit">{submitLabel || 'Guardar'}</Button>
+            {actions}
+          </div>
+        </form>
+      </Form>
+      <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
+        Volver
+      </Button>
+    </>
   )
 }
 

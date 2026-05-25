@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useReducer } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getEstancias } from '../services/estanciasService'
 import { getLote, updateLote, deleteAdjuntoLote, uploadAdjuntoLote } from '../services/lotesService'
@@ -12,19 +12,66 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
+const editLoteReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_ESTANCIAS':
+      return { ...state, estancias: action.payload }
+    case 'SET_LOTE':
+      return { ...state, lote: action.payload, loading: false }
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    default:
+      return state
+  }
+}
+
+const adjuntosDialogReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_MODAL_OPEN':
+      return { ...state, modalOpen: action.payload }
+    case 'SET_SELECTED_IMAGE':
+      return { ...state, selectedImage: action.payload, modalOpen: true }
+    case 'SET_DELETE_DIALOG_OPEN':
+      return { ...state, deleteDialogOpen: action.payload }
+    case 'SET_SELECTED_FILE':
+      return { ...state, selectedFile: action.payload }
+    case 'SET_ADJUNTO_TO_DELETE':
+      return { ...state, adjuntoToDelete: action.payload }
+    case 'SET_UPLOADING':
+      return { ...state, uploading: action.payload }
+    default:
+      return state
+  }
+}
+
 export default function LoteEditar() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [estancias, setEstancias] = useState([])
-  const [lote, setLote] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [adjuntoToDelete, setAdjuntoToDelete] = useState(null)
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [uploading, setUploading] = useState(false)
+
+  const initialEditLoteState = {
+    estancias: [],
+    lote: null,
+    loading: true
+  }
+
+  const initialAdjuntosDialogState = {
+    modalOpen: false,
+    deleteDialogOpen: false,
+    selectedImage: null,
+    selectedFile: null,
+    adjuntoToDelete: null,
+    uploading: false
+  }
+
+
+  const [lotesState, lotesDispatch] = useReducer(editLoteReducer, initialEditLoteState)
+  const { estancias, lote, loading } = lotesState
+
+
+  const [adjuntosDialogState, adjuntosDialogDispatch] = useReducer(adjuntosDialogReducer, initialAdjuntosDialogState)
+
+  const { modalOpen, selectedImage, deleteDialogOpen, selectedFile, adjuntoToDelete, uploading } = adjuntosDialogState
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -33,10 +80,10 @@ export default function LoteEditar() {
           getEstancias(),
           getLote(id),
         ])
-        setEstancias(estanciasData)
-        setLote(loteData)
+        lotesDispatch({ type: 'SET_ESTANCIAS', payload: estanciasData })
+        lotesDispatch({ type: 'SET_LOTE', payload: loteData })
       } finally {
-        setLoading(false)
+        lotesDispatch({ type: 'SET_LOADING', payload: false })
       }
     }
 
@@ -49,39 +96,38 @@ export default function LoteEditar() {
   }
 
   const handleDeleteAdjunto = (adjuntoId) => {
-    setAdjuntoToDelete(adjuntoId)
-    setDeleteDialogOpen(true)
+    adjuntosDialogDispatch({ type: 'SET_ADJUNTO_TO_DELETE', payload: adjuntoId })
   }
 
   const confirmDelete = async () => {
     try {
       await deleteAdjuntoLote(id, adjuntoToDelete)
       const updatedLote = await getLote(id)
-      setLote(updatedLote)
+      lotesDispatch({ type: 'SET_LOTE', payload: updatedLote })
     } catch (error) {
       alert('Error al eliminar adjunto')
       console.error(error)
     } finally {
-      setDeleteDialogOpen(false)
-      setAdjuntoToDelete(null)
+      adjuntosDialogDispatch({ type: 'SET_DELETE_DIALOG_OPEN', payload: false })
+      adjuntosDialogDispatch({ type: 'SET_ADJUNTO_TO_DELETE', payload: null })
     }
   }
 
   const handleUpload = async () => {
     if (!selectedFile) return
-    setUploading(true)
+    adjuntosDialogDispatch({ type: 'SET_UPLOADING', payload: true })
     try {
       await uploadAdjuntoLote(id, selectedFile)
       const updatedLote = await getLote(id)
-      setLote(updatedLote)
-      setSelectedFile(null)
+      lotesDispatch({ type: 'SET_LOTE', payload: updatedLote })
+      adjuntosDialogDispatch({ type: 'SET_SELECTED_FILE', payload: null })
       // Reset input
       document.getElementById('file-input').value = ''
     } catch (error) {
       alert('Error al subir adjunto')
       console.error(error)
     } finally {
-      setUploading(false)
+      adjuntosDialogDispatch({ type: 'SET_UPLOADING', payload: false })
     }
   }
 
@@ -127,9 +173,7 @@ export default function LoteEditar() {
                     src={adj.url}
                     alt="adjunto"
                     className="w-32 mt-2 cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => {
-                      setSelectedImage(adj)
-                      setModalOpen(true)
+                    onClick={() => {adjuntosDialogDispatch({ type: 'SET_SELECTED_IMAGE', payload: adj })
                     }}
                   />
                 )}
@@ -146,7 +190,7 @@ export default function LoteEditar() {
         type="file"
         id="file-input"
         style={{ display: 'none' }}
-        onChange={(e) => setSelectedFile(e.target.files[0])}
+        onChange={(e) => adjuntosDialogDispatch({ type: 'SET_SELECTED_FILE', payload: e.target.files[0] })}
       />
       <Button
         type="button"
@@ -157,7 +201,7 @@ export default function LoteEditar() {
         {uploading ? 'Subiendo...' : selectedFile ? 'Subir plano' : 'Agregar plano'}
       </Button>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <Dialog open={modalOpen} onOpenChange={(open)=> adjuntosDialogDispatch({ type: 'SET_MODAL_OPEN', payload: open })}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Imagen</DialogTitle>
@@ -172,14 +216,14 @@ export default function LoteEditar() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <Dialog open={deleteDialogOpen} onOpenChange={(open)=> adjuntosDialogDispatch({ type: 'SET_DELETE_DIALOG_OPEN', payload: open })}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
           </DialogHeader>
           <p>¿Confirma la eliminación del adjunto?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => adjuntosDialogDispatch({ type: 'SET_DELETE_DIALOG_OPEN', payload: false })}>
               No
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
