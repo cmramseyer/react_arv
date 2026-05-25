@@ -1,17 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { CalendarIcon } from 'lucide-react'
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
 import { getEstadisticas } from '../services/estadisticasService'
-import formatHectareas from '../utils/formatHectareas'
+
+import EstadisticaFilter from '../components/EstadisticaFilter'
+import EstadisticaCard from '../components/EstadisticaCard'
 
 const emptyStats = {
   hectareas_por_propietario: [],
@@ -35,12 +27,7 @@ const buildChartData = (list, labelKey) =>
 const formatApiDate = (date) => format(date, 'yyyy-MM-dd')
 const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')
 
-const createChartConfig = (colorVar) => ({
-  hectareas: {
-    label: 'Hectáreas',
-    color: `var(${colorVar})`,
-  },
-})
+
 
 export default function Estadistica() {
   const [range, setRange] = useState()
@@ -127,52 +114,19 @@ export default function Estadistica() {
     })
   }
 
-  const formatAxisValue = (value) => {
-    const parsed = Number(value)
-    if (Number.isNaN(parsed)) return value
-    return parsed.toLocaleString('es-AR')
-  }
+  
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={handleMesActual}>
-            Mes actual
-          </Button>
-          <Button variant="secondary" onClick={handleMesAnterior}>
-            Mes anterior
-          </Button>
-          <Button variant="secondary" onClick={handleRangoHistorico}>
-            Oct25/Mar26
-          </Button>
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal md:w-[280px]",
-                !range?.from && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {rangeLabel}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="range"
-              selected={range}
-              onSelect={setRange}
-              numberOfMonths={2}
-              defaultMonth={range?.from}
-              locale={es}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+      
+      <EstadisticaFilter
+        handleMesActual={handleMesActual}
+        handleMesAnterior={handleMesAnterior}
+        handleRangoHistorico={handleRangoHistorico}
+        range={range}
+        setRange={setRange}
+        rangeLabel={rangeLabel}
+      />
 
       {loading && (
         <div className="text-sm text-muted-foreground">Cargando estadísticas...</div>
@@ -192,107 +146,27 @@ export default function Estadistica() {
 
       {!loading && hasCharts && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Hectáreas por propietario</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={createChartConfig('--chart-1')}
-                className="h-[300px] w-full"
-              >
-                <BarChart data={propietarioData} layout="vertical" margin={{ left: 24, right: 16 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    width={140}
-                  />
-                  <XAxis
-                    dataKey="hectareas"
-                    type="number"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={formatAxisValue}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent valueFormatter={formatHectareas} />} />
-                  <Bar dataKey="hectareas" fill="var(--color-hectareas)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            title="Hectáreas por propietario"
+            data={propietarioData}
+            dataKey="hectareas"
+            chart="1"
+          />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Hectáreas por maquinista</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={createChartConfig('--chart-2')}
-                className="h-[300px] w-full"
-              >
-                <BarChart data={maquinistaData} layout="vertical" margin={{ left: 24, right: 16 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    width={140}
-                  />
-                  <XAxis
-                    dataKey="hectareas"
-                    type="number"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={formatAxisValue}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent valueFormatter={formatHectareas} />} />
-                  <Bar dataKey="hectareas" fill="var(--color-hectareas)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            title="Hectáreas por maquinista"
+            data={maquinistaData}
+            dataKey="hectareas"
+            chart="2"
+          />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Hectáreas por cultivo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={createChartConfig('--chart-3')}
-                className="h-[300px] w-full"
-              >
-                <BarChart data={cultivoData} layout="vertical" margin={{ left: 24, right: 16 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={10}
-                    width={140}
-                  />
-                  <XAxis
-                    dataKey="hectareas"
-                    type="number"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={formatAxisValue}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent valueFormatter={formatHectareas} />} />
-                  <Bar dataKey="hectareas" fill="var(--color-hectareas)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            title="Hectáreas por cultivo"
+            data={cultivoData}
+            dataKey="hectareas"
+            chart="3"
+          />
+
         </div>
       )}
     </div>
