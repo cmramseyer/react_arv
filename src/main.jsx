@@ -21,8 +21,6 @@ import OrdenFumigacionTerminar from './pages/OrdenFumigacionTerminar'
 import BuscarOrden from './pages/BuscarOrden'
 import Facturacion from './pages/Facturacion'
 import Estadistica from './pages/Estadistica'
-import EstanciaNueva from './pages/EstanciaNueva'
-import EstanciaEditar from './pages/EstanciaEditar'
 import Cultivos from './pages/Cultivos'
 import CultivoNueva from './pages/CultivoNueva'
 import CultivoEditar from './pages/CultivoEditar'
@@ -39,8 +37,6 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/estancias" element={<Estancias />} />
-          <Route path="/estancias/nueva" element={<EstanciaNueva />} />
-          <Route path="/estancias/:id/editar" element={<EstanciaEditar />} />
           <Route path="/cultivos" element={<Cultivos />} />
           <Route path="/cultivos/nueva" element={<CultivoNueva />} />
           <Route path="/cultivos/:id/editar" element={<CultivoEditar />} />

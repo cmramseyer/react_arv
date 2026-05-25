@@ -12,8 +12,9 @@ import {
 
 import { Button } from './ui/button'
 
-export default function EstanciaList({ estancias, onDelete }) {
+export default function EstanciaList({ estancias, onDelete, onSelectedIdChange }) {
   const navigate = useNavigate()
+
 
   return (
     <Table>
@@ -35,7 +36,7 @@ export default function EstanciaList({ estancias, onDelete }) {
             <TableCell>{e.telefono}</TableCell>
             <TableCell>{e.email}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => navigate(`/estancias/${e.id}/editar`)}>
+              <Button variant="default" onClick={() => onSelectedIdChange(e.id)}>
                 Editar
               </Button>
               <Button variant="default" onClick={() => onDelete(e.id)}>
