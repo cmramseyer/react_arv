@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 export default function LoteList({ lotes, onShow, onDelete }) {
   const navigate = useNavigate()

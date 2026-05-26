@@ -59,7 +59,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 const PDF_FILENAME_REGEX = /\.pdf$/i
 const DEFAULT_MARKER_COLOR = '#ffeb3b'

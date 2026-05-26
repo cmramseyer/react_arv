@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import formatHectareas from './formatHectareas'
+import { formatHectareas } from './formatHectareas'
 
 describe('formatHectareas', () => {
   it('returns Sin datos for empty values', () => {

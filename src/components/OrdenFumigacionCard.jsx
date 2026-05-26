@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 const formatCantidad = (value) => {
   if (value === null || value === undefined || value === '') return 'Sin datos'

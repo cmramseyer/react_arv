@@ -21,7 +21,7 @@ import { Controller } from 'react-hook-form'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import { getMaquinistas } from '../services/maquinistasService'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 const parseHectareasValue = (value) => {
   if (value === null || value === undefined || value === '') return null

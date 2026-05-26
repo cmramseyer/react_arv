@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 export default function LoteShow() {
   const { id } = useParams()

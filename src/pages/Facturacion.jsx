@@ -24,7 +24,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import formatHectareas from '../utils/formatHectareas'
+import { formatHectareas } from '../utils/formatHectareas'
 
 const groupHasOrdenes = (grupo) => Array.isArray(grupo?.data) && grupo.data.length > 0
 
