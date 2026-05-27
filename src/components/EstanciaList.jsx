@@ -12,7 +12,7 @@ import {
 
 import { Button } from './ui/button'
 
-export default function EstanciaList({ estancias, onDelete, onSelectedIdChange }) {
+export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorMessage }) {
   const navigate = useNavigate()
 
 
@@ -36,12 +36,13 @@ export default function EstanciaList({ estancias, onDelete, onSelectedIdChange }
             <TableCell>{e.telefono}</TableCell>
             <TableCell>{e.email}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => onSelectedIdChange(e.id)}>
+              <Button variant="default" onClick={() => onEdit(e.id)}>
                 Editar
               </Button>
               <Button variant="default" onClick={() => onDelete(e.id)}>
                 Eliminar
               </Button>
+              { deleteErrorMessage && deleteErrorMessage }
             </TableCell>
           </TableRow>
         ))}

@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useReducer } from 'react'
-import { getEstancias, deleteEstancia } from '../services/estanciasService'
+import { useNavigate } from 'react-router-dom'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import EstanciaList from '../components/EstanciaList'
-import EstanciaForm from '@/components/EstanciaForm'
 import { Button } from '@/components/ui/button'
+import { useEstanciasQuery, useMutationsEstancia } from '../hooks/useEstanciaQuery'
 
 const estanciaReducer = (state, action) => {
   switch (action.type) {
     case 'SET_ESTANCIAS':
       return { ...state, 
-        estancias: action.payload,
-        loading: false,
         modo: 'list',
         selectedId: null
       }
@@ -21,8 +20,7 @@ const estanciaReducer = (state, action) => {
     case 'CREATE_ESTANCIA':
       return { ...state, 
         modo: 'create',
-        selectedId: null,
-        loading: false
+        selectedId: null
       }
     case 'SAVED':
       return { ...state, 
@@ -40,87 +38,42 @@ const estanciaReducer = (state, action) => {
 }
 
 export default function Estancias() {
-  const initialState = {
-    estancias: [],
-    loading: true,
-    selectedId: null,
-    modo: 'list'
+  
+  const navigate = useNavigate()
+
+  const estanciasQuery = useEstanciasQuery()
+
+  const { deleteMutation } = useMutationsEstancia()
+
+  const handleDelete = (id) => {
+    deleteMutation.mutate(id)
   }
 
-  const [state, estanciaDispatch] = useReducer(estanciaReducer, initialState)
+  const deleteErrorMessage = deleteMutation.error?.message
 
-  const { estancias, loading, selectedId, modo } = state
-
-  useEffect(() => {
-    fetchEstancias()
-  }, [])
-
-  const fetchEstancias = async () => {
-    const data = await getEstancias()
-    estanciaDispatch({type: 'SET_ESTANCIAS', payload: data})
+  const handleEdit = (id) => {
+    navigate(`/estancias/${id}/edit`)
   }
-
-  const handleDelete = async (id) => {
-    await deleteEstancia(id)
-    fetchEstancias()
-  }
-
-  const onSelectedIdChange = (id) => {
-    estanciaDispatch({type: 'EDIT_ESTANCIA', payload: id})
-  }
-
-  const handleFormSaved = async () => {
-    await fetchEstancias()
-    estanciaDispatch({type: 'SAVED'})
-  }
-
-  const handleCancel = async () => {
-    estanciaDispatch({type: 'CANCEL'})
-  }
-
-  if (loading) return <div>Cargando...</div>
-
-  const editForm = (
-    <div>
-      <h2>Editar Estancia</h2>
-      <EstanciaForm
-        action="edit"
-        estanciaId={selectedId}
-        onSaved={handleFormSaved}
-      />
-    </div>
-  )
-
-  const newForm = (
-    <div>
-      <h2>Crear Estancia</h2>
-      <EstanciaForm
-        action="create"
-        onSaved={handleFormSaved}
-      />
-    </div>
-  )
-
-  const listView = (
-    <>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">Listado de Estancias</h1>
-        <Button onClick={() => estanciaDispatch({type: 'CREATE_ESTANCIA'})}>Crear Estancia</Button>
-      </div>
-
-      <EstanciaList
-        estancias={estancias}
-        onSelectedIdChange = {onSelectedIdChange}
-        onDelete={handleDelete}
-      />
-    </>
-  )
 
   return (
     <div className="p-4">
-      { modo === 'list' && listView }
-      { modo === 'edit' && editForm }
-      { modo === 'create' && newForm }
+      <>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold">Listado de Estancias</h1>
+          <Button onClick={() => navigate('/estancias/new')}>Crear Estancia</Button>
+        </div>
+
+        { estanciasQuery.error && <div>Error: {estanciasQuery.error.message}</div> }
+
+        { estanciasQuery.isPending ? <div>Cargando...</div> :
+          <EstanciaList
+            estancias={estanciasQuery.data}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            deleteErrorMessage={deleteErrorMessage}
+          />
+        }
+      </>
     </div>
   )
 }

@@ -1,60 +1,68 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { getEstancia, updateEstancia, createEstancia } from '../services/estanciasService'
-import { useNavigate } from 'react-router-dom'
+import { useEstanciaQueryById, useMutationsEstancia } from '../hooks/useEstanciaQuery'
 
-export default function EstanciaForm({ estanciaId, action, onSaved }) {
-  const form = useForm({
-    defaultValues: {
-      nombre: '',
-      contacto: '',
-      telefono: '',
-      email: ''
-    }
-  })
 
-  const isEdit = action === 'edit'
+export default function EstanciaForm({ estanciaId = null, formAction }) {
 
   const navigate = useNavigate()
+  const isEdit = formAction === 'edit'
 
-  const [estancia, setEstancia] = useState(null)
-  const [loading, setLoading] = useState(isEdit ? true : false)
+  const queryEnabled = isEdit && Boolean(estanciaId)
+  const estanciaQuery = useEstanciaQueryById(estanciaId, queryEnabled)
 
-  useEffect(() => {
-    if (!isEdit) return
-    const fetch = async () => {
-      try {
-        const data = await getEstancia(estanciaId)
-        setEstancia(data)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetch()
-  }, [estanciaId, isEdit])
 
-  const handleUpdate = async (formData) => {
-    await updateEstancia(estanciaId, formData)
-    await onSaved()
+  const emptyValues = {
+    nombre: '',
+    contacto: '',
+    telefono: '',
+    email: ''
   }
-  
-  const handleCreate = async (formData) => {
-    await createEstancia(formData)
-    await onSaved()
-  }
+  const defaultValues = isEdit ? estanciaQuery.data : emptyValues
+
+  const form = useForm({
+    defaultValues: defaultValues
+  })
 
   const { handleSubmit, control, reset } = form
 
-  useEffect(() => {
-    if (estancia) reset(estancia)
-  }, [estancia, reset])
+  const { createMutation, updateMutation, deleteMutation } = useMutationsEstancia()
 
-  if (isEdit && loading) return <div>Cargando...</div>
-  if (isEdit && !estancia) return <div>No se encontró la estancia</div>
+
+  const isSubmitting = createMutation.isPending || updateMutation.isPending
+  const isError = createMutation.isError || updateMutation.isError
+  const errorMessage = createMutation.error?.message || updateMutation.error?.message || 'Error desconocido'
+
+  const handleUpdate = async () => {
+    try {
+      await updateMutation.mutateAsync({id: estanciaId, payload: form.getValues()})
+      navigate('/estancias')
+    } catch(error) {
+      console.log(`error en el try: ${error}`)
+    }
+    
+  }
+  
+  const handleCreate = async () => { 
+    try {
+      await createMutation.mutateAsync(form.getValues())
+      navigate('/estancias')
+    } catch(error) {
+      console.log(`error en el try: ${error}`)
+    }
+  }
+
+  useEffect(() => {
+    if (estanciaQuery.data) reset(estanciaQuery.data)
+  }, [estanciaQuery.data, reset])
+
+  if (estanciaQuery.isLoading) return <div>Cargando...</div>
+  
+  if (isEdit && isError) return <div>No se encontró la estancia</div>
 
 
   return (
@@ -131,11 +139,12 @@ export default function EstanciaForm({ estanciaId, action, onSaved }) {
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="submit">{isEdit ? 'Actualizar' : 'Crear'}</Button>
+            <Button type="submit" disabled={ isSubmitting }> { isEdit ? 'Actualizar' : 'Crear' } </Button>
+            { isError && errorMessage } { isSubmitting && 'Guardando...' }
           </div>
         </form>
       </Form>
-      <Button type="button" variant="secondary" onClick={onSaved}>
+      <Button type="button" variant="secondary" onClick={() => navigate('/estancias')}>
         Volver
       </Button>
     </>
