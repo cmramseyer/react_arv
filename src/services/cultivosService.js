@@ -1,49 +1,45 @@
 const API_URL = `http://${import.meta.env.VITE_API_URL}/cultivos`
 
 import { fetchWithAuth } from "./fetchWithAuth"
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('arv_token')
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  }
-}
+import { handleResponse } from "../lib/utils"
+import { getAuthHeaders } from "./authHelpers"
 
 export const getCultivos = async () => {
   const res = await fetchWithAuth(API_URL, {
     headers: getAuthHeaders(),
   })
-  return await res.json()
+  return handleResponse(res, 'Error fetching cultivos')
 }
 
 export const getCultivo = async(id) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     headers: getAuthHeaders(),
   })
-  if (!res.ok) throw new Error('Error fetching cultivo')
-  return res.json()
+  return handleResponse(res, 'Error fetching cultivo')
 }
 
 export const createCultivo = async (cultivo) => {
-  await fetchWithAuth(API_URL, {
+  const res = await fetchWithAuth(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ cultivo }),
   })
+  return handleResponse(res, 'Error creating cultivo')
 }
 
 export const updateCultivo = async (id, cultivo) => {
-  await fetchWithAuth(`${API_URL}/${id}`, {
+  const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify({ cultivo }),
   })
+  return handleResponse(res, 'Error updating cultivo')
 }
 
 export const deleteCultivo = async (id) => {
-  await fetchWithAuth(`${API_URL}/${id}`, {
+  const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   })
+  return handleResponse(res, 'Error deleting cultivo')
 }
