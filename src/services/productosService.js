@@ -22,7 +22,7 @@ export const getProducto = async (id) => {
 export const createProducto = async (producto) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ producto }),
   })
   return handleResponse(res, 'Error creating producto')
@@ -31,7 +31,7 @@ export const createProducto = async (producto) => {
 export const updateProducto = async (id, producto) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ producto }),
   })
   return handleResponse(res, 'Error updating producto')

@@ -1,5 +1,6 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { useEffect } from 'react'
+import { useProductosQuery, useProductosMutation } from '@/hooks/useProductoQuery'
+
 import { useNavigate } from 'react-router-dom'
 import {
   Table,
@@ -12,8 +13,24 @@ import {
 
 import { Button } from './ui/button'
 
-export default function ProductoList({ productos, onDelete }) {
+export default function ProductoList() {
+  
   const navigate = useNavigate()
+
+  const { data, isLoading, isError, error } = useProductosQuery()
+  const { deleteMutation } = useProductosMutation()
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteMutation.mutateAsync(id)
+    } catch {
+
+    }
+
+  }
+
+  if (isLoading) { return <div>Cargando...</div> }
+  if (isError) { return <div>Error: {error.message}</div> }
 
   return (
     <Table>
@@ -27,7 +44,7 @@ export default function ProductoList({ productos, onDelete }) {
       </TableHeader>
 
       <TableBody>
-        {productos.map((producto) => (
+        {data.map((producto) => (
           <TableRow key={producto.id}>
             <TableCell>{producto.nombre}</TableCell>
             <TableCell>{producto.tipo_producto}</TableCell>
@@ -36,7 +53,7 @@ export default function ProductoList({ productos, onDelete }) {
               <Button variant="default" onClick={() => navigate(`/productos/${producto.id}/editar`)}>
                 Editar
               </Button>
-              <Button variant="default" onClick={() => onDelete(producto.id)}>
+              <Button variant="default" onClick={() => handleDelete(producto.id)}>
                 Eliminar
               </Button>
             </TableCell>
@@ -45,9 +62,4 @@ export default function ProductoList({ productos, onDelete }) {
       </TableBody>
     </Table>
   )
-}
-
-ProductoList.propTypes = {
-  productos: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }

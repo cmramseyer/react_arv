@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
-
+import { productosQueryKey, useProductoQuery, useProductosMutation } from '../hooks/useProductoQuery'
+import { useNavigate } from 'react-router-dom'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -21,20 +22,55 @@ const unidadMedidaOptions = [
   { value: 'ml', label: 'Mililitros' }
 ]
 
-export default function ProductoForm({ onSubmit, defaultValues, submitLabel, actions }) {
+export default function ProductoForm({ formAction, id }) {
+  
+  const isEdit = formAction === 'edit'
+  const navigate = useNavigate()
+
+  const emptyValues = {
+    nombre: '',
+    tipo_producto: '',
+    unidad_medida: '',
+  }
+
+  const productoQuery = useProductoQuery(id, isEdit)
+  
   const form = useForm({
-    defaultValues: defaultValues || {}
+    defaultValues: emptyValues
   })
 
-  const { control, handleSubmit, reset } = form
+  const { control, handleSubmit, reset, formState } = form
+
+  const { createMutation, updateMutation } = useProductosMutation()
+
+  const isSubmitting = createMutation.isSubmitting || updateMutation.isSubmitting
+
+  const handleCreate = async (payload) => {
+    try {
+      await createMutation.mutateAsync(payload)
+      navigate('/productos')
+    } catch {
+      console.log('error create')
+    }
+  }
+
+  const handleUpdate = async () => {
+    try {
+      await updateMutation.mutateAsync({id, payload: form.getValues()})
+      navigate('/productos')
+    } catch {
+      console.log('error update')
+    }
+  }
 
   useEffect(() => {
-    reset(defaultValues || {})
-  }, [defaultValues, reset])
+    console.log(productoQuery.data)
+    reset(productoQuery.data)
+  }, [productoQuery.data, reset])
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
@@ -92,17 +128,9 @@ export default function ProductoForm({ onSubmit, defaultValues, submitLabel, act
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{submitLabel || 'Guardar'}</Button>
-          {actions}
+          <Button type="submit" disabled={isSubmitting}>{isEdit ? "Actualizar" : 'Guardar'}</Button>
         </div>
       </form>
     </Form>
   )
-}
-
-ProductoForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,     // (data) => Promise<void>
-  defaultValues: PropTypes.object,
-  submitLabel: PropTypes.string,
-  actions: PropTypes.node,
 }
