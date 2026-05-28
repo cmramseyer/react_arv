@@ -21,7 +21,7 @@ export const getMaquinista = async(id) => {
 export const createMaquinista = async (maquinista) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ maquinista }),
   })
   return handleResponse(res, 'Error creating maquinista')
@@ -30,7 +30,7 @@ export const createMaquinista = async (maquinista) => {
 export const updateMaquinista = async (id, maquinista) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ maquinista }),
   })
   return handleResponse(res, 'Error updating maquinista')

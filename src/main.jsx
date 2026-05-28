@@ -27,8 +27,8 @@ import Cultivos from './pages/Cultivos'
 import CultivoNew from './pages/CultivoNew.jsx'
 import CultivoEdit from './pages/CultivoEdit.jsx'
 import Maquinistas from './pages/Maquinistas'
-import MaquinistaNueva from './pages/MaquinistaNueva'
-import MaquinistaEditar from './pages/MaquinistaEditar'
+import MaquinistaNew from './pages/MaquinistaNew.jsx'
+import MaquinistaEdit from './pages/MaquinistaEdit.jsx'
 import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -49,8 +49,8 @@ createRoot(document.getElementById('root')).render(
             <Route path="/cultivos/new" element={<CultivoNew />} />
             <Route path="/cultivos/:id/edit" element={<CultivoEdit />} />
             <Route path="/maquinistas" element={<Maquinistas />} />
-            <Route path="/maquinistas/nueva" element={<MaquinistaNueva />} />
-            <Route path="/maquinistas/:id/editar" element={<MaquinistaEditar />} />
+            <Route path="/maquinistas/new" element={<MaquinistaNew />} />
+            <Route path="/maquinistas/:id/edit" element={<MaquinistaEdit />} />
             <Route path="/lotes" element={<Lotes />} />
             <Route path="/lotes/:id" element={<LoteShow />} />
             <Route path="/lotes/new" element={<LoteNew />} />

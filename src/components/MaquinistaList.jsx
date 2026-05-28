@@ -1,6 +1,6 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
+import { useMaquinistasQuery, useMaquinistaMutation } from '@/hooks/useMaquinistaQuery'
 import {
   Table,
   TableBody,
@@ -12,8 +12,21 @@ import {
 
 import { Button } from './ui/button'
 
-export default function MaquinistaList({ maquinistas, onDelete }) {
+export default function MaquinistaList() {
   const navigate = useNavigate()
+
+  const maquinistasQuery = useMaquinistasQuery()
+  const { deleteMutation } = useMaquinistaMutation()
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteMutation.mutateAsync(id)
+    } catch {
+      console.log('error delete')
+    }
+  }
+
+  if ( maquinistasQuery.isLoading ) { return <div>Cargando...</div> }
 
   return (
     <Table>
@@ -25,14 +38,14 @@ export default function MaquinistaList({ maquinistas, onDelete }) {
       </TableHeader>
 
       <TableBody>
-        {maquinistas.map((m) => (
+        {maquinistasQuery.data.map((m) => (
           <TableRow key={m.id}>
             <TableCell>{m.nombre}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => navigate(`/maquinistas/${m.id}/editar`)}>
+              <Button variant="default" onClick={() => navigate(`/maquinistas/${m.id}/edit`)}>
                 Editar
               </Button>
-              <Button variant="default" onClick={() => onDelete(m.id)}>
+              <Button variant="default" onClick={() => handleDelete(m.id)}>
                 Eliminar
               </Button>
             </TableCell>
@@ -41,9 +54,4 @@ export default function MaquinistaList({ maquinistas, onDelete }) {
       </TableBody>
     </Table>
   )
-}
-
-MaquinistaList.propTypes = {
-  maquinistas: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }

@@ -1,12 +1,19 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import PropTypes from 'prop-types'
+import { useMaquinistaQuery, useMaquinistaMutation } from '@/hooks/useMaquinistaQuery'
+import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function MaquinistaForm({ onSubmit, maquinista, actions }) {
+export default function MaquinistaForm({ formAction, id }) {
+
+  console.log(id)
+
+  const navigate = useNavigate()
+  const isEdit = formAction === 'edit'
+
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -15,13 +22,35 @@ export default function MaquinistaForm({ onSubmit, maquinista, actions }) {
 
   const { handleSubmit, control, reset } = form
 
+  const enabled = isEdit
+  const maquinistaQuery = useMaquinistaQuery(id, enabled)
+  const { createMutation, updateMutation } = useMaquinistaMutation()
+
   useEffect(() => {
-    if (maquinista) reset(maquinista)
-  }, [maquinista, reset])
+    reset(maquinistaQuery.data)
+  }, [maquinistaQuery.data, reset])
+
+  const handleCreate = async () => {
+    try {
+      await createMutation.mutateAsync(form.getValues())
+      navigate('/maquinistas')
+    } catch (error) {
+      console.log('error create')
+    }
+  }
+  
+  const handleUpdate = async () => {
+    try {
+      await updateMutation.mutateAsync({id, data: form.getValues()})
+      navigate('/maquinistas')
+    } catch (error) {
+      console.log('error create')
+    }
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
@@ -38,16 +67,9 @@ export default function MaquinistaForm({ onSubmit, maquinista, actions }) {
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{maquinista ? 'Actualizar' : 'Crear'}</Button>
-          {actions}
+          <Button type="submit">{isEdit ? 'Actualizar' : 'Crear'}</Button>
         </div>
       </form>
     </Form>
   )
-}
-
-MaquinistaForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  maquinista: PropTypes.object,
-  actions: PropTypes.node,
 }
