@@ -1,7 +1,7 @@
 import React from 'react'
 import ProductoForm from '../components/ProductoForm'
 
-export default function ProductoNuevo() {
+export default function ProductoNew() {
   
   return (
     <div className="p-4">

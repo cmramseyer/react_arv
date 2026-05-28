@@ -10,7 +10,7 @@ vi.mock('../services/productosService', () => ({
 
 import { createProducto } from '../services/productosService'
 
-import ProductoNuevo from './ProductoNuevo'
+import ProductoNuevo from './ProductoNew'
 
 function ProductosMock() {
   return <h1>Productos</h1>

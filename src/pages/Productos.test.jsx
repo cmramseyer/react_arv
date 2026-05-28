@@ -14,8 +14,8 @@ vi.mock('../services/productosService', () => ({
 import { getProductos, createProducto } from '../services/productosService'
 
 import Productos from './Productos'
-import ProductoNuevo from './ProductoNuevo'
-import ProductoEditar from './ProductoEditar'
+import ProductoNuevo from './ProductoNew'
+import ProductoEditar from './ProductoEdit'
 
 function LocationDisplay() {
   const location = useLocation()

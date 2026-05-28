@@ -12,7 +12,7 @@ export default function Productos() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">Listado de Productos</h1>
 
-        <Button onClick={() => navigate('/productos/nuevo')}>Crear Producto</Button>
+        <Button onClick={() => navigate('/productos/new')}>Crear Producto</Button>
       </div>
 
       <ProductoList />

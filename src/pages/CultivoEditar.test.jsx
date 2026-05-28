@@ -9,7 +9,7 @@ vi.mock('../services/cultivosService', () => ({
 }))
 
 import { getCultivo, updateCultivo } from '../services/cultivosService'
-import CultivoEditar from './CultivoEditar'
+import CultivoEditar from './CultivoEdit'
 
 const cultivoFixture = { id: 1, nombre: 'Trigo' }
 

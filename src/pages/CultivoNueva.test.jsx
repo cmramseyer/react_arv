@@ -8,7 +8,7 @@ vi.mock('../services/cultivosService', () => ({
 }))
 
 import { createCultivo } from '../services/cultivosService'
-import CultivoNueva from './CultivoNueva'
+import CultivoNueva from './CultivoNew'
 
 function LocationDisplay() {
   const location = useLocation()

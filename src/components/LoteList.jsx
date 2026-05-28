@@ -49,7 +49,7 @@ export default function LoteList({ lotes, onShow, onDelete }) {
                       <Button variant="secondary" size="sm" onClick={() => onShow(lote)}>
                         Ver
                       </Button>
-                      <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/editar`)}>
+                      <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/edit`)}>
                         Editar
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => onDelete(lote.id)}>

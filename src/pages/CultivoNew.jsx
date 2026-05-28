@@ -4,7 +4,7 @@ import { createCultivo } from '../services/cultivosService'
 import { Button } from '@/components/ui/button'
 import CultivoForm from '../components/CultivoForm'
 
-export default function CultivoNueva() {
+export default function CultivoNew() {
   const navigate = useNavigate()
 
   const handleSubmit = async (formData) => {

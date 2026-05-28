@@ -9,7 +9,7 @@ vi.mock('../services/productosService', () => ({
 }))
 
 import { getProducto, updateProducto } from '../services/productosService'
-import ProductoEditar from './ProductoEditar'
+import ProductoEditar from './ProductoEdit'
 
 const productoFixture = {
   id: 1,

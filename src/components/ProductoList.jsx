@@ -50,7 +50,7 @@ export default function ProductoList() {
             <TableCell>{producto.tipo_producto}</TableCell>
             <TableCell>{producto.unidad_medida}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => navigate(`/productos/${producto.id}/editar`)}>
+              <Button variant="default" onClick={() => navigate(`/productos/${producto.id}/edit`)}>
                 Editar
               </Button>
               <Button variant="default" onClick={() => handleDelete(producto.id)}>

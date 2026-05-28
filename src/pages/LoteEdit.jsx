@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import LoteForm from '../components/LoteForm'
 
 
-export default function LoteEditar() {
+export default function LoteEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
   

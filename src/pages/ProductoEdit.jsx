@@ -2,7 +2,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import ProductoForm from '../components/ProductoForm'
 
-export default function ProductoEditar() {
+export default function ProductoEdit() {
   const { id } = useParams()
 
   return (

@@ -4,7 +4,7 @@ import CultivoForm from '../components/CultivoForm'
 import { Button } from '@/components/ui/button'
 import { getCultivo, updateCultivo } from '../services/cultivosService'
 
-export default function CultivoEditar() {
+export default function CultivoEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [cultivo, setCultivo] = useState(null)
