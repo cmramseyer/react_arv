@@ -14,7 +14,7 @@ vi.mock('../services/estanciasService', () => ({
 
 import { getLote, updateLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
-import LoteEditar from './LoteEditar'
+import LoteEditar from './LoteEdit'
 
 const loteFixture = {
   id: 1,

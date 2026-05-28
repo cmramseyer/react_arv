@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
-import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
-import { productosQueryKey, useProductoQuery, useProductosMutation } from '../hooks/useProductoQuery'
+import { useProductoQuery, useProductosMutation } from '../hooks/useProductoQuery'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'

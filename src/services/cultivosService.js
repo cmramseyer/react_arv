@@ -21,7 +21,7 @@ export const getCultivo = async(id) => {
 export const createCultivo = async (cultivo) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ cultivo }),
   })
   return handleResponse(res, 'Error creating cultivo')
@@ -30,7 +30,7 @@ export const createCultivo = async (cultivo) => {
 export const updateCultivo = async (id, cultivo) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ cultivo }),
   })
   return handleResponse(res, 'Error updating cultivo')

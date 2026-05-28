@@ -1,6 +1,6 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
+import { useCultivosQuery, useCultivoMutation } from '../hooks/useCultivoQuery'
 import {
   Table,
   TableBody,
@@ -12,8 +12,22 @@ import {
 
 import { Button } from './ui/button'
 
-export default function CultivoList({ cultivos, onDelete }) {
+export default function CultivoList() {
   const navigate = useNavigate()
+
+  const cultivosQuery = useCultivosQuery()
+  
+  const { deleteMutation } = useCultivoMutation()
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteMutation.mutateAsync(id)
+    } catch {
+      console.log('error delete')
+    }
+  }
+
+  if (cultivosQuery.isLoading) { return <div>Cargando...</div>}
 
   return (
     <Table>
@@ -25,14 +39,14 @@ export default function CultivoList({ cultivos, onDelete }) {
       </TableHeader>
 
       <TableBody>
-        {cultivos.map((c) => (
+        {cultivosQuery.data.map((c) => (
           <TableRow key={c.id}>
             <TableCell>{c.nombre}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => navigate(`/cultivos/${c.id}/editar`)}>
+              <Button variant="default" onClick={() => navigate(`/cultivos/${c.id}/edit`)}>
                 Editar
               </Button>
-              <Button variant="default" onClick={() => onDelete(c.id)}>
+              <Button variant="default" onClick={() => handleDelete(c.id)}>
                 Eliminar
               </Button>
             </TableCell>
@@ -41,9 +55,4 @@ export default function CultivoList({ cultivos, onDelete }) {
       </TableBody>
     </Table>
   )
-}
-
-CultivoList.propTypes = {
-  cultivos: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }

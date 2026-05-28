@@ -1,12 +1,16 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import PropTypes from 'prop-types'
+import { useCultivoQuery, useCultivoMutation } from '@/hooks/useCultivoQuery'
+import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function CultivoForm({ onSubmit, cultivo, actions }) {
+export default function CultivoForm({ formAction, id }) {
+  const navigate = useNavigate()
+  const isEdit = formAction === 'edit'
+  
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -15,13 +19,32 @@ export default function CultivoForm({ onSubmit, cultivo, actions }) {
 
   const { handleSubmit, control, reset } = form
 
+  const enabled = isEdit
+  console.log(`isEdit: ${isEdit}, id: ${id}`)
+  const cultivoQuery = useCultivoQuery(id, enabled)
+  const { createMutation, updateMutation } = useCultivoMutation()
+
   useEffect(() => {
-    if (cultivo) reset(cultivo)
-  }, [cultivo, reset])
+    reset(cultivoQuery.data)
+  }, [cultivoQuery.data, reset])
+
+  const handleCreate = async () => {
+    try {
+      await createMutation.mutateAsync(form.getValues())
+      navigate('/cultivos')
+    } catch {}
+  }
+
+  const handleUpdate = async () => {
+    try {
+      await updateMutation.mutateAsync({id, data: form.getValues()})
+      navigate('/cultivos')
+    } catch {}
+  }
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
@@ -38,16 +61,10 @@ export default function CultivoForm({ onSubmit, cultivo, actions }) {
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{cultivo ? 'Actualizar' : 'Crear'}</Button>
-          {actions}
+          <Button type="submit">{isEdit ? 'Actualizar' : 'Crear'}</Button>
         </div>
       </form>
     </Form>
   )
 }
 
-CultivoForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  cultivo: PropTypes.object,
-  actions: PropTypes.node,
-}
