@@ -1,6 +1,6 @@
 import { fetchWithAuth } from './fetchWithAuth'
 import { handleResponse } from '../lib/utils'
-import { getAuthHeaders } from "./authHelpers"
+import { getAuthJsonHeaders, getAuthOnlyHeaders } from "./authHelpers"
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}/facturas_pago`
 const FACTURAS_URL = `http://${import.meta.env.VITE_API_URL}/facturas`

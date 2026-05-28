@@ -7,7 +7,12 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,jsx}"], plugins: { js }, extends: ["js/recommended"] },
-  { files: ["**/*.{js,mjs,cjs,jsx}"], languageOptions: { globals: globals.browser } },
+  { files: ["**/*.{js,mjs,cjs,jsx}"], languageOptions: { globals: globals.browser },
+    rules: {
+      "no-unused-vars": ["error", {
+        ignoreRestSiblings: true
+      }]
+    } },
   pluginReact.configs.flat.recommended,
   { files: ["**/*.json"], plugins: { json }, language: "json/json", extends: ["json/recommended"] },
   {
@@ -17,5 +22,6 @@ export default defineConfig([
         ...globals.jest
       }
     }
+    
   }
 ]);

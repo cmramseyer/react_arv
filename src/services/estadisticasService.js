@@ -1,6 +1,6 @@
 import { fetchWithAuth } from './fetchWithAuth'
 import { handleResponse } from '../lib/utils'
-import { getAuthHeaders } from "./authHelpers"
+import { getAuthJsonHeaders, getAuthOnlyHeaders } from "./authHelpers"
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}/estadisticas`
 
@@ -10,7 +10,7 @@ export const getEstadisticas = async ({ fechaDesde, fechaHasta }) => {
   if (fechaHasta) url.searchParams.append('fecha_hasta', fechaHasta)
 
   const res = await fetchWithAuth(url.toString(), {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
 
   return handleResponse(res, 'Error fetching estadisticas')

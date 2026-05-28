@@ -9,7 +9,7 @@ import Estancias from './pages/Estancias'
 import EstanciaNew from './pages/EstanciaNew'
 import EstanciaEdit from './pages/EstanciaEdit'
 import Lotes from './pages/Lotes'
-import LoteNuevo from './pages/LoteNuevo'
+import LoteNew from './pages/LoteNew.jsx'
 import LoteEditar from './pages/LoteEditar'
 import LoteShow from './pages/LoteShow'
 import Productos from './pages/Productos'
@@ -53,7 +53,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/maquinistas/:id/editar" element={<MaquinistaEditar />} />
             <Route path="/lotes" element={<Lotes />} />
             <Route path="/lotes/:id" element={<LoteShow />} />
-            <Route path="/lotes/nuevo" element={<LoteNuevo />} />
+            <Route path="/lotes/new" element={<LoteNew />} />
             <Route path="/lotes/:id/editar" element={<LoteEditar />} />
             <Route path="/productos" element={<Productos />} />
             <Route path="/productos/nuevo" element={<ProductoNuevo />} />

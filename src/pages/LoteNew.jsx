@@ -5,6 +5,9 @@ import { getEstancias } from '../services/estanciasService'
 import LoteForm from '../components/LoteForm'
 
 export default function LoteNuevo() {
+  
+  
+  /* 
   const [estancias, setEstancias] = useState([])
   const navigate = useNavigate()
 
@@ -20,15 +23,12 @@ export default function LoteNuevo() {
     await createLote(formData)
     navigate('/lotes')
   }
-
+ */
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Nuevo Lote</h2>
-
       <LoteForm
-        estancias={estancias}
-        onSubmit={handleCreate}
-        submitLabel="Crear"
+        formAction='create'
+        loteId={1}
       />
     </div>
   )

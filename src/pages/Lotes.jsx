@@ -1,98 +1,78 @@
-import React, { useEffect, useState, useReducer } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { getLotes, getLotesPorEstancia, deleteLote } from '../services/lotesService'
-import { getEstancias } from '../services/estanciasService'
+import { useLotesQuery, useLotesByEstanciaQuery, useLoteMutation } from '../hooks/useLoteQuery'
+import { useEstanciasQuery } from '../hooks/useEstanciaQuery'
+
 import LoteList from '../components/LoteList'
 import { Button } from '@/components/ui/button'
 import EstanciaFilterSelect from '../components/EstanciaFilterSelect'
 
-const lotesReducer = (state, action) => {
-  switch (action.type) {
-    case 'SET_LOTES':
-      return { ...state, lotes: action.payload, loading: false }
-    case 'SET_ESTANCIAS':
-      return { ...state, estancias: action.payload }
-    case 'SET_SELECTED_ESTANCIA':
-      return { ...state, selectedEstanciaId: action.payload }
-    default:
-      return state
-  }
-}
-
 export default function Lotes() {
-  const initialState = {
-    lotes: [],
-    estancias: [],
-    selectedEstanciaId: '',
-    loading: true
-  }
 
-  const [state, lotesDispatch] = useReducer(lotesReducer, initialState)
-  
-  const { lotes, estancias, selectedEstanciaId, loading, modo } = state
+  const [ selectedEstanciaId, setSelectedEstanciaId ] = useState('all')
 
   const navigate = useNavigate()
 
-  const fetchLotes = async (estanciaId = '') => {
-    const data = estanciaId ? await getLotesPorEstancia(estanciaId) : await getLotes()
-    lotesDispatch({ type: 'SET_LOTES', payload: data })
-  }
+  const lotesQuery = useLotesQuery()
 
-  const fetchEstancias = async () => {
-    const data = await getEstancias()
-    lotesDispatch({ type: 'SET_ESTANCIAS', payload: data })
-  }
+  const lotesByEstanciaEnabled = selectedEstanciaId !== ''
+  const lotesByEstanciaQuery = useLotesByEstanciaQuery(selectedEstanciaId, lotesByEstanciaEnabled)
 
-  useEffect(() => {
-    fetchEstancias()
-    fetchLotes()
-  }, [])
+  const estanciasQuery = useEstanciasQuery()
 
-  useEffect(() => {
-    fetchLotes(selectedEstanciaId)
-  }, [selectedEstanciaId])
+  const { deleteLoteQuery } = useLoteMutation()
+
 
   const handleDelete = async (id) => {
-    await deleteLote(id)
-    fetchLotes()
+    try {
+      await deleteLoteQuery.mutateAsync(id)
+    } catch (error) {
+      console.error('Error deleting lote:', error)
+    }
   }
 
   const handleShow = (lote) => {
     navigate(`/lotes/${lote.id}`)
   }
 
-  const handleSelectEstancia = (value) => {
-
-    lotesDispatch({ type: 'SET_SELECTED_ESTANCIA', payload: value === 'all' ? '' : value })
+  const handleSelectEstancia = (id) => {
+    setSelectedEstanciaId(id)
   }
 
   const handleResetEstancia = () => {
-    lotesDispatch({ type: 'SET_SELECTED_ESTANCIA', payload: '' })
+    setSelectedEstanciaId('all')
   }
+
+  const lotes = selectedEstanciaId == 'all' ? 
+    lotesQuery.data || [] :
+    lotesByEstanciaQuery.data || []
+    
 
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Lotes</h2>
 
-        <Button onClick={() => navigate('/lotes/nuevo')}>Crear lote</Button>
+        <Button onClick={() => navigate('/lotes/new')}>Crear lote</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <span className="text-sm font-medium">Filtrar por Estancia:</span>
         <div className="flex items-center gap-2">
           <EstanciaFilterSelect
-            estancias={estancias}
+            estancias={estanciasQuery.data || []}
             selectedEstanciaId={selectedEstanciaId}
             onSelect={handleSelectEstancia}
             onResetSelect={handleResetEstancia}
           />
-          
         </div>
       </div>
 
-      <LoteList lotes={lotes} onShow={handleShow} onDelete={handleDelete} />
+      { lotesQuery.isLoading ? 
+        'Cargando...' :
+        <LoteList lotes={lotes} onShow={handleShow} onDelete={handleDelete} />
+      }
     </div>
   )
 }

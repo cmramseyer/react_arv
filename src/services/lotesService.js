@@ -2,12 +2,12 @@ const API_URL = `http://${import.meta.env.VITE_API_URL}/lotes`
 
 import { fetchWithAuth } from "./fetchWithAuth"
 import { handleResponse } from '../lib/utils'
-import { getAuthHeaders } from "./authHelpers"
+import { getAuthOnlyHeaders, getAuthJsonHeaders } from "./authHelpers"
 
 
 export const getLotes = async () => {
   const res = await fetchWithAuth(API_URL, {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
   return handleResponse(res, 'Error fetching lotes')
 }
@@ -17,14 +17,14 @@ export const getLotesPorEstancia = async (estancia_id) => {
   url.searchParams.append('estancia_id', estancia_id)
 
   const res = await fetchWithAuth(url.toString(), {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
   return handleResponse(res, 'Error fetching lotes por estancia')
 }
 
 export const getLote = async (id) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
   return handleResponse(res, 'Error fetching lote')
 }
@@ -32,7 +32,7 @@ export const getLote = async (id) => {
 export const createLote = async (formData) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
     body: formData,
   })
   return handleResponse(res, 'Error creating lote')
@@ -41,7 +41,7 @@ export const createLote = async (formData) => {
 export const updateLote = async (id, formData) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
     body: formData,
   })
   return handleResponse(res, 'Error updating lote')
@@ -50,7 +50,7 @@ export const updateLote = async (id, formData) => {
 export const deleteLote = async (id) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders()
+    headers: getAuthOnlyHeaders()
   })
   return handleResponse(res, 'Error deleting lote')
 }
@@ -58,7 +58,7 @@ export const deleteLote = async (id) => {
 export const deleteAdjuntoLote = async (loteId, adjuntoId) => {
   const res = await fetchWithAuth(`${API_URL}/${loteId}/adjuntos/${adjuntoId}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
   })
   return handleResponse(res, 'Error deleting adjunto')
 }
@@ -69,8 +69,16 @@ export const uploadAdjuntoLote = async (loteId, file) => {
 
   const res = await fetchWithAuth(`${API_URL}/${loteId}/adjuntos`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
     body: formData,
   })
   return handleResponse(res, 'Error uploading adjunto')
+}
+
+export const getAdjuntosLote = async(loteId) => {
+  const res = await fetchWithAuth(`${API_URL}/${loteId}/adjuntos`, {
+    method: 'GET',
+    headers: getAuthJsonHeaders(),
+  })
+  return handleResponse(res, 'Error fetching adjuntos lote')
 }

@@ -1,24 +1,78 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+
+import { useLoteQueryById, useLoteMutation } from '../hooks/useLoteQuery'
+import { useEstanciasQuery } from '../hooks/useEstanciaQuery'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import SelectField from './SelectField'
+import { AdjuntosList } from '../components/AdjuntosList'
+import { de } from 'date-fns/locale'
 
-export default function LoteForm({ estancias, onSubmit, defaultValues, submitLabel, showAdjuntos = true, actions }) {
+export default function LoteForm({ formAction, loteId = null }) {
+
+  const navigate = useNavigate()
+
+  const isEdit = formAction === 'edit'
+
+  const loteQueryEnabled = isEdit
+
+  const loteQuery = useLoteQueryById(loteId, loteQueryEnabled)
+  const estanciasQuery = useEstanciasQuery()
+
+  const emptyValues = {
+    nombre: '',
+    lat: '',
+    long: '',
+    link_mapa: '',
+    hectareas: '',
+    estancia_id: '',
+  } 
+  
+  const defaultValues = {
+    nombre: loteQuery.data?.nombre ?? '',
+    lat: loteQuery.data?.lat ?? '',
+    long: loteQuery.data?.long ?? '',
+    link_mapa: loteQuery.data?.link_mapa ?? '',
+    hectareas: loteQuery.data?.hectareas ?? '',
+    estancia_id: loteQuery.data?.estancia_id ? String(loteQuery.data?.estancia_id) : '',
+  }
+  
   const form = useForm({
-    defaultValues: defaultValues || {}
+    defaultValues: emptyValues
   })
+  const { handleSubmit, reset, control, formState } = form
 
-  const { handleSubmit, reset, control } = form
+  const showAdjuntos = isEdit
 
   useEffect(() => {
+    if (!isEdit || !loteQuery.data || formState.isDirty) return
     reset(defaultValues || {})
-  }, [defaultValues, reset])
+  }, [loteQuery.data, reset])
+ 
 
-  const internalSubmit = async (data) => {
+  const { createMutation, updateMutation } = useLoteMutation()
+
+  const handleCreate = async (formData) => {
+    const data = internalData(formData)
+    
+    console.log(`formData: ${JSON.stringify(formData)}`)
+    console.log(`data: ${JSON.stringify(data)}`)
+
+    try {
+      await createMutation.mutateAsync(data)
+      navigate('/lotes')
+    } catch (error) {
+      console.log(error)
+      console.log('Error submit new lote')
+    }
+  }
+
+  const internalData = (data) => {
     const formData = new FormData()
 
     Object.keys(data).forEach((key) => {
@@ -37,16 +91,30 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
       }
     })
 
-    await onSubmit(formData)
+    return formData
 
-    // En crear suele convenir limpiar el form; en editar no necesariamente.
-    // Si querés, lo controlás desde el padre. Por ahora no reseteo automáticamente.
+  }
+
+  const handleUpdate = async (formData) => {
+    const {id, created_at, updated_at, ...data} = internalData(formData)
+
+    console.log(`formData: ${JSON.stringify(formData)}`)
+    console.log(`data: ${JSON.stringify(data)}`)
+
+    try {
+      await updateMutation.mutateAsync({id: loteId, payload: data})
+      navigate('/lotes')
+    } catch (error) {
+      console.log(error)
+      console.log('Error submit update lote')
+    }
   }
 
   return (
     <>
+      <h2 className="text-xl font-bold mb-4">lalala</h2>
       <Form {...form}>
-        <form onSubmit={handleSubmit(internalSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
           <FormField
             control={control}
             name="estancia_id"
@@ -55,7 +123,7 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
               <FormItem>
                 <FormLabel>Estancia</FormLabel>
                 <FormControl>
-                  <SelectField field={field} label="Estancia" options={estancias} />
+                  <SelectField field={field} label="Estancia" options={estanciasQuery.data || []} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -170,11 +238,13 @@ export default function LoteForm({ estancias, onSubmit, defaultValues, submitLab
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="submit">{submitLabel || 'Guardar'}</Button>
-            {actions}
+            <Button type="submit">{isEdit ? 'Actualizar' : 'Guardar'}</Button>
           </div>
         </form>
       </Form>
+
+      <AdjuntosList loteId={loteQuery.data?.id} />
+
       <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
         Volver
       </Button>

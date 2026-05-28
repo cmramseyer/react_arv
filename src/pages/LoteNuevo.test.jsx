@@ -18,7 +18,7 @@ vi.mock('../services/estanciasService', () => ({
 import { getLotes, createLote } from '../services/lotesService'
 import { getEstancias } from '../services/estanciasService'
 
-import LoteNuevo from './LoteNuevo'
+import LoteNuevo from './LoteNew'
 
 const mockLotes = () => {
   getLotes.mockResolvedValueOnce([

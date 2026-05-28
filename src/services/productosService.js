@@ -3,18 +3,18 @@ const API_URL = `http://${import.meta.env.VITE_API_URL}/productos`
 
 import { fetchWithAuth } from "./fetchWithAuth"
 import { handleResponse } from "../lib/utils"
-import { getAuthHeaders } from "./authHelpers"
+import { getAuthJsonHeaders, getAuthOnlyHeaders } from "./authHelpers"
 
 export const getProductos = async () => {
   const res = await fetchWithAuth(API_URL, {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
   return handleResponse(res, 'Error fetching productos')
 }
 
 export const getProducto = async (id) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
   })
   return handleResponse(res, 'Error fetching producto')
 }
@@ -22,7 +22,7 @@ export const getProducto = async (id) => {
 export const createProducto = async (producto) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
     body: JSON.stringify({ producto }),
   })
   return handleResponse(res, 'Error creating producto')
@@ -31,7 +31,7 @@ export const createProducto = async (producto) => {
 export const updateProducto = async (id, producto) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
     body: JSON.stringify({ producto }),
   })
   return handleResponse(res, 'Error updating producto')
@@ -40,7 +40,7 @@ export const updateProducto = async (id, producto) => {
 export const deleteProducto = async (id) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
+    headers: getAuthOnlyHeaders(),
   })
   return handleResponse(res, 'Error deleting producto')
 }
