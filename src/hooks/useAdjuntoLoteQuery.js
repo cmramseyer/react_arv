@@ -22,11 +22,13 @@ export const useAdjuntoLoteMutation = () => {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: ({loteId, payload}) => deleteAdjuntoLote(loteId, payload),
+    mutationFn: ({ loteId, payload }) => deleteAdjuntoLote(loteId, payload),
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries(adjuntosLoteQueryKey({queryKey: variables.loteId}))
-    }
-  })
+      await queryClient.invalidateQueries(
+        adjuntosLoteQueryKey({ queryKey: variables.loteId }),
+      );
+    },
+  });
 
   return { uploadMutation, deleteMutation }
 }
