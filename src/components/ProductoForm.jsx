@@ -67,6 +67,8 @@ export default function ProductoForm({ formAction, id }) {
     reset(productoQuery.data)
   }, [productoQuery.data, reset])
 
+  if (productoQuery.isLoading) { return <div>Cargando...</div> }
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">

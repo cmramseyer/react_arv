@@ -2,20 +2,26 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-// Mockear los servicios
-vi.mock('../services/productosService', () => ({
-  getProductos: vi.fn(() => Promise.resolve([])),
-  createProducto: vi.fn(() => Promise.resolve()),
-  updateProducto: vi.fn(() => Promise.resolve()),
-  deleteProducto: vi.fn(() => Promise.resolve())
-}))
-
-import { getProductos, createProducto } from '../services/productosService'
+import { getProductos, createProducto } from '@/services/productosService'
 
 import Productos from './Productos'
-import ProductoNuevo from './ProductoNew'
-import ProductoEditar from './ProductoEdit'
+
+const renderWithQueryClient = (ui) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  )
+}
 
 function LocationDisplay() {
   const location = useLocation()
@@ -42,7 +48,7 @@ describe('Productos', () => {
 
     mockProductos()
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <Productos />
       </MemoryRouter>
@@ -61,11 +67,11 @@ describe('Productos', () => {
 
   it('edit redirects to Edit page', async () => {
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/productos']}>
         <Routes>
           <Route path="/productos" element={<Productos />} />
-          <Route path="/productos/:id/editar" element={<div />} />
+          <Route path="/productos/:id/edit" element={<div />} />
         </Routes>
 
         <LocationDisplay />
@@ -76,17 +82,17 @@ describe('Productos', () => {
 
     await user.click(screen.getAllByText('Editar')[0])
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos/1/editar')
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/1/edit')
 
   })
 
   it('new redirects to New page', async () => {
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/productos']}>
         <Routes>
           <Route path="/productos" element={<Productos />} />
-          <Route path="/productos/nuevo" element={<div />} />
+          <Route path="/productos/new" element={<div />} />
         </Routes>
 
         <LocationDisplay />
@@ -97,7 +103,7 @@ describe('Productos', () => {
 
     await user.click(screen.getByRole('button', { name: /crear producto/i }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos/nuevo')
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/new')
 
   })
 
