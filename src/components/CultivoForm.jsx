@@ -61,7 +61,7 @@ export default function CultivoForm({ formAction, id }) {
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{isEdit ? 'Actualizar' : 'Crear'}</Button>
+          <Button type="submit">{isEdit ? 'Actualizar' : 'Grabar'}</Button>
         </div>
       </form>
     </Form>

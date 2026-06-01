@@ -3,17 +3,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
-import { getProducto, updateProducto } from "../services/productosService";
-import ProductoEdit from "@/pages/ProductoEdit";
 import ProductoForm from "@/components/ProductoForm";
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { setupServer } from 'msw/node'
-import { http, HttpResponse } from 'msw'
-import { handlers } from '@/mocks/handlers'
+import { productoHandlers } from '@/mocks/productoHandlers'
  
-export const server = setupServer(...handlers)
+export const server = setupServer(...productoHandlers)
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
@@ -60,7 +57,7 @@ describe("ProductoForm", () => {
       expect(await screen.findByDisplayValue("Roundup")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Agroquímico")).toBeInTheDocument();
       await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveTextContent("Litros");
+        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
       });
       expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
     });
@@ -79,7 +76,7 @@ describe("ProductoForm", () => {
       expect(await screen.findByDisplayValue("Roundup")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Agroquímico")).toBeInTheDocument();
       await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveTextContent("Litros");
+        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
       });
       expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
     });

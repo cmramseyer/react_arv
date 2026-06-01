@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useProductosQuery, useProductosMutation } from '@/hooks/useProductoQuery'
 
 import { useNavigate } from 'react-router-dom'

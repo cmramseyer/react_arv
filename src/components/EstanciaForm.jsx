@@ -139,7 +139,7 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="submit" disabled={ isSubmitting }> { isEdit ? 'Actualizar' : 'Crear' } </Button>
+            <Button type="submit" disabled={ isSubmitting }> { isEdit ? 'Actualizar' : 'Grabar' } </Button>
             { isError && errorMessage } { isSubmitting && 'Guardando...' }
           </div>
         </form>
