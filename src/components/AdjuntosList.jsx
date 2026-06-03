@@ -1,6 +1,5 @@
 import React, {useReducer} from 'react'
 import { Button } from '@/components/ui/button'
-import { uploadAdjuntoLote, deleteAdjuntoLote } from '@/services/lotesService'
 import { useAdjuntoLoteQuery, useAdjuntoLoteMutation } from '@/hooks/useAdjuntoLoteQuery'
 
 import {
