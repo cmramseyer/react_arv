@@ -21,7 +21,7 @@ const unidadMedidaOptions = [
   { value: 'ml', label: 'Mililitros' }
 ]
 
-export default function ProductoForm({ formAction, id }) {
+export default function ProductoForm({ formAction, id, onSuccess = null }) {
   
   const isEdit = formAction === 'edit'
   const navigate = useNavigate()
@@ -47,7 +47,9 @@ export default function ProductoForm({ formAction, id }) {
   const handleCreate = async (payload) => {
     try {
       await createMutation.mutateAsync(payload)
-      navigate('/productos')
+      if (onSuccess) {
+        onSuccess()
+      }
     } catch {
       console.log('error create')
     }

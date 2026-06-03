@@ -12,6 +12,11 @@ import {
 
 
 export default function SelectField({ field, label, options, className = '', getOptionLabel }) {
+  console.log(`options in SelectField: ${JSON.stringify(options)}`)
+
+  if (!options) { return <div>Cargando...</div>}
+  if (options.length === 0) { return <div>Cargando...</div>}
+
   const getLabel = getOptionLabel || ((option) => option.nombre)
 
   return (

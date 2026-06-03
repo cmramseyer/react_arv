@@ -14,6 +14,9 @@ export default function DosisFields({
   showNuevoProductoButton = false,
   onNuevoProducto,
 }) {
+
+  if (!productos) { return <div>Cargando...</div>}
+
   const { fields, append, remove } = useFieldArray({
     control,
     name

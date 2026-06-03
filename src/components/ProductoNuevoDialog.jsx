@@ -4,6 +4,7 @@ import ProductoForm from '../components/ProductoForm'
 import { Button } from '@/components/ui/button'
 
 export default function ProductoNuevoDialog({ isNuevoProductoOpen, onCreate, onProductoOpen }) {
+
   return (
     <Dialog open={isNuevoProductoOpen} onOpenChange={(open) => onProductoOpen(open)}>
       <DialogContent>
@@ -17,6 +18,7 @@ export default function ProductoNuevoDialog({ isNuevoProductoOpen, onCreate, onP
         <ProductoForm
           onSubmit={onCreate}
           submitLabel="Crear"
+          onSuccess={() => onProductoOpen(false)}
           actions={(
             <Button type="button" variant="secondary" onClick={() => onProductoOpen(false)}>
               Cancelar
