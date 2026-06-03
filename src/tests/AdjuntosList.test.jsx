@@ -88,4 +88,54 @@ describe('Adjuntos list', () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   })
+  it('open delete modal, click No', async () => {
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <AdjuntosList loteId={'1'} />
+      </MemoryRouter>
+    )
+
+
+    const deleteButton = await screen.findAllByRole("button", { name: /eliminar/i });
+    await user.click(deleteButton[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeInTheDocument();
+    });
+
+    const noButton = await screen.findByRole("button", { name: "No" })
+    user.click(noButton)
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+  })
+
+  // add request spy or request recorder
+  it.skip('open delete modal, click Si', async () => {
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <AdjuntosList loteId={'1'} />
+      </MemoryRouter>
+    )
+
+
+    const deleteButton = await screen.findAllByRole("button", { name: /eliminar/i });
+    await user.click(deleteButton[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeInTheDocument();
+    });
+
+    const siButton = await screen.findByRole("button", { name: "Sí" })
+    user.click(siButton)
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+  })
 })
