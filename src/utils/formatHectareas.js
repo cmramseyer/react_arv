@@ -57,3 +57,20 @@ export const parseHectareasValue = (value) => {
   const numericValue = Number(value)
   return Number.isNaN(numericValue) ? null : numericValue
 }
+
+
+export const formatDate = (value) => {
+  if (!value) return 'Sin fecha'
+  const dateString = String(value)
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString
+  const isoMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!isoMatch) return 'Sin fecha'
+  const [, year, month, day] = isoMatch
+  return `${day}/${month}/${year}`
+}
+
+export const joinWith = (string1, string2, separator) => {
+  const left = string1 ? String(string1) : 'Sin datos'
+  const right = string2 ? String(string2) : 'Sin datos'
+  return `${left} ${separator} ${right}`
+}
