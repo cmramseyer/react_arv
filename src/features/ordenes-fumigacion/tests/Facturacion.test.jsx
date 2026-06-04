@@ -2,18 +2,19 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
-vi.mock('../services/ordenesFumigacionService', () => ({
+vi.mock('../api/ordenesFumigacionService', () => ({
   getOrdenesPendientesFacturacion: vi.fn(),
   facturarOrdenes: vi.fn(),
 }))
 
-vi.mock('../services/facturasService', () => ({
+vi.mock('../api/facturasService', () => ({
   getFacturasPago: vi.fn(),
   marcarFacturaPagada: vi.fn(),
 }))
 
-import { getOrdenesPendientesFacturacion } from '../services/ordenesFumigacionService'
-import Facturacion from './Facturacion'
+import { getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
+import { getFacturasPago, marcarFacturaPagada } from '../api/facturasService'
+import Facturacion from '../pages/Facturacion'
 
 const ordenesFixture = [
   {
