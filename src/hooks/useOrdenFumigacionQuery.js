@@ -37,7 +37,7 @@ export function useOrdenFumigacionQuery(id, enabled = true) {
 // GET /ordenes_fumigacion/:id/adjuntos
 export function useOrdenFumigacionAdjuntosQuery(ordenId, enabled = true) {
   return useQuery({
-    queryKey: () => ordenFumigacionAdjuntosQueryKey(ordenId),
+    queryKey: ordenFumigacionAdjuntosQueryKey(ordenId),
     queryFn: () => getAdjuntosOrden(ordenId),
     enabled: Boolean(ordenId) && enabled
   })
@@ -46,7 +46,7 @@ export function useOrdenFumigacionAdjuntosQuery(ordenId, enabled = true) {
 // GET /ordenes_fumigacion/:id/imprimir
 export function useOrdenFumigacionImprimirQuery(ordenId, enabled = true) {
   return useQuery({
-    queryKey: () => ordenFumigacionImprimirQueryKey(ordenId),
+    queryKey: ordenFumigacionImprimirQueryKey(ordenId),
     queryFn: () => imprimirOrdenFumigacion(ordenId),
     enabled: Boolean(ordenId) && enabled
   })
