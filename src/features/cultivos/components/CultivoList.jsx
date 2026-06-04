@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMaquinistasQuery, useMaquinistaMutation } from '@/hooks/useMaquinistaQuery'
+import { useCultivosQuery, useCultivoMutation } from '@/features/cultivos/hooks/useCultivoQuery'
 import {
   Table,
   TableBody,
@@ -10,13 +10,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import { Button } from './ui/button'
+import { Button } from '@/components/ui/button'
 
-export default function MaquinistaList() {
+export default function CultivoList() {
   const navigate = useNavigate()
 
-  const maquinistasQuery = useMaquinistasQuery()
-  const { deleteMutation } = useMaquinistaMutation()
+  const cultivosQuery = useCultivosQuery()
+  
+  const { deleteMutation } = useCultivoMutation()
 
   const handleDelete = async (id) => {
     try {
@@ -26,7 +27,7 @@ export default function MaquinistaList() {
     }
   }
 
-  if ( maquinistasQuery.isLoading ) { return <div>Cargando...</div> }
+  if (cultivosQuery.isLoading) { return <div>Cargando...</div>}
 
   return (
     <Table>
@@ -38,14 +39,14 @@ export default function MaquinistaList() {
       </TableHeader>
 
       <TableBody>
-        {maquinistasQuery.data.map((m) => (
-          <TableRow key={m.id}>
-            <TableCell>{m.nombre}</TableCell>
+        {cultivosQuery.data.map((c) => (
+          <TableRow key={c.id}>
+            <TableCell>{c.nombre}</TableCell>
             <TableCell>
-              <Button variant="default" onClick={() => navigate(`/maquinistas/${m.id}/edit`)}>
+              <Button variant="default" onClick={() => navigate(`/cultivos/${c.id}/edit`)}>
                 Editar
               </Button>
-              <Button variant="default" onClick={() => handleDelete(m.id)}>
+              <Button variant="default" onClick={() => handleDelete(c.id)}>
                 Eliminar
               </Button>
             </TableCell>

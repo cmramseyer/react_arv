@@ -1,5 +1,5 @@
 import React from 'react'
-import CultivoForm from '../components/CultivoForm'
+import CultivoForm from '@/features/cultivos/components/CultivoForm'
 
 export default function CultivoNew() {
   return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import MaquinistaList from '../components/MaquinistaList'
+import MaquinistaList from '@/features/maquinistas/components/MaquinistaList'
 import { Button } from '@/components/ui/button'
 
 export default function Maquinistas() {

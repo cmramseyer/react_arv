@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import { useMaquinistasQuery } from "@/hooks/useMaquinistaQuery";
+import { useMaquinistasQuery } from "@/features/maquinistas/hooks/useMaquinistaQuery";
 
 
 

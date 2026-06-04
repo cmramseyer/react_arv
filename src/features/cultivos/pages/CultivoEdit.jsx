@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import CultivoForm from '../components/CultivoForm'
+import CultivoForm from '@/features/cultivos/components/CultivoForm'
 
 export default function CultivoEdit() {
   const { id } = useParams()

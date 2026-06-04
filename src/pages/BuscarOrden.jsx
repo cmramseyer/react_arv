@@ -17,10 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { getCultivos } from '../services/cultivosService'
+import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { getMaquinistas } from '../services/maquinistasService'
+import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
 import OrdenFumigacionCard from '../components/OrdenFumigacionCard'
 

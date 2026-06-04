@@ -1,5 +1,5 @@
 import React from 'react'
-import MaquinistaForm from '../components/MaquinistaForm'
+import MaquinistaForm from '@/features/maquinistas/components/MaquinistaForm'
 
 export default function MaquinistaNew() {
   

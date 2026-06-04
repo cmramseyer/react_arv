@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { getCultivos, getCultivo, createCultivo, updateCultivo, deleteCultivo } from '@/services/cultivosService'
+import { getCultivos, getCultivo, createCultivo, updateCultivo, deleteCultivo } from '@/features/cultivos/api/cultivosService'
 
 export const cultivosQueryKey = () => ['cultivos']
 export const cultivoQueryKey = (cultivoId) => ['cultivo', cultivoId]

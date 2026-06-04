@@ -5,7 +5,7 @@ import { getOrdenFumigacion, updateOrdenFumigacion } from '../services/ordenesFu
 import { getProductos } from '@/features/productos/api/productosService'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { getCultivos } from '../services/cultivosService'
+import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import {
 import { Controller } from 'react-hook-form'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
-import { getMaquinistas } from '../services/maquinistasService'
+import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { formatHectareas } from '../utils/formatHectareas'
 
 const parseHectareasValue = (value) => {

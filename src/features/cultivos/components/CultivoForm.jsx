@@ -1,19 +1,16 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMaquinistaQuery, useMaquinistaMutation } from '@/hooks/useMaquinistaQuery'
+import { useCultivoQuery, useCultivoMutation } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function MaquinistaForm({ formAction, id }) {
-
-  console.log(id)
-
+export default function CultivoForm({ formAction, id }) {
   const navigate = useNavigate()
   const isEdit = formAction === 'edit'
-
+  
   const form = useForm({
     defaultValues: {
       nombre: '',
@@ -23,29 +20,26 @@ export default function MaquinistaForm({ formAction, id }) {
   const { handleSubmit, control, reset } = form
 
   const enabled = isEdit
-  const maquinistaQuery = useMaquinistaQuery(id, enabled)
-  const { createMutation, updateMutation } = useMaquinistaMutation()
+  console.log(`isEdit: ${isEdit}, id: ${id}`)
+  const cultivoQuery = useCultivoQuery(id, enabled)
+  const { createMutation, updateMutation } = useCultivoMutation()
 
   useEffect(() => {
-    reset(maquinistaQuery.data)
-  }, [maquinistaQuery.data, reset])
+    reset(cultivoQuery.data)
+  }, [cultivoQuery.data, reset])
 
   const handleCreate = async () => {
     try {
       await createMutation.mutateAsync(form.getValues())
-      navigate('/maquinistas')
-    } catch (error) {
-      console.log('error create')
-    }
+      navigate('/cultivos')
+    } catch {}
   }
-  
+
   const handleUpdate = async () => {
     try {
       await updateMutation.mutateAsync({id, data: form.getValues()})
-      navigate('/maquinistas')
-    } catch (error) {
-      console.log('error create')
-    }
+      navigate('/cultivos')
+    } catch {}
   }
 
   return (

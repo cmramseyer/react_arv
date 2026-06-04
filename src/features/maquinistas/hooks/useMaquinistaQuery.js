@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { getMaquinistas, getMaquinista, createMaquinista, updateMaquinista, deleteMaquinista } from '@/services/maquinistasService'
+import { getMaquinistas, getMaquinista, createMaquinista, updateMaquinista, deleteMaquinista } from '@/features/maquinistas/api/maquinistasService'
 
 export const maquinistasQueryKey = () => ['maquinistas']
 export const maquinistaQueryKey = (id) => ['maquinista', id]
@@ -46,5 +46,4 @@ export const useMaquinistaMutation = () => {
 
   return { createMutation, updateMutation, deleteMutation }
 }
-
 

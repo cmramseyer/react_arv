@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import CultivoList from '../components/CultivoList'
+import CultivoList from '@/features/cultivos/components/CultivoList'
 import { Button } from '@/components/ui/button'
 
 export default function Cultivos() {

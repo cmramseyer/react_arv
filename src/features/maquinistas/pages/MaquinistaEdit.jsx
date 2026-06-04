@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import MaquinistaForm from '../components/MaquinistaForm'
+import MaquinistaForm from '@/features/maquinistas/components/MaquinistaForm'
 
 export default function MaquinistaEdit() {
   

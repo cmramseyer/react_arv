@@ -5,7 +5,7 @@ import { getOrdenFumigacion, terminarOrdenFumigacion } from '../services/ordenes
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
 import { getProductos } from '@/features/productos/api/productosService'
-import { getMaquinistas } from '../services/maquinistasService'
+import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
