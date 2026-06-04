@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
+import { getOrdenesFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import { Button } from '@/components/ui/button'
-import OrdenFumigacionCard from '../components/OrdenFumigacionCard'
+import OrdenFumigacionCard from '@/features/ordenes-fumigacion/components/OrdenFumigacionCard'
 
 export default function OrdenesFumigacion() {
   const [ordenes, setOrdenes] = useState([])

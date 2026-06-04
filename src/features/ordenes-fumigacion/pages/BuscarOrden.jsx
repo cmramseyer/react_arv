@@ -21,8 +21,8 @@ import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { getEstancias } from '@/features/estancias/api/estanciasService'
 import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
 import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
-import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
-import OrdenFumigacionCard from '../components/OrdenFumigacionCard'
+import { getOrdenesFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
+import OrdenFumigacionCard from '@/features/ordenes-fumigacion/components/OrdenFumigacionCard'
 
 const formatApiDate = (date) => format(date, 'yyyy-MM-dd')
 const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')

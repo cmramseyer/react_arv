@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getOrdenFumigacion, updateOrdenFumigacion } from '../services/ordenesFumigacionService'
+import { getOrdenFumigacion, updateOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import { getProductos } from '@/features/productos/api/productosService'
 import { getEstancias } from '@/features/estancias/api/estanciasService'
 import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
@@ -18,10 +18,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Controller } from 'react-hook-form'
-import DosisFields from '../components/DosisFields'
-import SelectField from '../components/SelectField'
+import DosisFields from '@/features/ordenes-fumigacion/components/DosisFields'
+import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
-import { formatHectareas } from '../utils/formatHectareas'
+import { formatHectareas } from '@/utils/formatHectareas'
 
 const parseHectareasValue = (value) => {
   if (value === null || value === undefined || value === '') return null

@@ -9,7 +9,7 @@ import {
   createOrdenFumigacion,
   updateOrdenFumigacion,
   deleteOrdenFumigacion,
-  terminarOrdenFumigacion } from '../services/ordenesFumigacionService'
+  terminarOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 
 export const ordenesFumigacionQueryKey = () => ['ordenesFumigacion']
 export const ordenFumigacionQueryKey = (ordenId) => ['ordenFumigacion', ordenId]

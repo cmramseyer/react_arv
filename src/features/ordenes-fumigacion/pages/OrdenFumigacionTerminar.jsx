@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getOrdenFumigacion, terminarOrdenFumigacion } from '../services/ordenesFumigacionService'
+import { getOrdenFumigacion, terminarOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import { getEstancias } from '@/features/estancias/api/estanciasService'
 import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
 import { getProductos } from '@/features/productos/api/productosService'
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { formatHectareas } from '../utils/formatHectareas'
+import { formatHectareas } from '@/utils/formatHectareas'
 
 export default function OrdenFumigacionTerminar() {
   const { id } = useParams()

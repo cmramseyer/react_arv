@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import OrdenFumigacionForm from '@/components/OrdenFumigacionForm'
-import OrdenFumigacionEditForm from '@/components/OrdenFumigacionEditForm'
+import OrdenFumigacionForm from '@/features/ordenes-fumigacion/components/OrdenFumigacionForm'
+import OrdenFumigacionEditForm from '@/features/ordenes-fumigacion/components/OrdenFumigacionEditForm'
 
 export default function OrdenFumigacionEdit() {
   const { id } = useParams()

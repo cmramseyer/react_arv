@@ -3,12 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   deleteOrdenFumigacion,
   imprimirOrdenFumigacion,
-} from "../services/ordenesFumigacionService";
+} from "@/features/ordenes-fumigacion/api/ordenesFumigacionService";
 
 import {
   useOrdenFumigacionQuery,
   useOrdenFumigacionAdjuntosQuery,
-} from "../hooks/useOrdenFumigacionQuery";
+} from "@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery";
 
 import {
   Card,
@@ -26,10 +26,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { formatHectareas } from "../utils/formatHectareas";
-import OrdenFumigacionInfoBadges from "@/components/OrdenFumigacionInfoBadges";
-import DialogEditAdjunto from "@/components/DialogEditAdjunto";
-import OrdenFumigacionAdjuntoParaImprimir from "@/components/OrdenFumigacionAdjuntoParaImprimir";
+import { formatHectareas } from "@/utils/formatHectareas";
+import OrdenFumigacionInfoBadges from "@/features/ordenes-fumigacion/components/OrdenFumigacionInfoBadges";
+import DialogEditAdjunto from "@/features/ordenes-fumigacion/components/DialogEditAdjunto";
+import OrdenFumigacionAdjuntoParaImprimir from "@/features/ordenes-fumigacion/components/OrdenFumigacionAdjuntoParaImprimir";
 
 const PDF_FILENAME_REGEX = /\.pdf$/i;
 const normalizeAdjuntoId = (adjuntoId) => String(adjuntoId);

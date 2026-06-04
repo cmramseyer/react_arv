@@ -1,8 +1,8 @@
 const API_URL = `http://${import.meta.env.VITE_API_URL}/ordenes_fumigacion`
 
-import { fetchWithAuth } from "./fetchWithAuth"
-import { handleResponse } from "../lib/utils"
-import { getAuthJsonHeaders, getAuthOnlyHeaders } from "./authHelpers"
+import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { handleResponse } from "@/lib/utils"
+import { getAuthJsonHeaders, getAuthOnlyHeaders } from "@/services/authHelpers"
 
 export const getOrdenesFumigacion = async (filters = {}) => {
   const url = new URL(API_URL)

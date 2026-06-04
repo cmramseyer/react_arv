@@ -25,11 +25,11 @@ import {
   ZoomOut,
 } from 'lucide-react'
 
-import { fetchWithAuth } from '../services/fetchWithAuth'
+import { fetchWithAuth } from '@/services/fetchWithAuth'
 import {
   getOrdenFumigacion,
   updateAdjuntoOrdenFumigacion,
-} from '../services/ordenesFumigacionService'
+} from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import {
   Dialog,
   DialogContent,

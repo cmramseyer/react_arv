@@ -9,7 +9,7 @@ import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import SelectField from '@/components/SelectField'
+import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 
 export default function LoteForm({ formAction, loteId = null }) {

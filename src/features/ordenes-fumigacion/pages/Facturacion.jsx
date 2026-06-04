@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { getOrdenesPendientesFacturacion, facturarOrdenes } from '../services/ordenesFumigacionService'
-import { getFacturasPago, marcarFacturaPagada } from '../services/facturasService'
+import { getOrdenesPendientesFacturacion, facturarOrdenes } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
+import { getFacturasPago, marcarFacturaPagada } from '@/services/facturasService'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -24,7 +24,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { formatHectareas } from '../utils/formatHectareas'
+import { formatHectareas } from '@/utils/formatHectareas'
 
 const groupHasOrdenes = (grupo) => Array.isArray(grupo?.data) && grupo.data.length > 0
 
