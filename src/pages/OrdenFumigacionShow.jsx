@@ -7,6 +7,13 @@ import {
   getAdjuntosOrden,
 } from '../services/ordenesFumigacionService'
 
+import { 
+  useOrdenFumigacionQuery,
+  useOrdenFumigacionAdjuntosQuery,
+  useOrdenFumigacionImprimirQuery,
+  useOrdenFumigacionMutation
+} from '../hooks/useOrdenFumigacionQuery'
+
 import {
   Card,
   CardContent,
@@ -99,15 +106,20 @@ export default function OrdenFumigacionShow() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [orden, setOrden] = useState(null)
   const [pdfUrl, setPdfUrl] = useState(null)
   const [fechaPdf, setFechaPdf] = useState(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [adjuntos, setAdjuntos] = useState([])
+  // const [adjuntos, setAdjuntos] = useState([])
   const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set())
   const [isLoadingAdjuntos, setIsLoadingAdjuntos] = useState(false)
   const [adjuntoEnEdicion, setAdjuntoEnEdicion] = useState(null)
   const [adjuntoEditando, setAdjuntoEditando] = useState(null)
+
+  const ordenFumigacionQuery = useOrdenFumigacionQuery(id)
+  const ordenFumigacionAdjuntosQuery = useOrdenFumigacionAdjuntosQuery(id, false)
+  const ordenFumigacionImprimirQuery = useOrdenFumigacionImprimirQuery(id, false)
+
+  const orden = ordenFumigacionQuery.data || null
 
   const updateAdjuntosState = (nextAdjuntos, { preserveSelection = false } = {}) => {
     setAdjuntos(nextAdjuntos)
@@ -174,7 +186,8 @@ export default function OrdenFumigacionShow() {
     }
 
     try {
-      const data = await getAdjuntosOrden(id)
+      const adjuntosQuery = await ordenFumigacionAdjuntosQuery.refetch()
+      const data = adjuntosQuery.data || []
       const fetchedAdjuntos = normalizeAdjuntosList(data)
       const mergedAdjuntos = mergeAdjuntosLists(fetchedAdjuntos, ordenAdjuntos)
       updateAdjuntosState(mergedAdjuntos, { preserveSelection })
@@ -226,7 +239,6 @@ export default function OrdenFumigacionShow() {
   }
 
   const labelGenerarPdf = pdfUrl ? 'Regenerar PDF' : 'Generar PDF'
-  const hasAdjuntos = adjuntos.length > 0
   const selectedAdjuntosArray = Array.from(selectedAdjuntos)
   const isSavingAdjunto = adjuntoEnEdicion !== null
   const labelImprimirSeleccion = selectedAdjuntosArray.length > 0
@@ -415,15 +427,15 @@ export default function OrdenFumigacionShow() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {isLoadingAdjuntos && (
+            {ordenFumigacionAdjuntosQuery.isFetching && (
               <div className="text-sm text-muted-foreground">Cargando adjuntos...</div>
             )}
-            {!isLoadingAdjuntos && !hasAdjuntos && (
+            {!ordenFumigacionAdjuntosQuery.isFetching && !ordenFumigacionAdjuntosQuery.data && (
               <div className="text-sm text-muted-foreground">No hay adjuntos disponibles.</div>
             )}
-            {!isLoadingAdjuntos && hasAdjuntos && (
+            {!ordenFumigacionAdjuntosQuery.isFetching && ordenFumigacionAdjuntosQuery.data && (
               <div className="grid gap-3 max-h-[50vh] overflow-y-auto pr-1">
-                {adjuntos.map((adjunto) => (
+                {ordenFumigacionAdjuntosQuery.data.map((adjunto) => (
                   <div
                     key={adjunto.id}
                     className="flex items-center gap-3 rounded-md border p-3 hover:bg-muted/40">
