@@ -11,14 +11,49 @@ import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import { formatHectareas, getTotalHectareas } from '../utils/formatHectareas'
 import ProductoNuevoDialog from '../components/ProductoNuevoDialog'
+import OrdenFumigacionEditForm from '@/components/OrdenFumigacionEditForm'
 
 import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
 import { useLotesByEstanciaQuery } from '@/hooks/useLoteQuery'
 import { useCultivosQuery } from '@/hooks/useCultivoQuery'
 import { useProductosQuery, useProductosMutation } from '@/hooks/useProductoQuery'
-import { useOrdenFumigacionMutation } from '@/hooks/useOrdenFumigacionQuery'
+import { useOrdenFumigacionQuery, useOrdenFumigacionMutation } from '@/hooks/useOrdenFumigacionQuery'
+
+
+const ordenToForm = (data) => {
+  return { 
+    id: String(data.id) ?? '',
+    estancia_id: String(data.estancia_id) ?? '',
+    cultivo_id: String(data.cultivo.id) ?? '',
+    sensible: data.sensible ?? false,
+    comentarios: data.comentarios ?? '',
+    datos_clima: data.datos_clima ?? '',
+    info_trabajo: data.info_trabajo ?? '',
+    creator: data.creator ?? '',
+    fecha_trabajo: data.fecha_trabajo ?? '',
+    maquinista_id: String(data.maquinista?.id) ?? '',
+    lotes: data.lotes.map((e) => {
+      return {
+        lote_id: String(e.lote_id),
+        hectareas_reales: e.hectareas_reales,
+        dosis: e.dosis.map((d) => { 
+          return {
+            producto_id: d.producto_id,
+            cantidad: d.cantidad 
+          }
+        })
+      }
+    })
+
+  }
+}
+
 
 export default function OrdenFumigacionForm({ formAction, ordenId }) {
+  const isEdit = formAction === 'edit'
+  const isTerminar = formAction === 'terminar'
+  const isCreate = formAction === 'create'
+
   const form = useForm({
     defaultValues: {
       estancia_id: '',
@@ -31,7 +66,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     }
   })
 
-  const { handleSubmit, control, watch } = form
+  const { handleSubmit, control, watch, reset } = form
   const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
     control,
     name: 'lotes'
@@ -45,6 +80,9 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const cultivosQuery = useCultivosQuery()
   const enabled = true
   const lotesQuery = useLotesByEstanciaQuery(estanciaId, enabled)
+  const ordenFumigacionQuery = useOrdenFumigacionQuery(ordenId, enabled)
+
+  const estadoOrden = ordenFumigacionQuery.data?.estado_orden
 
   const { createProductoMutation } = useProductosMutation()
   const { createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
@@ -81,6 +119,18 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   //     setLotes([])
   //   }
   // }, [estanciaId])
+
+  useEffect(() => {
+
+    console.log('useEffect carga orden fumigacion')
+    console.log(JSON.stringify(ordenFumigacionQuery.data))
+
+    if (ordenFumigacionQuery.data) {
+      console.log('orden form')
+      console.log(JSON.stringify(ordenToForm(ordenFumigacionQuery.data)))
+      reset(ordenToForm(ordenFumigacionQuery.data))
+    }
+  }, [ordenFumigacionQuery.data, reset])
 
   const onSubmit = async (data) => {
     const payload = {
@@ -290,6 +340,11 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
           </span>
         </div>
       </form>
+
+      { ordenFumigacionQuery.data && 
+        estadoOrden === 'terminada' &&
+        <OrdenFumigacionEditForm ordenId={ordenFumigacionQuery.data} control={control} estadoOrden={estadoOrden} /> 
+      }
 
       <ProductoNuevoDialog
         isNuevoProductoOpen={isNuevoProductoOpen}
