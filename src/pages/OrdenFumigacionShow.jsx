@@ -83,7 +83,6 @@ export default function OrdenFumigacionShow() {
   const navigate = useNavigate();
 
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [fechaPdf, setFechaPdf] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set());
   const [adjuntoEnEdicion, setAdjuntoEnEdicion] = useState(null);
@@ -102,7 +101,6 @@ export default function OrdenFumigacionShow() {
 
   useEffect(() => {
     setPdfUrl(orden?.orden_url ?? null);
-    setFechaPdf(orden?.orden_pdf_fecha_creacion ?? null);
   }, [orden?.orden_pdf_fecha_creacion, orden?.orden_url]);
 
   const handleEditar = () => {
@@ -150,13 +148,11 @@ export default function OrdenFumigacionShow() {
   const handleImprimir = async (attachmentIds) => {
     const data = await imprimirOrdenFumigacion(id, attachmentIds);
     setPdfUrl(data.orden_url);
-    setFechaPdf(data.orden_pdf_fecha_creacion);
     setIsDialogOpen(false);
   };
 
   const handleAdjuntoSaved = async (updatedOrden) => {
     setPdfUrl(updatedOrden?.orden_url ?? null);
-    setFechaPdf(updatedOrden?.orden_pdf_fecha_creacion ?? null);
     setSelectedAdjuntos(new Set());
     await ordenFumigacionQuery.refetch();
     await ordenFumigacionAdjuntosQuery.refetch();
