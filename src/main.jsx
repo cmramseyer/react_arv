@@ -24,7 +24,7 @@ import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumiga
 import OrdenFumigacionTerminar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar'
 import BuscarOrden from '@/features/ordenes-fumigacion/pages/BuscarOrden'
 import Facturacion from '@/features/ordenes-fumigacion/pages/Facturacion'
-import Estadistica from './pages/Estadistica'
+import Estadistica from '@/features/estadisticas/pages/Estadistica'
 import Cultivos from '@/features/cultivos/pages/Cultivos'
 import CultivoNew from '@/features/cultivos/pages/CultivoNew'
 import CultivoEdit from '@/features/cultivos/pages/CultivoEdit'

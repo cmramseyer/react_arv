@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns'
-import { getEstadisticas } from '../services/estadisticasService'
+import { getEstadisticas } from '@/features/estadisticas/api/estadisticasService'
 
-import EstadisticaFilter from '../components/EstadisticaFilter'
-import EstadisticaCard from '../components/EstadisticaCard'
+import EstadisticaFilter from '@/features/estadisticas/components/EstadisticaFilter'
+import EstadisticaCard from '@/features/estadisticas/components/EstadisticaCard'
 
 const emptyStats = {
   hectareas_por_propietario: [],
