@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { createProducto, getProductos } from '../services/productosService'
+import { createProducto, getProductos } from '@/features/productos/api/productosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -10,13 +10,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import { formatHectareas, getTotalHectareas } from '../utils/formatHectareas'
-import ProductoNuevoDialog from '../components/ProductoNuevoDialog'
+import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDialog'
 import OrdenFumigacionEditForm from '@/components/OrdenFumigacionEditForm'
 
 import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
 import { useLotesByEstanciaQuery } from '@/hooks/useLoteQuery'
 import { useCultivosQuery } from '@/hooks/useCultivoQuery'
-import { useProductosQuery, useProductosMutation } from '@/hooks/useProductoQuery'
+import { useProductosQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useOrdenFumigacionQuery, useOrdenFumigacionMutation } from '@/hooks/useOrdenFumigacionQuery'
 
 

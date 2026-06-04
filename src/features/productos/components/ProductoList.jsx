@@ -1,5 +1,5 @@
 import React from 'react'
-import { useProductosQuery, useProductosMutation } from '@/hooks/useProductoQuery'
+import { useProductosQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 
 import { useNavigate } from 'react-router-dom'
 import {
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import { Button } from './ui/button'
+import { Button } from '@/components/ui/button'
 
 export default function ProductoList() {
   

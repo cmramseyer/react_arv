@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import ProductoForm from '../components/ProductoForm'
+import ProductoForm from '@/features/productos/components/ProductoForm'
 import { Button } from '@/components/ui/button'
 
 export default function ProductoNuevoDialog({ isNuevoProductoOpen, onCreate, onProductoOpen }) {

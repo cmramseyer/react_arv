@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { getEstancias } from '../services/estanciasService'
 import { getLotesPorEstancia } from '../services/lotesService'
-import { createProducto, getProductos } from '../services/productosService'
+import { createProducto, getProductos } from '@/features/productos/api/productosService'
 import { getCultivos } from '../services/cultivosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import DosisFields from '../components/DosisFields'
 import SelectField from '../components/SelectField'
 import { formatHectareas, getTotalHectareas } from '../utils/formatHectareas'
-import ProductoNuevoDialog from '../components/ProductoNuevoDialog'
+import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDialog'
 
 
 export default function OrdenFumigacionNueva() {

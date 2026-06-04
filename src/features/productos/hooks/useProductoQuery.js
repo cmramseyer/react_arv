@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { getProductos, getProducto, createProducto, updateProducto, deleteProducto } from '@/services/productosService'
+import { getProductos, getProducto, createProducto, updateProducto, deleteProducto } from '@/features/productos/api/productosService'
 
 export const productosQueryKey = () => ['productos']
 export const productoQueryKey = (id) => ['producto', id]

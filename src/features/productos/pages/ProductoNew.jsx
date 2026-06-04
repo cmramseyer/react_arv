@@ -1,5 +1,5 @@
 import React from 'react'
-import ProductoForm from '../components/ProductoForm'
+import ProductoForm from '@/features/productos/components/ProductoForm'
 import { useNavigate } from 'react-router-dom'
 
 export default function ProductoNew() {
