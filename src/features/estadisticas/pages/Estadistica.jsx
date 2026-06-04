@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns'
-import { getEstadisticas } from '@/features/estadisticas/api/estadisticasService'
-
+import { useEstadisticasQuery } from '../hooks/useEstadisticasQuery'
 import EstadisticaFilter from '@/features/estadisticas/components/EstadisticaFilter'
 import EstadisticaCard from '@/features/estadisticas/components/EstadisticaCard'
+
+// TODO: one query per chart
+
 
 const emptyStats = {
   hectareas_por_propietario: [],
@@ -31,8 +33,14 @@ const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')
 
 export default function Estadistica() {
   const [range, setRange] = useState()
-  const [estadisticas, setEstadisticas] = useState(emptyStats)
-  const [loading, setLoading] = useState(false)
+
+  const estadisticasQuery = useEstadisticasQuery(
+    range?.from ? formatApiDate(range.from) : null,
+    range?.to ? formatApiDate(range.to) : null,
+    Boolean(range?.from && range?.to)
+  )
+
+  const estadisticas = estadisticasQuery.data || emptyStats
 
   const propietarioData = useMemo(
     () => buildChartData(estadisticas.hectareas_por_propietario, 'nombre_estancia'),
@@ -56,40 +64,6 @@ export default function Estadistica() {
     return `${formatDisplayDate(range.from)} - ${formatDisplayDate(range.to)}`
   }, [range])
 
-  useEffect(() => {
-    if (!range?.from || !range?.to) return
-
-    const fechaDesde = formatApiDate(range.from)
-    const fechaHasta = formatApiDate(range.to)
-    let active = true
-
-    const fetchStats = async () => {
-      setLoading(true)
-      try {
-        const data = await getEstadisticas({ fechaDesde, fechaHasta })
-        if (!active) return
-        setEstadisticas({
-          hectareas_por_propietario: normalizeList(data?.hectareas_por_propietario),
-          hectareas_por_maquinista: normalizeList(data?.hectareas_por_maquinista),
-          hectareas_por_cultivo: normalizeList(data?.hectareas_por_cultivo),
-        })
-      } catch {
-        if (active) {
-          setEstadisticas(emptyStats)
-        }
-      } finally {
-        if (active) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchStats()
-
-    return () => {
-      active = false
-    }
-  }, [range])
 
   const handleMesActual = () => {
     const today = new Date()
@@ -128,23 +102,23 @@ export default function Estadistica() {
         rangeLabel={rangeLabel}
       />
 
-      {loading && (
+      { estadisticasQuery.isLoading && (
         <div className="text-sm text-muted-foreground">Cargando estadísticas...</div>
       )}
 
-      {!loading && !hasRange && (
+      {estadisticasQuery.data && !hasRange && (
         <div className="text-sm text-muted-foreground">
           Selecciona un rango para ver estadísticas.
         </div>
       )}
 
-      {!loading && hasRange && !hasCharts && (
+      {estadisticasQuery.data && hasRange && !hasCharts && (
         <div className="text-sm text-muted-foreground">
           No hay estadísticas para el rango seleccionado.
         </div>
       )}
 
-      {!loading && hasCharts && (
+      {estadisticasQuery.data && hasCharts && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <EstadisticaCard
             title="Hectáreas por propietario"
