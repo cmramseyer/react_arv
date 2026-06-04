@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
-import EstanciaForm from '../components/EstanciaForm'
+import EstanciaForm from '@/features/estancias/components/EstanciaForm'
 
 export default function EstanciaEdit() {
 
@@ -10,4 +10,3 @@ export default function EstanciaEdit() {
     <EstanciaForm formAction="edit" estanciaId={estanciaId} />
   )
 }
-

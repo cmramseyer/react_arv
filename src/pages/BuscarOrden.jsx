@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { getCultivos } from '@/features/cultivos/api/cultivosService'
-import { getEstancias } from '../services/estanciasService'
+import { getEstancias } from '@/features/estancias/api/estanciasService'
 import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
 import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'

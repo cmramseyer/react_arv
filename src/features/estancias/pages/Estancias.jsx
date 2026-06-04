@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useReducer } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import EstanciaList from '../components/EstanciaList'
+import EstanciaList from '@/features/estancias/components/EstanciaList'
 import { Button } from '@/components/ui/button'
-import { useEstanciasQuery, useMutationsEstancia } from '../hooks/useEstanciaQuery'
+import { useEstanciasQuery, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
 
 const estanciaReducer = (state, action) => {
   switch (action.type) {

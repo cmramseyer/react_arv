@@ -13,7 +13,7 @@ import { formatHectareas, getTotalHectareas } from '../utils/formatHectareas'
 import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDialog'
 import OrdenFumigacionEditForm from '@/components/OrdenFumigacionEditForm'
 
-import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
+import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useCultivosQuery } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useProductosQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'

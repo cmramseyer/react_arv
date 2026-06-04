@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useLotesQuery, useLotesByEstanciaQuery, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
-import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
+import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 
 import LoteList from '@/features/lotes/components/LoteList'
 import { Button } from '@/components/ui/button'
-import EstanciaFilterSelect from '@/components/EstanciaFilterSelect'
+import EstanciaFilterSelect from '@/features/estancias/components/EstanciaFilterSelect'
 
 export default function Lotes() {
 

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 
 import { useLoteQueryById, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
-import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
+import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'

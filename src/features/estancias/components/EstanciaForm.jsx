@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useEstanciaQueryById, useMutationsEstancia } from '../hooks/useEstanciaQuery'
+import { useEstanciaQueryById, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
 
 
 export default function EstanciaForm({ estanciaId = null, formAction }) {

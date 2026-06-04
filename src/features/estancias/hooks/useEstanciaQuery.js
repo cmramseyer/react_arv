@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getEstancia, getEstancias, updateEstancia, createEstancia, deleteEstancia } from '../services/estanciasService'
+import { getEstancia, getEstancias, updateEstancia, createEstancia, deleteEstancia } from '@/features/estancias/api/estanciasService'
 
 export const estanciasQueryKey = () => ['estancias']
 export const estanciaByIdQueryKey = (estanciaId) => ['estancia', estanciaId]
@@ -46,4 +46,3 @@ export function useMutationsEstancia() {
 
   return { createMutation, updateMutation, deleteMutation }
 }
-
