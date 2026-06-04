@@ -3,15 +3,14 @@ import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 
-import { useLoteQueryById, useLoteMutation } from '../hooks/useLoteQuery'
-import { useEstanciasQuery } from '../hooks/useEstanciaQuery'
+import { useLoteQueryById, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
+import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import SelectField from './SelectField'
-import { AdjuntosList } from '../components/AdjuntosList'
-import { de } from 'date-fns/locale'
+import SelectField from '@/components/SelectField'
+import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 
 export default function LoteForm({ formAction, loteId = null }) {
 

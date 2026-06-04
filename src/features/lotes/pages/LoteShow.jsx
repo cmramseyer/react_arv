@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getLote } from '../services/lotesService'
+import { getLote } from '@/features/lotes/api/lotesService'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { formatHectareas } from '../utils/formatHectareas'
+import { formatHectareas } from '@/utils/formatHectareas'
 
 export default function LoteShow() {
   const { id } = useParams()

@@ -1,6 +1,6 @@
 import React, {useReducer} from 'react'
 import { Button } from '@/components/ui/button'
-import { useAdjuntoLoteQuery, useAdjuntoLoteMutation } from '@/hooks/useAdjuntoLoteQuery'
+import { useAdjuntoLoteQuery, useAdjuntoLoteMutation } from '@/features/lotes/hooks/useAdjuntoLoteQuery'
 
 import {
   Dialog,

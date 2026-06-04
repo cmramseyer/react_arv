@@ -14,7 +14,7 @@ import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDi
 import OrdenFumigacionEditForm from '@/components/OrdenFumigacionEditForm'
 
 import { useEstanciasQuery } from '@/hooks/useEstanciaQuery'
-import { useLotesByEstanciaQuery } from '@/hooks/useLoteQuery'
+import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useCultivosQuery } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useProductosQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useOrdenFumigacionQuery, useOrdenFumigacionMutation } from '@/hooks/useOrdenFumigacionQuery'

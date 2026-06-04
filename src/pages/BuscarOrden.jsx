@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { getEstancias } from '../services/estanciasService'
-import { getLotesPorEstancia } from '../services/lotesService'
+import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
 import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { getOrdenesFumigacion } from '../services/ordenesFumigacionService'
 import OrdenFumigacionCard from '../components/OrdenFumigacionCard'

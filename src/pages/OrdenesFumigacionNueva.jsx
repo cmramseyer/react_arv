@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { getEstancias } from '../services/estanciasService'
-import { getLotesPorEstancia } from '../services/lotesService'
+import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
 import { createProducto, getProductos } from '@/features/productos/api/productosService'
 import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { createOrdenFumigacion } from '../services/ordenesFumigacionService'

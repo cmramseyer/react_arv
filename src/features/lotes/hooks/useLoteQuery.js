@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getLote, getLotes, getLotesPorEstancia, updateLote, createLote, deleteLote } from '../services/lotesService'
+import { getLote, getLotes, getLotesPorEstancia, updateLote, createLote, deleteLote } from '@/features/lotes/api/lotesService'
 
 export const lotesQueryKey = () => ['lotes']
 export const loteByIdQueryKey = (loteId) => ['lote', loteId]
