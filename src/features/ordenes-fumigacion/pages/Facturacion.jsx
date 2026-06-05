@@ -1,17 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import {
-  getOrdenesPendientesFacturacion,
-  facturarOrdenes,
-} from "@/features/ordenes-fumigacion/api/ordenesFumigacionService";
-import {
-  getFacturasPago,
-  marcarFacturaPagada,
-} from "@/features/ordenes-fumigacion/api/facturasService";
 import FacturaPendiente from "@/features/facturacion/components/FacturaPendiente";
 import PagoPendiente from "@/features/facturacion/components/PagoPendiente";
+import {
+  useFacturacionMutation,
+  useFacturacionQuery,
+} from "@/features/facturacion/hooks/useFacturacionQuery";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -28,22 +24,16 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
+
+
 const groupHasOrdenes = (grupo) =>
   Array.isArray(grupo?.data) && grupo.data.length > 0;
-
-const normalizarRespuesta = (data) => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.data?.data)) return data.data.data;
-  return [];
-};
 
 const formatApiDate = (date) => format(date, "yyyy-MM-dd");
 const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
 
 export default function Facturacion() {
   const [ordenesPorEstancia, setOrdenesPorEstancia] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [facturandoIds, setFacturandoIds] = useState(() => new Set());
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
     () => new Set(),
@@ -59,24 +49,13 @@ export default function Facturacion() {
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
   const [fechaPago, setFechaPago] = useState();
 
-  useEffect(() => {
-    const fetchOrdenes = async () => {
-      setLoading(true);
-      try {
-        if (modoPago) {
-          const data = await getFacturasPago();
-          setOrdenesPorEstancia(normalizarRespuesta(data));
-        } else {
-          const data = await getOrdenesPendientesFacturacion();
-          setOrdenesPorEstancia(normalizarRespuesta(data));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: facturacionData, isFetching } = useFacturacionQuery(modoPago);
+  const { facturarMutation, marcarFacturaPagadaMutation } =
+    useFacturacionMutation();
 
-    fetchOrdenes();
-  }, [modoPago]);
+  useEffect(() => {
+    setOrdenesPorEstancia(facturacionData ?? []);
+  }, [facturacionData, modoPago]);
 
   const cantidadSeleccionadas = useMemo(
     () => ordenesSeleccionadas.size,
@@ -161,7 +140,7 @@ export default function Facturacion() {
 
     setFacturandoIds(new Set(ordenesIds));
     try {
-      const response = await facturarOrdenes({
+      const response = await facturarMutation.mutateAsync({
         ordenes_fumigacion: ordenesPayload,
         nro_factura: nroFacturaPayload || undefined,
       });
@@ -192,10 +171,10 @@ export default function Facturacion() {
 
     setPagandoIds((prev) => new Set(prev).add(facturaId));
     try {
-      const response = await marcarFacturaPagada(
+      const response = await marcarFacturaPagadaMutation.mutateAsync({
         facturaId,
-        fechaPagoSeleccionada,
-      );
+        fechaPago: fechaPagoSeleccionada,
+      });
       if (!response?.ok) return false;
 
       setOrdenesPorEstancia((prev) =>
@@ -238,6 +217,8 @@ export default function Facturacion() {
 
   const pagoEnProceso =
     facturaPagoSeleccionada !== null && pagandoIds.has(facturaPagoSeleccionada);
+
+  const loading = isFetching;
 
   const parseImporte = (importe) => {
     if (importe === null || importe === undefined) return null;
