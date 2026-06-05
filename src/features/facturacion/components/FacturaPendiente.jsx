@@ -1,3 +1,4 @@
+import React from "react"
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,7 +15,7 @@ export default function FacturaPendiente({
   ordenesPorEstancia,
   cantidadSeleccionadas,
   nroFactura,
-  facturandoIds,
+  isFacturando,
   tieneImportesInvalidos,
   ordenesSeleccionadas,
   importesPorOrden,
@@ -77,11 +78,11 @@ export default function FacturaPendiente({
                 onClick={onFacturar}
                 disabled={
                   cantidadSeleccionadas === 0 ||
-                  facturandoIds.size > 0 ||
+                  isFacturando ||
                   tieneImportesInvalidos
                 }
               >
-                {facturandoIds.size > 0 ? "Facturando..." : "Facturar"}
+                {isFacturando ? "Facturando..." : "Facturar"}
               </Button>
             </div>
           </div>
@@ -113,7 +114,7 @@ export default function FacturaPendiente({
                                   orden.nombre_estancia ?? grupo.nombre,
                                 )
                               }
-                              disabled={facturandoIds.has(orden.orden_id)}
+                              disabled={isFacturando}
                               aria-label={`Seleccionar orden ${orden.orden_id}`}
                             />
                           </label>

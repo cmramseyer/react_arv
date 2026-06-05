@@ -1,3 +1,4 @@
+import React from 'react'
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +12,7 @@ import { formatHectareas } from "@/utils/formatHectareas";
 export default function PagoPendiente({
   loading,
   ordenesPorEstancia,
-  pagandoIds,
+  isPagando,
   onAbrirDialogoPago,
   onCambiarModo,
   parseImporte,
@@ -77,9 +78,9 @@ export default function PagoPendiente({
                   </div>
                   <Button
                     onClick={() => onAbrirDialogoPago(grupo.id)}
-                    disabled={pagandoIds.has(grupo.id)}
+                    disabled={isPagando}
                   >
-                    {pagandoIds.has(grupo.id)
+                    {isPagando
                       ? "Marcando..."
                       : "Marcar como pagado"}
                   </Button>

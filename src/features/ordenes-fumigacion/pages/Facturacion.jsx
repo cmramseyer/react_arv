@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -33,7 +33,6 @@ const formatApiDate = (date) => format(date, "yyyy-MM-dd");
 const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
 
 export default function Facturacion() {
-  const [ordenesPorEstancia, setOrdenesPorEstancia] = useState([]);
   const [facturandoIds, setFacturandoIds] = useState(() => new Set());
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
     () => new Set(),
@@ -49,18 +48,14 @@ export default function Facturacion() {
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
   const [fechaPago, setFechaPago] = useState();
 
-  const { data: facturacionData, isFetching } = useFacturacionQuery(modoPago);
+  const { data: ordenesPorEstancia = [], isFetching: loading } = useFacturacionQuery(modoPago);
   const { facturarMutation, marcarFacturaPagadaMutation } =
     useFacturacionMutation();
 
-  useEffect(() => {
-    setOrdenesPorEstancia(facturacionData ?? []);
-  }, [facturacionData, modoPago]);
+  const cantidadSeleccionadas = ordenesSeleccionadas.size
 
-  const cantidadSeleccionadas = useMemo(
-    () => ordenesSeleccionadas.size,
-    [ordenesSeleccionadas],
-  );
+  const isFacturando = facturarMutation.isPending
+  const isPagando = marcarFacturaPagadaMutation.isPending
 
   const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe);
 
@@ -138,7 +133,6 @@ export default function Facturacion() {
 
     const nroFacturaPayload = nroFactura.trim();
 
-    setFacturandoIds(new Set(ordenesIds));
     try {
       const response = await facturarMutation.mutateAsync({
         ordenes_fumigacion: ordenesPayload,
@@ -162,7 +156,6 @@ export default function Facturacion() {
       setNroFactura("");
       setEstanciaSeleccionada(null);
     } finally {
-      setFacturandoIds(new Set());
     }
   };
 
@@ -218,8 +211,6 @@ export default function Facturacion() {
   const pagoEnProceso =
     facturaPagoSeleccionada !== null && pagandoIds.has(facturaPagoSeleccionada);
 
-  const loading = isFetching;
-
   const parseImporte = (importe) => {
     if (importe === null || importe === undefined) return null;
     const raw = String(importe).trim();
@@ -258,7 +249,7 @@ export default function Facturacion() {
         <PagoPendiente
           loading={loading}
           ordenesPorEstancia={ordenesPorEstancia}
-          pagandoIds={pagandoIds}
+          isPagando={isPagando}
           onAbrirDialogoPago={handleAbrirDialogoPago}
           onCambiarModo={setModoPago}
           parseImporte={parseImporte}
@@ -270,7 +261,7 @@ export default function Facturacion() {
           ordenesPorEstancia={ordenesPorEstancia}
           cantidadSeleccionadas={cantidadSeleccionadas}
           nroFactura={nroFactura}
-          facturandoIds={facturandoIds}
+          isFacturando={isFacturando}
           tieneImportesInvalidos={tieneImportesInvalidos}
           ordenesSeleccionadas={ordenesSeleccionadas}
           importesPorOrden={importesPorOrden}
