@@ -31,6 +31,7 @@ import OrdenFumigacionInfoBadges from "@/features/ordenes-fumigacion/components/
 import DialogEditAdjunto from "@/features/ordenes-fumigacion/components/DialogEditAdjunto";
 import OrdenFumigacionAdjuntoParaImprimir from "@/features/ordenes-fumigacion/components/OrdenFumigacionAdjuntoParaImprimir";
 import OrdenFumigacionTerminar from "@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar";
+import OrdenFumigacionCard from "@/features/ordenes-fumigacion/components/OrdenFumigacionCard";
 
 const PDF_FILENAME_REGEX = /\.pdf$/i;
 const normalizeAdjuntoId = (adjuntoId) => String(adjuntoId);
@@ -214,139 +215,8 @@ export default function OrdenFumigacionShow() {
   const createdAtLabel = orden.created_at_locale || "Sin fecha";
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 md:hidden">
-          <CardTitle className="text-lg">Orden #{orden.id}</CardTitle>
-          <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
-        </div>
-        <div className="text-sm text-muted-foreground md:hidden">
-          Creado: {createdAtLabel} por: {orden.creator || "Sin datos"}
-        </div>
-
-        <div className="hidden items-center justify-between gap-4 md:flex">
-          <div className="flex flex-wrap items-center gap-4">
-            <CardTitle className="text-lg">Orden #{orden.id}</CardTitle>
-            <span className="text-lg font-semibold">
-              {orden.nombre_estancia || "Sin estancia"}
-            </span>
-            {orden.cultivo && (
-              <IconLabelBadge
-                iconName="Sprout"
-                value={orden.cultivo.nombre}
-                tooltip="Cultivo"
-                variant="outline"
-                className="border-transparent bg-green-800 text-white"
-              />
-            )}
-            <span className="text-sm text-muted-foreground">
-              Creado: {createdAtLabel} por: {orden.creator || "Sin datos"}
-            </span>
-          </div>
-          <Badge variant={getEstadoVariant(estadoOrden)}>{estadoLabel}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="md:hidden">
-          <div className="text-sm font-medium">Estancia</div>
-          <div className="text-sm text-muted-foreground">
-            {orden.nombre_estancia || "Sin estancia"}
-          </div>
-          {orden.cultivo && (
-            <IconLabelBadge
-              iconName="Sprout"
-              value={orden.cultivo.nombre}
-              tooltip="Cultivo"
-              variant="outline"
-              className="border-transparent bg-green-800 text-white"
-            />
-          )}
-        </div>
-
-        {lotesOrden.length > 0 ? (
-          <ul className="space-y-1 text-sm text-muted-foreground">
-            {lotesOrden.map((lote, loteIndex) => {
-              const loteHectareas = formatHectareas(lote.hectareas);
-              const loteKey =
-                lote.id ?? lote.lote_id ?? `${orden.id}-${loteIndex}`;
-              const dosisList = Array.isArray(lote.dosis) ? lote.dosis : [];
-              const dosisValue = `dosis-${orden.id}-${loteKey}`;
-
-              return (
-                <li key={loteKey} className="space-y-2">
-                  <div>
-                    Lote {lote.nombre || "Sin nombre"}: {loteHectareas}
-                  </div>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem
-                      value={dosisValue}
-                      className="rounded-md border border-border"
-                    >
-                      <AccordionTrigger className="group rounded-md bg-muted/40 px-3 py-2 text-sm hover:bg-muted/60">
-                        <span className="group-data-[state=open]:hidden">
-                          Ver dosis
-                        </span>
-                        <span className="hidden group-data-[state=open]:inline">
-                          Ocultar dosis
-                        </span>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        {dosisList.length > 0 ? (
-                          <ul className="space-y-1 text-sm text-muted-foreground">
-                            {dosisList.map((dosis, dosisIndex) => {
-                              const cantidadLabel = formatCantidad(
-                                dosis.cantidad,
-                              );
-                              const unidadLabel = dosis.unidad_medida
-                                ? ` (${dosis.unidad_medida})`
-                                : "";
-
-                              return (
-                                <li
-                                  key={
-                                    dosis.id ?? `${loteKey}-dosis-${dosisIndex}`
-                                  }
-                                >
-                                  {dosis.producto || "Producto"}:{" "}
-                                  {cantidadLabel}
-                                  {unidadLabel}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        ) : (
-                          <div className="text-sm text-muted-foreground">
-                            Sin dosis cargadas.
-                          </div>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <div className="space-y-1 text-sm text-muted-foreground">
-            <div>
-              Lote {orden.nombre_lote || orden.temp_lotes || "Sin lote"}:{" "}
-              {formatHectareas(orden.hectareas || orden.hectareas_reales)}
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <span>Total Hectareas: {hectareasLabel}</span>
-          <span>Sensible: {orden.sensible ? "Si" : "No"}</span>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Comentarios:{" "}
-          {orden.comentarios ? orden.comentarios : "Sin comentarios"}
-        </div>
-
-        <OrdenFumigacionInfoBadges orden={orden} />
-      </CardContent>
-
+    <>
+    <OrdenFumigacionCard orden={orden} onTerminar={() => {}} />
       <CardFooter className="flex flex-wrap gap-2">
         <Button onClick={handleEditar} variant="default">
           Editar
@@ -400,6 +270,6 @@ export default function OrdenFumigacionShow() {
         isTerminarDialogOpen={isTerminarDialogOpen}
         setIsTerminarDialogOpen={setIsTerminarDialogOpen}
       />
-    </Card>
+    </>
   );
 }
