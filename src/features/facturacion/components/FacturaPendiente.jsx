@@ -7,6 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { formatHectareas } from "@/utils/formatHectareas";
 
@@ -27,6 +34,8 @@ export default function FacturaPendiente({
   onImporteChange,
   onNroOrdenClienteChange,
   importeEsValido,
+  dialogoEstanciaAbierto,
+  onDialogoEstanciaOpenChange,
 }) {
   return (
     <>
@@ -194,6 +203,27 @@ export default function FacturaPendiente({
           })}
         </>
       )}
+      <Dialog
+        open={dialogoEstanciaAbierto}
+        onOpenChange={onDialogoEstanciaOpenChange}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              No se puede crear una factura con órdenes de diferentes
+              propietarios
+            </DialogTitle>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => onDialogoEstanciaOpenChange(false)}
+            >
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -237,6 +237,8 @@ export default function Facturacion() {
           onImporteChange={handleImporteChange}
           onNroOrdenClienteChange={handleNroOrdenClienteChange}
           importeEsValido={importeEsValido}
+          dialogoEstanciaAbierto={dialogoEstanciaAbierto}
+          onDialogoEstanciaOpenChange={setDialogoEstanciaAbierto}
         />
       )}
       <Dialog open={dialogoPagoAbierto}>
@@ -281,27 +283,6 @@ export default function Facturacion() {
               disabled={!fechaPago || pagoEnProceso}
             >
               {pagoEnProceso ? "Marcando..." : "Confirmar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog
-        open={dialogoEstanciaAbierto}
-        onOpenChange={setDialogoEstanciaAbierto}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              No se puede crear una factura con órdenes de diferentes
-              propietarios
-            </DialogTitle>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDialogoEstanciaAbierto(false)}
-            >
-              Entendido
             </Button>
           </DialogFooter>
         </DialogContent>
