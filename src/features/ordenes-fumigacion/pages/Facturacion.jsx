@@ -38,7 +38,6 @@ export default function Facturacion() {
   const [nroOrdenClientePorOrden, setNroOrdenClientePorOrden] = useState({});
   const [nroFactura, setNroFactura] = useState("");
   const [modoPago, setModoPago] = useState(false);
-  const [pagandoIds, setPagandoIds] = useState(() => new Set());
   const [dialogoEstanciaAbierto, setDialogoEstanciaAbierto] = useState(false);
   const [estanciaSeleccionada, setEstanciaSeleccionada] = useState(null);
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
@@ -133,9 +132,8 @@ export default function Facturacion() {
   };
 
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
-    if (pagandoIds.has(facturaId)) return false;
+    if (isPagando) return false;
 
-    setPagandoIds((prev) => new Set(prev).add(facturaId));
     try {
       const response = await marcarFacturaPagadaMutation.mutateAsync(
         mapPagoFacturaPayload({
@@ -147,11 +145,6 @@ export default function Facturacion() {
 
       return true;
     } finally {
-      setPagandoIds((prev) => {
-        const next = new Set(prev);
-        next.delete(facturaId);
-        return next;
-      });
     }
   };
 
@@ -180,8 +173,7 @@ export default function Facturacion() {
     }
   };
 
-  const pagoEnProceso =
-    facturaPagoSeleccionada !== null && pagandoIds.has(facturaPagoSeleccionada);
+  const pagoEnProceso = isPagando
 
   const parseImporte = (importe) => {
     if (importe === null || importe === undefined) return null;
