@@ -30,6 +30,7 @@ import { formatHectareas } from "@/utils/formatHectareas";
 import OrdenFumigacionInfoBadges from "@/features/ordenes-fumigacion/components/OrdenFumigacionInfoBadges";
 import DialogEditAdjunto from "@/features/ordenes-fumigacion/components/DialogEditAdjunto";
 import OrdenFumigacionAdjuntoParaImprimir from "@/features/ordenes-fumigacion/components/OrdenFumigacionAdjuntoParaImprimir";
+import OrdenFumigacionTerminar from "@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar";
 
 const PDF_FILENAME_REGEX = /\.pdf$/i;
 const normalizeAdjuntoId = (adjuntoId) => String(adjuntoId);
@@ -84,6 +85,7 @@ export default function OrdenFumigacionShow() {
 
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false);
   const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set());
   const [adjuntoEnEdicion, setAdjuntoEnEdicion] = useState(null);
   const [adjuntoEditando, setAdjuntoEditando] = useState(null);
@@ -108,7 +110,7 @@ export default function OrdenFumigacionShow() {
   };
 
   const handleTerminar = () => {
-    navigate(`/ordenes_fumigacion/${id}/terminar`);
+    setIsTerminarDialogOpen(true);
   };
 
   const handleBorrar = async () => {
@@ -392,6 +394,11 @@ export default function OrdenFumigacionShow() {
         onClose={() => setAdjuntoEditando(null)}
         onSaved={handleAdjuntoSaved}
         onSavingChange={setAdjuntoEnEdicion}
+      />
+      <OrdenFumigacionTerminar
+        selectedOrdenId={id}
+        isTerminarDialogOpen={isTerminarDialogOpen}
+        setIsTerminarDialogOpen={setIsTerminarDialogOpen}
       />
     </Card>
   );

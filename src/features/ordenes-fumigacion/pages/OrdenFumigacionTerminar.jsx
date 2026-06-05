@@ -1,200 +1,169 @@
-import React, { useEffect, useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { useParams, useNavigate } from 'react-router-dom'
-import { getOrdenFumigacion, terminarOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
-import { getEstancias } from '@/features/estancias/api/estanciasService'
-import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
-import { getProductos } from '@/features/productos/api/productosService'
-import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import React, { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+  useOrdenFumigacionQuery,
+  useOrdenFumigacionMutation,
+} from "../hooks/useOrdenFumigacionQuery";
+import { useMaquinistasQuery } from "../../maquinistas/hooks/useMaquinistaQuery";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { formatHectareas } from '@/utils/formatHectareas'
+} from "@/components/ui/select";
+import { formatHectareas } from "@/utils/formatHectareas";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
-export default function OrdenFumigacionTerminar() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const { register, handleSubmit, reset, control } = useForm()
+export default function OrdenFumigacionTerminar({
+  selectedOrdenId,
+  isTerminarDialogOpen,
+  setIsTerminarDialogOpen,
+  onOpenChange,
+  onSuccess,
+}) {
+  const { register, handleSubmit, reset, control } = useForm({
+    defaultValues: {
+      datos_clima: "",
+      info_trabajo: "",
+      fecha_trabajo: "",
+      maquinista_id: "",
+    },
+  });
 
-  const [orden, setOrden] = useState(null)
-  const [estanciaNombre, setEstanciaNombre] = useState('')
-  const [loteNombre, setLoteNombre] = useState('')
-    const [loteHectareas, setLoteHectareas] = useState('')
-   const [productos, setProductos] = useState([])
-   const [maquinistas, setMaquinistas] = useState([])
 
-  const formatCantidad = (value) => {
-    if (value === null || value === undefined || value === '') return 'Sin datos'
-    const numericValue = Number(value)
-    if (Number.isNaN(numericValue)) return 'Sin datos'
-    return numericValue.toLocaleString('es-AR', { maximumFractionDigits: 2 })
-  }
+  const ordenFumigacionQuery = useOrdenFumigacionQuery(selectedOrdenId, true);
+  const maquinistasQuery = useMaquinistasQuery();
+  const { terminarMutation } = useOrdenFumigacionMutation();
+
+  const estanciaNombre = ordenFumigacionQuery.data?.nombre_estancia || "Sin datos";
+  const loteNombre = ordenFumigacionQuery.data?.nombre_lote || "Sin datos";
+  const loteHectareas = ordenFumigacionQuery.data?.hectareas || 0;
 
   useEffect(() => {
-    const fetchData = async () => {
-      const ordenData = await getOrdenFumigacion(id)
-      setOrden(ordenData)
-      reset(ordenData)
+    if (!ordenFumigacionQuery.data) return;
 
-      // Fetch nombre de estancia
-      const estancias = await getEstancias()
-      const estancia = estancias.find(e => e.id === ordenData.estancia_id)
-      setEstanciaNombre(estancia ? estancia.nombre : '')
+    reset({
+      datos_clima: ordenFumigacionQuery.data.datos_clima || "",
+      info_trabajo: ordenFumigacionQuery.data.info_trabajo || "",
+      fecha_trabajo: ordenFumigacionQuery.data.fecha_trabajo || "",
+      maquinista_id: ordenFumigacionQuery.data.maquinista?.id
+        ? String(ordenFumigacionQuery.data.maquinista.id)
+        : "",
+    });
+  }, [ordenFumigacionQuery.data, reset]);
 
-      // Fetch nombre y hectareas de lote
-      const lotes = await getLotesPorEstancia(ordenData.estancia_id)
-      const lote = lotes.find(l => l.id === ordenData.lote_id)
-      if (lote) {
-        setLoteNombre(lote.nombre)
-        setLoteHectareas(lote.hectareas)
-      }
-
-       // Fetch productos para mostrar nombre en dosis
-       const productosData = await getProductos()
-       setProductos(productosData)
-
-       // Fetch maquinistas para el select
-       const maquinistasData = await getMaquinistas()
-       setMaquinistas(maquinistasData)
-    }
-    fetchData()
-  }, [id, reset])
-
-  const onSubmit = async (data) => {
+  const handleTerminar = async (data) => {
     const payload = {
       orden_fumigacion: {
-        datos_clima: data.datos_clima || '',
-        info_trabajo: data.info_trabajo || '',
-        fecha_trabajo: data.fecha_trabajo || '',
-        maquinista_id: data.maquinista_id || '',
-      }
-    }
+        datos_clima: data.datos_clima || "",
+        info_trabajo: data.info_trabajo || "",
+        fecha_trabajo: data.fecha_trabajo || "",
+        maquinista_id: data.maquinista_id || "",
+      },
+    };
 
-    await terminarOrdenFumigacion(id, payload)
-    navigate('/ordenes_fumigacion')
+    await terminarMutation.mutateAsync({ id: selectedOrdenId, payload });
+    await onSuccess?.();
+    setIsTerminarDialogOpen(false);
+  };
+
+  if (isTerminarDialogOpen && ordenFumigacionQuery.isLoading) {
+    return <div className="p-4">Cargando...</div>;
   }
-
-  if (!orden) {
-    return <div className="p-4">Cargando...</div>
-  }
-
-  const lotesOrden = Array.isArray(orden?.lotes) && orden.lotes.length > 0 ? orden.lotes : []
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Terminar Orden de Fumigación</h2>
+    <Dialog
+      open={isTerminarDialogOpen}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Terminar Orden</DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulario para terminar una orden de fumigacion.
+          </DialogDescription>
+        </DialogHeader>
 
-      {/* Datos fijos no editables */}
-      <div className="space-y-2 mb-6">
-        <div><strong>Estancia:</strong> {estanciaNombre}</div>
-        <div><strong>Lote:</strong> {loteNombre}</div>
-        <div><strong>Hectáreas:</strong> {formatHectareas(loteHectareas)}</div>
-        <div><strong>Creado Por:</strong> {orden.creator}</div>
-        <div><strong>Estado:</strong> {orden.estado_orden}</div>
-         {lotesOrden.length > 0 ? (
-           <ul className="space-y-1 text-sm text-muted-foreground">
-             {lotesOrden.map((lote, loteIndex) => {
-               const loteKey = lote.id ?? lote.lote_id ?? `${orden.id}-${loteIndex}`
-               const dosisList = Array.isArray(lote.dosis) ? lote.dosis : []
-               const dosisValue = `dosis-${orden.id}-${loteKey}`
+        <div className="p-4">
+          <h2 className="text-xl font-bold mb-4">
+            Terminar Orden de Fumigación
+          </h2>
 
-               return (
-                 <li key={loteKey} className="space-y-2">
-                   <div className="flex flex-wrap gap-2">
-                     <Badge variant="success">Lote: {lote.nombre || 'Sin nombre'}</Badge>
-                      <Badge variant="outline">{formatHectareas(lote.hectareas)}</Badge>
-                   </div>
-                   <Accordion type="single" collapsible className="w-full">
-                     <AccordionItem value={dosisValue} className="rounded-md border border-border">
-                       <AccordionTrigger className="group rounded-md bg-muted/40 px-3 py-2 text-sm hover:bg-muted/60">
-                         <span className="group-data-[state=open]:hidden">Ver dosis</span>
-                         <span className="hidden group-data-[state=open]:inline">Ocultar dosis</span>
-                       </AccordionTrigger>
-                       <AccordionContent>
-                         {dosisList.length > 0 ? (
-                           <ul className="space-y-1 text-sm text-muted-foreground">
-                             {dosisList.map((dosis, dosisIndex) => {
-                               const cantidadLabel = formatCantidad(dosis.cantidad)
-                               const unidadLabel = dosis.unidad_medida ? ` (${dosis.unidad_medida})` : ''
-                               const producto = productos.find(p => p.id === dosis.producto_id)
+          {/* Datos fijos no editables */}
+          <div className="space-y-2 mb-6">
+            <div>
+              <strong>Estancia:</strong> {estanciaNombre}
+            </div>
+            <div>
+              <strong>Lote:</strong> {loteNombre}
+            </div>
+            <div>
+              <strong>Hectáreas:</strong> {formatHectareas(loteHectareas)}
+            </div>
+          </div>
 
-                               return (
-                                 <li key={dosis.id ?? `${loteKey}-dosis-${dosisIndex}`}>
-                                   {producto ? producto.nombre : dosis.producto || 'Producto'}: {cantidadLabel}{unidadLabel}
-                                 </li>
-                               )
-                             })}
-                           </ul>
-                         ) : (
-                           <div className="text-sm text-muted-foreground">Sin dosis cargadas.</div>
-                         )}
-                       </AccordionContent>
-                     </AccordionItem>
-                   </Accordion>
-                 </li>
-               )
-             })}
-           </ul>
-         ) : (
-           <div className="text-sm text-muted-foreground">Sin lotes cargados.</div>
-         )}
-      </div>
+          {/* Formulario de campos editables */}
+          <form onSubmit={handleSubmit(handleTerminar)} className="space-y-4">
+            <div>
+              <label>Datos Clima</label>
+              <input
+                {...register("datos_clima")}
+                className="block w-full border p-2"
+              />
+            </div>
+            <div>
+              <label>Info Trabajo</label>
+              <input
+                {...register("info_trabajo")}
+                className="block w-full border p-2"
+              />
+            </div>
+            <div>
+              <label>Fecha Trabajo</label>
+              <input
+                {...register("fecha_trabajo")}
+                type="date"
+                className="block w-full border p-2"
+              />
+            </div>
+            <div>
+              <label>Maquinista</label>
+              <Controller
+                name="maquinista_id"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="w-full border p-2">
+                      <SelectValue placeholder="Seleccionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {maquinistasQuery.data &&
+                        maquinistasQuery.data.map((m) => (
+                          <SelectItem key={m.id} value={String(m.id)}>
+                            {m.nombre}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
 
-      {/* Formulario de campos editables */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label>Datos Clima</label>
-          <input {...register('datos_clima')} className="block w-full border p-2" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="submit">Confirmar Terminar</Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Volver
+                </Button>
+            </div>
+          </form>
         </div>
-        <div>
-          <label>Info Trabajo</label>
-          <input {...register('info_trabajo')} className="block w-full border p-2" />
-        </div>
-        <div>
-          <label>Fecha Trabajo</label>
-          <input {...register('fecha_trabajo')} type="date" className="block w-full border p-2" />
-        </div>
-         <div>
-           <label>Maquinista</label>
-           <Controller
-             name="maquinista_id"
-             control={control}
-             render={({ field }) => (
-               <Select onValueChange={field.onChange} value={field.value}>
-                 <SelectTrigger className="w-full border p-2">
-                   <SelectValue placeholder="Seleccionar..." />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {maquinistas.map(m => (
-                     <SelectItem key={m.id} value={m.id}>
-                       {m.nombre}
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             )}
-           />
-         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">Confirmar Terminar</Button>
-          <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
-            Volver
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
+      </DialogContent>
+    </Dialog>
+  );
 }

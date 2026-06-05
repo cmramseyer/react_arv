@@ -18,10 +18,10 @@ export const ordenFumigacionImprimirQueryKey = (ordenId) => ['ordenFumigacionImp
 export const ordenesPendientesFacturacionQueryKey = () => ['ordenesPendientesFacturacion']
 
 // GET /ordenes_fumigacion
-export function useOrdenesFumigacionQuery() {
+export function useOrdenesFumigacionQuery(filters = {}) {
   return useQuery({
     queryKey: ordenesFumigacionQueryKey(),
-    queryFn: getOrdenesFumigacion
+    queryFn: () => getOrdenesFumigacion(filters)
   })
 }
 
@@ -86,5 +86,13 @@ export function useOrdenFumigacionMutation() {
     }
   })
 
-  return { createMutation, updateMutation, deleteMutation }
+  const terminarMutation = useMutation({
+    mutationFn: ({id, payload}) => terminarOrdenFumigacion(id, payload),
+    onSuccess: async (_data, variables) => {
+      await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
+      await queryClient.invalidateQueries({queryKey: ordenFumigacionQueryKey(variables.id)})
+    }
+  })
+
+  return { createMutation, updateMutation, deleteMutation, terminarMutation }
 }

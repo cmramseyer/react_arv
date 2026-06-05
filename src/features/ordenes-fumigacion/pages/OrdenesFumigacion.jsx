@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getOrdenesFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
+import { useOrdenesFumigacionQuery } from '../hooks/useOrdenFumigacionQuery'
 import { Button } from '@/components/ui/button'
 import OrdenFumigacionCard from '@/features/ordenes-fumigacion/components/OrdenFumigacionCard'
+import OrdenFumigacionTerminar from './OrdenFumigacionTerminar'
 
 export default function OrdenesFumigacion() {
-  const [ordenes, setOrdenes] = useState([])
   const navigate = useNavigate()
   const [estadoOrdenSeleccionada, setEstadoOrdenSeleccionada] = useState('activa')
+  const [selectedOrdenId, setSelectedOrdenId] = useState(null)
+  const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false)
 
-  const fetchOrdenes = async () => {
-    const data = await getOrdenesFumigacion({ estado: estadoOrdenSeleccionada })
-    setOrdenes(data)
-  }
+  const ordenesFumigacionQuery = useOrdenesFumigacionQuery({estado: estadoOrdenSeleccionada})
 
   useEffect(() => {
-    fetchOrdenes()
+    ordenesFumigacionQuery.refetch()
   }, [estadoOrdenSeleccionada])
 
   const handleEstadoOrdenes = async (estado) => {
@@ -25,6 +24,11 @@ export default function OrdenesFumigacion() {
   const handleVerOrden = (id) => {
     navigate(`/ordenes_fumigacion/${id}`)
   }
+
+  const handleTerminar = (id) => {
+    setSelectedOrdenId(id)
+    setIsTerminarDialogOpen(true);
+  };
 
   const seleccionadoClass = (boton) => {
     if (boton === estadoOrdenSeleccionada) {
@@ -69,14 +73,16 @@ export default function OrdenesFumigacion() {
       </div>
 
       <div className="space-y-4">
-        {ordenes.map((orden) => (
+        {ordenesFumigacionQuery.data && ordenesFumigacionQuery.data.map((orden) => (
           <OrdenFumigacionCard
             key={orden.id}
             orden={orden}
             onVerOrden={handleVerOrden}
+            onTerminar={handleTerminar}
           />
         ))}
       </div>
+      <OrdenFumigacionTerminar selectedOrdenId={selectedOrdenId} isTerminarDialogOpen={isTerminarDialogOpen} setIsTerminarDialogOpen={setIsTerminarDialogOpen} />
     </div>
   )
 }

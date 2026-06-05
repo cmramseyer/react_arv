@@ -48,7 +48,7 @@ const joinWith = (string1, string2, separator) => {
   return `${left} ${separator} ${right}`
 }
 
-export default function OrdenFumigacionCard({ orden, onVerOrden }) {
+export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }) {
   const estadoOrden = (orden.estado_orden || '').toLowerCase()
   const estadoLabel = estadoOrden
     ? `${estadoOrden.charAt(0).toUpperCase()}${estadoOrden.slice(1)}`
@@ -234,6 +234,7 @@ export default function OrdenFumigacionCard({ orden, onVerOrden }) {
       </CardContent>
 
       <CardFooter className="flex justify-end">
+        <Button onClick={() => onTerminar(orden.id)}>Terminar orden</Button>
         <Button onClick={() => onVerOrden(orden.id)}>Ver orden</Button>
       </CardFooter>
     </Card>
