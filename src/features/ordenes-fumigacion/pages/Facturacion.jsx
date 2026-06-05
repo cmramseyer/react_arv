@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -8,6 +8,10 @@ import {
   useFacturacionMutation,
   useFacturacionQuery,
 } from "@/features/facturacion/hooks/useFacturacionQuery";
+import {
+  mapFacturacionPayload,
+  mapPagoFacturaPayload,
+} from "@/features/facturacion/mappers/facturacionMappers";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -24,16 +28,9 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-
-
-const groupHasOrdenes = (grupo) =>
-  Array.isArray(grupo?.data) && grupo.data.length > 0;
-
-const formatApiDate = (date) => format(date, "yyyy-MM-dd");
 const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
 
 export default function Facturacion() {
-  const [facturandoIds, setFacturandoIds] = useState(() => new Set());
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
     () => new Set(),
   );
@@ -48,14 +45,15 @@ export default function Facturacion() {
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
   const [fechaPago, setFechaPago] = useState();
 
-  const { data: ordenesPorEstancia = [], isFetching: loading } = useFacturacionQuery(modoPago);
+  const { data: ordenesPorEstancia = [], isFetching: loading } =
+    useFacturacionQuery(modoPago);
   const { facturarMutation, marcarFacturaPagadaMutation } =
     useFacturacionMutation();
 
-  const cantidadSeleccionadas = ordenesSeleccionadas.size
+  const cantidadSeleccionadas = ordenesSeleccionadas.size;
 
-  const isFacturando = facturarMutation.isPending
-  const isPagando = marcarFacturaPagadaMutation.isPending
+  const isFacturando = facturarMutation.isPending;
+  const isPagando = marcarFacturaPagadaMutation.isPending;
 
   const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe);
 
@@ -115,48 +113,23 @@ export default function Facturacion() {
   };
 
   const handleFacturar = async () => {
-    const ordenesIds = Array.from(ordenesSeleccionadas);
-    if (ordenesIds.length === 0) return;
-
-    const ordenesPayload = ordenesIds.map((ordenId) => {
-      const importeTexto = importesPorOrden[ordenId] ?? "0,00";
-      const importe = Number(importeTexto.replace(",", "."));
-      const nroOrdenCliente = (nroOrdenClientePorOrden[ordenId] ?? "").trim();
-      const payload = { id: ordenId, importe };
-
-      if (nroOrdenCliente) {
-        payload.nro_orden_cliente = nroOrdenCliente;
-      }
-
-      return payload;
+    const { ordenesIds, payload } = mapFacturacionPayload({
+      ordenesSeleccionadas,
+      importesPorOrden,
+      nroOrdenClientePorOrden,
+      nroFactura,
     });
 
-    const nroFacturaPayload = nroFactura.trim();
+    if (ordenesIds.length === 0) return;
 
-    try {
-      const response = await facturarMutation.mutateAsync({
-        ordenes_fumigacion: ordenesPayload,
-        nro_factura: nroFacturaPayload || undefined,
-      });
-      if (!response?.ok) return;
+    const response = await facturarMutation.mutateAsync(payload);
+    if (!response?.ok) return;
 
-      setOrdenesPorEstancia((prev) =>
-        prev
-          .map((grupo) => ({
-            ...grupo,
-            data: (Array.isArray(grupo.data) ? grupo.data : []).filter(
-              (orden) => !ordenesSeleccionadas.has(orden.orden_id),
-            ),
-          }))
-          .filter(groupHasOrdenes),
-      );
-      setOrdenesSeleccionadas(new Set());
-      setImportesPorOrden({});
-      setNroOrdenClientePorOrden({});
-      setNroFactura("");
-      setEstanciaSeleccionada(null);
-    } finally {
-    }
+    setOrdenesSeleccionadas(new Set());
+    setImportesPorOrden({});
+    setNroOrdenClientePorOrden({});
+    setNroFactura("");
+    setEstanciaSeleccionada(null);
   };
 
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
@@ -164,15 +137,14 @@ export default function Facturacion() {
 
     setPagandoIds((prev) => new Set(prev).add(facturaId));
     try {
-      const response = await marcarFacturaPagadaMutation.mutateAsync({
-        facturaId,
-        fechaPago: fechaPagoSeleccionada,
-      });
+      const response = await marcarFacturaPagadaMutation.mutateAsync(
+        mapPagoFacturaPayload({
+          facturaId,
+          fechaPago: fechaPagoSeleccionada,
+        }),
+      );
       if (!response?.ok) return false;
 
-      setOrdenesPorEstancia((prev) =>
-        prev.filter((grupo) => grupo.id !== facturaId),
-      );
       return true;
     } finally {
       setPagandoIds((prev) => {
@@ -200,7 +172,7 @@ export default function Facturacion() {
 
     const responseOk = await handleMarcarPagado(
       facturaPagoSeleccionada,
-      formatApiDate(fechaPago),
+      fechaPago,
     );
 
     if (responseOk) {
