@@ -1,41 +1,44 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useOrdenesFumigacionQuery } from '../hooks/useOrdenFumigacionQuery'
-import { Button } from '@/components/ui/button'
-import OrdenFumigacionCard from '@/features/ordenes-fumigacion/components/OrdenFumigacionCard'
-import OrdenFumigacionTerminar from './OrdenFumigacionTerminar'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useOrdenesFumigacionQuery } from "../hooks/useOrdenFumigacionQuery";
+import { Button } from "@/components/ui/button";
+import OrdenFumigacionCard from "@/features/ordenes-fumigacion/components/OrdenFumigacionCard";
+import OrdenFumigacionTerminar from "./OrdenFumigacionTerminar";
 
 export default function OrdenesFumigacion() {
-  const navigate = useNavigate()
-  const [estadoOrdenSeleccionada, setEstadoOrdenSeleccionada] = useState('activa')
-  const [selectedOrdenId, setSelectedOrdenId] = useState(null)
-  const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false)
+  const navigate = useNavigate();
+  const [estadoOrdenSeleccionada, setEstadoOrdenSeleccionada] =
+    useState("activa");
+  const [selectedOrdenId, setSelectedOrdenId] = useState(null);
+  const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false);
 
-  const ordenesFumigacionQuery = useOrdenesFumigacionQuery({estado: estadoOrdenSeleccionada})
+  const ordenesFumigacionQuery = useOrdenesFumigacionQuery({
+    estado: estadoOrdenSeleccionada,
+  });
 
   useEffect(() => {
-    ordenesFumigacionQuery.refetch()
-  }, [estadoOrdenSeleccionada])
+    ordenesFumigacionQuery.refetch();
+  }, [estadoOrdenSeleccionada]);
 
   const handleEstadoOrdenes = async (estado) => {
-    setEstadoOrdenSeleccionada(estado)
-  }
+    setEstadoOrdenSeleccionada(estado);
+  };
 
   const handleVerOrden = (id) => {
-    navigate(`/ordenes_fumigacion/${id}`)
-  }
+    navigate(`/ordenes_fumigacion/${id}`);
+  };
 
   const handleTerminar = (id) => {
-    setSelectedOrdenId(id)
+    setSelectedOrdenId(id);
     setIsTerminarDialogOpen(true);
   };
 
   const seleccionadoClass = (boton) => {
     if (boton === estadoOrdenSeleccionada) {
-      return 'default'
+      return "default";
     }
-    return 'secondary'
-  }
+    return "secondary";
+  };
 
   return (
     <div className="p-4 space-y-6">
@@ -46,43 +49,48 @@ export default function OrdenesFumigacion() {
 
         <div className="flex flex-wrap items-center gap-2 md:flex-1 md:justify-center">
           <Button
-            onClick={() => handleEstadoOrdenes('')}
-            variant={seleccionadoClass('')}
+            onClick={() => handleEstadoOrdenes("")}
+            variant={seleccionadoClass("")}
           >
             Todas
           </Button>
           <Button
-            onClick={() => handleEstadoOrdenes('activa')}
-            variant={seleccionadoClass('activa')}
+            onClick={() => handleEstadoOrdenes("activa")}
+            variant={seleccionadoClass("activa")}
           >
             Activas
           </Button>
           <Button
-            onClick={() => handleEstadoOrdenes('terminada')}
-            variant={seleccionadoClass('terminada')}
+            onClick={() => handleEstadoOrdenes("terminada")}
+            variant={seleccionadoClass("terminada")}
           >
             Terminadas
           </Button>
         </div>
 
         <div className="flex md:flex-1 md:justify-end">
-          <Button onClick={() => navigate('/ordenes_fumigacion/nueva')}>
+          <Button onClick={() => navigate("/ordenes_fumigacion/nueva")}>
             Crear Orden
           </Button>
         </div>
       </div>
 
       <div className="space-y-4">
-        {ordenesFumigacionQuery.data && ordenesFumigacionQuery.data.map((orden) => (
-          <OrdenFumigacionCard
-            key={orden.id}
-            orden={orden}
-            onVerOrden={handleVerOrden}
-            onTerminar={handleTerminar}
-          />
-        ))}
+        {ordenesFumigacionQuery.data &&
+          ordenesFumigacionQuery.data.map((orden) => (
+            <OrdenFumigacionCard
+              key={orden.id}
+              orden={orden}
+              onVerOrden={handleVerOrden}
+              onTerminar={handleTerminar}
+            />
+          ))}
       </div>
-      <OrdenFumigacionTerminar selectedOrdenId={selectedOrdenId} isTerminarDialogOpen={isTerminarDialogOpen} setIsTerminarDialogOpen={setIsTerminarDialogOpen} />
+      <OrdenFumigacionTerminar
+        selectedOrdenId={selectedOrdenId}
+        isTerminarDialogOpen={isTerminarDialogOpen}
+        setIsTerminarDialogOpen={setIsTerminarDialogOpen}
+      />
     </div>
-  )
+  );
 }
