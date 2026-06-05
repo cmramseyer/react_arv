@@ -74,3 +74,37 @@ export const joinWith = (string1, string2, separator) => {
   const right = string2 ? String(string2) : 'Sin datos'
   return `${left} ${separator} ${right}`
 }
+
+export const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe)
+
+export const parseImporte = (importe) => {
+  if (importe === null || importe === undefined) return null
+  const raw = String(importe).trim()
+  if (raw === '') return null
+
+  let normalized = raw
+  if (raw.includes(',') && raw.includes('.')) {
+    normalized = raw.replace(/\./g, '').replace(',', '.')
+  } else if (raw.includes(',')) {
+    normalized = raw.replace(',', '.')
+  }
+
+  const numero = Number(normalized)
+  if (Number.isNaN(numero)) return null
+
+  return numero
+}
+
+export const formatImporte = (importe) => {
+  const numero = parseImporte(importe)
+  if (numero === null) return ''
+
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+    .format(numero)
+    .replace(/\s/g, '')
+}

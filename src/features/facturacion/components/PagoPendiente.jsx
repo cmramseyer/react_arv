@@ -1,13 +1,31 @@
-import React from 'react'
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import { formatHectareas } from "@/utils/formatHectareas";
+
+const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
 
 export default function PagoPendiente({
   loading,
@@ -17,6 +35,12 @@ export default function PagoPendiente({
   onCambiarModo,
   parseImporte,
   formatImporte,
+  dialogoPagoAbierto,
+  fechaPago,
+  pagoEnProceso,
+  onFechaPagoChange,
+  onCerrarDialogoPago,
+  onConfirmarPago,
 }) {
   return (
     <>
@@ -141,6 +165,52 @@ export default function PagoPendiente({
           })}
         </>
       )}
+      <Dialog open={dialogoPagoAbierto}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmar pago</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <span className="text-sm font-medium">Fecha de pago</span>
+            <Popover modal>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !fechaPago && "text-muted-foreground",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {fechaPago
+                    ? formatDisplayDate(fechaPago)
+                    : "Seleccionar fecha"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={fechaPago}
+                  onSelect={onFechaPagoChange}
+                  locale={es}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={onCerrarDialogoPago}>
+              Cerrar
+            </Button>
+            <Button
+              onClick={onConfirmarPago}
+              disabled={!fechaPago || pagoEnProceso}
+            >
+              {pagoEnProceso ? "Marcando..." : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

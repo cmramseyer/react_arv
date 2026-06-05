@@ -1,7 +1,4 @@
 import { useMemo, useState } from "react";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import FacturaPendiente from "@/features/facturacion/components/FacturaPendiente";
 import PagoPendiente from "@/features/facturacion/components/PagoPendiente";
 import {
@@ -12,23 +9,11 @@ import {
   mapFacturacionPayload,
   mapPagoFacturaPayload,
 } from "@/features/facturacion/mappers/facturacionMappers";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-
-const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
+  formatImporte,
+  importeEsValido,
+  parseImporte,
+} from "@/utils/formatHectareas";
 
 export default function Facturacion() {
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
@@ -53,8 +38,6 @@ export default function Facturacion() {
 
   const isFacturando = facturarMutation.isPending;
   const isPagando = marcarFacturaPagadaMutation.isPending;
-
-  const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe);
 
   const tieneImportesInvalidos = useMemo(() => {
     return Array.from(ordenesSeleccionadas).some((ordenId) => {
@@ -134,18 +117,15 @@ export default function Facturacion() {
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
     if (isPagando) return false;
 
-    try {
-      const response = await marcarFacturaPagadaMutation.mutateAsync(
-        mapPagoFacturaPayload({
-          facturaId,
-          fechaPago: fechaPagoSeleccionada,
-        }),
-      );
-      if (!response?.ok) return false;
+    const response = await marcarFacturaPagadaMutation.mutateAsync(
+      mapPagoFacturaPayload({
+        facturaId,
+        fechaPago: fechaPagoSeleccionada,
+      }),
+    );
+    if (!response?.ok) return false;
 
-      return true;
-    } finally {
-    }
+    return true;
   };
 
   const handleAbrirDialogoPago = (facturaId) => {
@@ -173,39 +153,7 @@ export default function Facturacion() {
     }
   };
 
-  const pagoEnProceso = isPagando
-
-  const parseImporte = (importe) => {
-    if (importe === null || importe === undefined) return null;
-    const raw = String(importe).trim();
-    if (raw === "") return null;
-
-    let normalized = raw;
-    if (raw.includes(",") && raw.includes(".")) {
-      normalized = raw.replace(/\./g, "").replace(",", ".");
-    } else if (raw.includes(",")) {
-      normalized = raw.replace(",", ".");
-    }
-
-    const numero = Number(normalized);
-    if (Number.isNaN(numero)) return null;
-
-    return numero;
-  };
-
-  const formatImporte = (importe) => {
-    const numero = parseImporte(importe);
-    if (numero === null) return "";
-
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-      .format(numero)
-      .replace(/\s/g, "");
-  };
+  const pagoEnProceso = isPagando;
 
   return (
     <div className="p-4 space-y-4">
@@ -218,6 +166,12 @@ export default function Facturacion() {
           onCambiarModo={setModoPago}
           parseImporte={parseImporte}
           formatImporte={formatImporte}
+          dialogoPagoAbierto={dialogoPagoAbierto}
+          fechaPago={fechaPago}
+          pagoEnProceso={pagoEnProceso}
+          onFechaPagoChange={setFechaPago}
+          onCerrarDialogoPago={handleCerrarDialogoPago}
+          onConfirmarPago={handleConfirmarPago}
         />
       ) : (
         <FacturaPendiente
@@ -241,52 +195,6 @@ export default function Facturacion() {
           onDialogoEstanciaOpenChange={setDialogoEstanciaAbierto}
         />
       )}
-      <Dialog open={dialogoPagoAbierto}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirmar pago</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Fecha de pago</span>
-            <Popover modal>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !fechaPago && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {fechaPago
-                    ? formatDisplayDate(fechaPago)
-                    : "Seleccionar fecha"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={fechaPago}
-                  onSelect={setFechaPago}
-                  locale={es}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={handleCerrarDialogoPago}>
-              Cerrar
-            </Button>
-            <Button
-              onClick={handleConfirmarPago}
-              disabled={!fechaPago || pagoEnProceso}
-            >
-              {pagoEnProceso ? "Marcando..." : "Confirmar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
