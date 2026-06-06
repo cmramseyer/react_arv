@@ -13,8 +13,7 @@ import {
 
 export default function SelectField({ field, label, options, className = '', getOptionLabel }) {
 
-  if (!options) { return <div>Cargando...</div>}
-  if (options.length === 0) { return <div>Cargando...</div>}
+  console.log("selectfield", { field, label, options })
 
   const getLabel = getOptionLabel || ((option) => option.nombre)
 

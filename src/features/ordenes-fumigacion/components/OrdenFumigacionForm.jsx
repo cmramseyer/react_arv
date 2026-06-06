@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -11,48 +11,13 @@ import { formatHectareas, getTotalHectareas } from '@/utils/formatHectareas'
 import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDialog'
 import OrdenFumigacionEditForm from '@/features/ordenes-fumigacion/components/OrdenFumigacionEditForm'
 
-import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
-import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
-import { useCultivosQuery } from '@/features/cultivos/hooks/useCultivoQuery'
-import { useProductosQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
-import { useOrdenFumigacionQuery, useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery'
-
-
-const ordenToForm = (data) => {
-  return { 
-    id: String(data.id) ?? '',
-    estancia_id: String(data.estancia_id) ?? '',
-    cultivo_id: String(data.cultivo.id) ?? '',
-    sensible: data.sensible ?? false,
-    comentarios: data.comentarios ?? '',
-    datos_clima: data.datos_clima ?? '',
-    info_trabajo: data.info_trabajo ?? '',
-    creator: data.creator ?? '',
-    fecha_trabajo: data.fecha_trabajo ?? '',
-    maquinista_id: String(data.maquinista?.id) ?? '',
-    lotes: data.lotes.map((e) => {
-      return {
-        orden_lote_id: e.id,
-        lote_id: String(e.lote_id),
-        hectareas_reales: e.hectareas_reales,
-        dosis: e.dosis.map((d) => { 
-          return {
-            orden_lote_dosis_id: d.id,
-            producto_id: d.producto_id,
-            cantidad: d.cantidad 
-          }
-        })
-      }
-    })
-
-  }
-}
+import { useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery'
+import { useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
+import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 
 
 export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const isEdit = formAction === 'edit'
-  const isTerminar = formAction === 'terminar'
-  const isCreate = formAction === 'create'
 
   const form = useForm({
     defaultValues: {
@@ -72,65 +37,36 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     name: 'lotes'
   })
 
-  const estanciaId = watch('estancia_id')
-  const selectedLotes = watch('lotes')
-
-  const estanciasQuery = useEstanciasQuery()
-  const productosQuery = useProductosQuery()
-  const cultivosQuery = useCultivosQuery()
-  const enabled = true
-  const lotesQuery = useLotesByEstanciaQuery(estanciaId, enabled)
-  const ordenFumigacionQuery = useOrdenFumigacionQuery(ordenId, enabled)
+  const { isReady, isLoading, error, initialValues, options: { estancias, productos, cultivos }, 
+    queries: { ordenFumigacionQuery, lotesQuery } } = useOrdenFumigacionEditLoader(isEdit ? ordenId : null)
 
   const estadoOrden = ordenFumigacionQuery.data?.estado_orden
+  const selectedLotes = watch('lotes')
 
   const { createProductoMutation } = useProductosMutation()
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
-  // const [estancias, setEstancias] = useState([])
-  // const [lotes, setLotes] = useState([])
-  // const [productos, setProductos] = useState([])
-  // const [cultivos, setCultivos] = useState([])
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
   const navigate = useNavigate()
 
   const totalHectareas = getTotalHectareas(selectedLotes, lotesQuery.data)
 
+  const initializedRef = useRef(false);
+  
+  useEffect(() => {
+    if (!isReady) return;
+    if (initializedRef.current) return;
+    form.reset(initialValues);
+
+    initializedRef.current = true;
+
+
+  }, [isReady, initialValues, form]);
 
   const handleProductoOpen = (productoOpen) => {
     setIsNuevoProductoOpen(productoOpen)
   }
 
-  // const loadProductos = useCallback(async () => {
-  //   const data = await getProductos()
-  //   setProductos(data)
-  // }, [])
-
-  // useEffect(() => {
-  //   getEstancias().then(setEstancias)
-  //   loadProductos()
-  //   getCultivos().then(setCultivos)
-  // }, [loadProductos])
-
-  // useEffect(() => {
-  //   if (estanciaId) {
-  //     getLotesPorEstancia(estanciaId).then(setLotes)
-  //   } else {
-  //     setLotes([])
-  //   }
-  // }, [estanciaId])
-
-  useEffect(() => {
-
-    console.log('useEffect carga orden fumigacion')
-    console.log(JSON.stringify(ordenFumigacionQuery.data))
-
-    if (ordenFumigacionQuery.data) {
-      console.log('orden form')
-      console.log(JSON.stringify(ordenToForm(ordenFumigacionQuery.data)))
-      reset(ordenToForm(ordenFumigacionQuery.data))
-    }
-  }, [ordenFumigacionQuery.data, reset])
 
   const onSubmit = async (data) => {
     const payload = {
@@ -201,7 +137,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
               <FormItem>
                 <FormLabel>Estancia</FormLabel>
                 <FormControl>
-                  <SelectField field={field} label="Estancia" options={estanciasQuery.data || []} />
+                  <SelectField field={field} label="Estancia" options={estancias || []} />
                 </FormControl>
                 <FormDescription>Estancia desc.</FormDescription>
                 <FormMessage />
@@ -212,16 +148,22 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
           <FormField
             control={control}
             name="cultivo_id"
-            render={({ field }) => (
+            render={({ field }) => {
+              console.log("CULTIVO FIELD RENDER", {
+      value: field.value,
+      optionsCount: cultivos?.length,
+      optionsIds: cultivos?.map((cultivo) => String(cultivo.id)),
+    });
+              return(
               <FormItem>
                 <FormLabel>Cultivo</FormLabel>
                 <FormControl>
-                  <SelectField field={field} label="Cultivo" options={cultivosQuery.data} />
+                  <SelectField field={field} label="Cultivo" options={cultivos} />
                 </FormControl>
                 <FormDescription>Opcional</FormDescription>
                 <FormMessage />
               </FormItem>
-            )}
+            )}}
           />
 
           <FormField
@@ -322,7 +264,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
             <DosisFields
               control={control}
-              productos={productosQuery.data}
+              productos={productos}
               name={`lotes.${index}.dosis`}
               showNuevoProductoButton
               onNuevoProducto={() => setIsNuevoProductoOpen(true)}
