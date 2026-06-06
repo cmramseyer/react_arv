@@ -52,11 +52,30 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const totalHectareas = getTotalHectareas(selectedLotes, lotesQuery.data)
 
   const initializedRef = useRef(false);
+
+  useEffect(() => {
+  const subscription = watch((values, info) => {
+    if (info.name === "cultivo_id") {
+      console.log("CULTIVO CHANGED", {
+        value: values.cultivo_id,
+        info,
+        allValues: values,
+      });
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}, [watch]);
   
   useEffect(() => {
     if (!isReady) return;
     if (initializedRef.current) return;
     form.reset(initialValues);
+    console.log("AFTER RESET", {
+    cultivoAfterReset: form.getValues("cultivo_id"),
+    valuesAfterReset: form.getValues(),
+  });
+
 
     initializedRef.current = true;
 
