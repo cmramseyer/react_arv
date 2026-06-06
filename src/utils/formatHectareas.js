@@ -1,3 +1,4 @@
+// Parses hectare values from numbers or localized strings.
 export const parseHectareas = (value) => {
   if (value === null || value === undefined || value === '') return null
   if (typeof value === 'string') {
@@ -13,6 +14,7 @@ export const parseHectareas = (value) => {
   return Number.isNaN(numericValue) ? null : numericValue
 }
 
+// Formats hectares for display with the AR locale and unit suffix.
 export const formatHectareas = (value) => {
   const numericValue = parseHectareas(value)
   if (numericValue === null) return 'Sin datos'
@@ -25,6 +27,7 @@ export const formatHectareas = (value) => {
   return `${formattedValue} ha`
 }
 
+// Sums selected lot hectares using actual hectares when available.
 export const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
   if (!Array.isArray(selectedLotes) || !Array.isArray(lotesDisponibles)) return 0
   const lotesById = new Map(lotesDisponibles.map((lote) => [String(lote.id), lote]))
@@ -43,6 +46,7 @@ export const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
   }, 0)
 }
 
+// Parses raw hectare values into numbers or null.
 export const parseHectareasValue = (value) => {
   if (value === null || value === undefined || value === '') return null
   if (typeof value === 'string') {
@@ -58,7 +62,7 @@ export const parseHectareasValue = (value) => {
   return Number.isNaN(numericValue) ? null : numericValue
 }
 
-
+// Formats ISO-like dates into dd/mm/yyyy display format.
 export const formatDate = (value) => {
   if (!value) return 'Sin fecha'
   const dateString = String(value)
@@ -69,14 +73,17 @@ export const formatDate = (value) => {
   return `${day}/${month}/${year}`
 }
 
+// Joins two display values with a separator, using fallbacks.
 export const joinWith = (string1, string2, separator) => {
   const left = string1 ? String(string1) : 'Sin datos'
   const right = string2 ? String(string2) : 'Sin datos'
   return `${left} ${separator} ${right}`
 }
 
+// Validates AR decimal currency input with exactly two decimals.
 export const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe)
 
+// Parses localized amount strings into numeric values.
 export const parseImporte = (importe) => {
   if (importe === null || importe === undefined) return null
   const raw = String(importe).trim()
@@ -95,6 +102,7 @@ export const parseImporte = (importe) => {
   return numero
 }
 
+// Formats amounts as ARS currency without spacing.
 export const formatImporte = (importe) => {
   const numero = parseImporte(importe)
   if (numero === null) return ''
