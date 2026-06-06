@@ -16,10 +16,8 @@ import Productos from '@/features/productos/pages/Productos'
 import ProductoNew from '@/features/productos/pages/ProductoNew'
 import ProductoEdit from '@/features/productos/pages/ProductoEdit'
 import OrdenesFumigacion from '@/features/ordenes-fumigacion/pages/OrdenesFumigacion'
-import OrdenesFumigacionNueva from '@/features/ordenes-fumigacion/pages/OrdenesFumigacionNueva'
 import OrdenFumigacionNew from '@/features/ordenes-fumigacion/pages/OrdenFumigacionNew'
 import OrdenFumigacionShow from '@/features/ordenes-fumigacion/pages/OrdenFumigacionShow'
-import OrdenFumigacionEditar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEditar'
 import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEdit'
 import OrdenFumigacionTerminar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar'
 import BuscarOrden from '@/features/ordenes-fumigacion/pages/BuscarOrden'
@@ -63,12 +61,10 @@ createRoot(document.getElementById('root')).render(
             <Route path="/estadisticas" element={<Estadistica />} />
             <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
             <Route path="/buscar_ordenes" element={<BuscarOrden />} />
-            <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
-            <Route path="/orden_fumigacion/new" element={<OrdenFumigacionNew />} />
+            <Route path="/ordenes_fumigacion/new" element={<OrdenFumigacionNew />} />
             <Route path="/ordenes_fumigacion/pendiente_factura" element={<Facturacion />} />
             <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
-            <Route path="/ordenes_fumigacion/:id/editar" element={<OrdenFumigacionEditar />} />
-            <Route path="/orden_fumigacion/:id/edit" element={<OrdenFumigacionEdit />} />
+            <Route path="/ordenes_fumigacion/:id/edit" element={<OrdenFumigacionEdit />} />
             <Route path="/ordenes_fumigacion/:id/terminar" element={<OrdenFumigacionTerminar />} />
           </Route>
         </Routes>

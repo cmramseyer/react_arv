@@ -69,7 +69,7 @@ export default function OrdenesFumigacion() {
         </div>
 
         <div className="flex md:flex-1 md:justify-end">
-          <Button onClick={() => navigate("/ordenes_fumigacion/nueva")}>
+          <Button onClick={() => navigate("/ordenes_fumigacion/new")}>
             Crear Orden
           </Button>
         </div>

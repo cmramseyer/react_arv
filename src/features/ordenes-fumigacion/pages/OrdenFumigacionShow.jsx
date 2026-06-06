@@ -107,7 +107,7 @@ export default function OrdenFumigacionShow() {
   }, [orden?.orden_pdf_fecha_creacion, orden?.orden_url]);
 
   const handleEditar = () => {
-    navigate(`/ordenes_fumigacion/${id}/editar`);
+    navigate(`/ordenes_fumigacion/${id}/edit`);
   };
 
   const handleTerminar = () => {

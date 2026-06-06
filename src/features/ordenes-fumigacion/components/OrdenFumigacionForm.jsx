@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { createProducto, getProductos } from '@/features/productos/api/productosService'
-import { createOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
@@ -34,10 +32,12 @@ const ordenToForm = (data) => {
     maquinista_id: String(data.maquinista?.id) ?? '',
     lotes: data.lotes.map((e) => {
       return {
+        orden_lote_id: e.id,
         lote_id: String(e.lote_id),
         hectareas_reales: e.hectareas_reales,
         dosis: e.dosis.map((d) => { 
           return {
+            orden_lote_dosis_id: d.id,
             producto_id: d.producto_id,
             cantidad: d.cantidad 
           }
@@ -85,7 +85,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const estadoOrden = ordenFumigacionQuery.data?.estado_orden
 
   const { createProductoMutation } = useProductosMutation()
-  const { createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
+  const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
   // const [estancias, setEstancias] = useState([])
   // const [lotes, setLotes] = useState([])
@@ -142,10 +142,12 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
           .filter(lote => lote.lote_id)
           .map(lote => {
             const loteData = {
+              id: lote?.orden_lote_id || null,
               lote_id: lote.lote_id,
               dosis: (lote.dosis || [])
               .filter(dosis => dosis.producto_id && dosis.cantidad !== '' && dosis.cantidad !== null)
               .map(dosis => ({
+                id: dosis.orden_lote_dosis_id || null,
                 producto_id: dosis.producto_id,
                 cantidad: dosis.cantidad
               }))
@@ -165,6 +167,12 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     }
 
     try {
+      if (isEdit) {
+        payload.orden_fumigacion.id = data.id
+        await updateOrdenFumigacionMutation.mutateAsync({id: ordenId, payload})
+        navigate(`/ordenes_fumigacion`)
+        return
+      }
       await createOrdenFumigacionMutation.mutateAsync(payload)
       navigate('/ordenes_fumigacion')
      } catch(error) {
@@ -331,7 +339,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
         </Button>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit">{ createOrdenFumigacionMutation && createOrdenFumigacionMutation.isSubmitting ? "Creando..." : "Crear orden" }</Button>
+          <Button type="submit">{ isEdit ? "Actualizar" : "Crear" }</Button>
           <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
             Volver
           </Button>
