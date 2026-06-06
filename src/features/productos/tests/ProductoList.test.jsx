@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ProductoList from '@/components/ProductoList'
 
 import { setupServer } from 'msw/node'
-import { productoHandlers } from '@/mocks/productoHandlers'
+import { productoHandlers } from '@/features/productos/mocks/productoHandlers'
  
 export const server = setupServer(...productoHandlers)
 

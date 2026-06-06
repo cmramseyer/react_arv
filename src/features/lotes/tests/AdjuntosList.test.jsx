@@ -8,7 +8,7 @@ import { AdjuntosList } from '@/components/AdjuntosList'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { setupServer } from 'msw/node'
-import { loteHandlers } from '@/mocks/loteHandlers'
+import { loteHandlers } from '@/features/lotes/mocks/loteHandlers'
  
 export const server = setupServer(...loteHandlers)
 

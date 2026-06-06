@@ -12,7 +12,7 @@ function LocationDisplay() {
 }
 
 import { setupServer } from 'msw/node'
-import { estanciaHandlers } from '@/mocks/estanciaHandlers'
+import { estanciaHandlers } from '@/features/estancias/mocks/estanciaHandlers'
  
 export const server = setupServer(...estanciaHandlers)
 

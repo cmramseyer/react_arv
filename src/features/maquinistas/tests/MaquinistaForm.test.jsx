@@ -13,7 +13,7 @@ function LocationDisplay() {
 }
 
 import { setupServer } from 'msw/node'
-import { maquinistaHandlers } from '@/mocks/maquinistaHandlers'
+import { maquinistaHandlers } from '@/features/maquinistas/mocks/maquinistaHandlers'
  
 export const server = setupServer(...maquinistaHandlers)
 

@@ -13,7 +13,7 @@ function LocationDisplay() {
 }
 
 import { setupServer } from 'msw/node'
-import { cultivoHandlers } from '@/mocks/cultivoHandlers'
+import { cultivoHandlers } from '@/features/cultivos/mocks/cultivoHandlers'
  
 export const server = setupServer(...cultivoHandlers)
 
