@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -13,6 +13,7 @@ import OrdenFumigacionEditForm from '@/features/ordenes-fumigacion/components/Or
 
 import { useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery'
 import { useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
+import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 
 
@@ -31,17 +32,27 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     }
   })
 
-  const { handleSubmit, control, watch, reset } = form
+  const { handleSubmit, control, watch } = form
   const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
     control,
     name: 'lotes'
   })
 
-  const { isReady, isLoading, error, initialValues, options: { estancias, productos, cultivos }, 
-    queries: { ordenFumigacionQuery, lotesQuery } } = useOrdenFumigacionEditLoader(isEdit ? ordenId : null)
+  const {
+    isReady,
+    initialValues,
+    options: { estancias, productos, cultivos, lotes: editLotes },
+    queries: { ordenFumigacionQuery },
+  } = useOrdenFumigacionEditLoader(isEdit ? ordenId : null)
 
   const estadoOrden = ordenFumigacionQuery.data?.estado_orden
+  const estanciaId = watch('estancia_id')
   const selectedLotes = watch('lotes')
+  const createLotesQuery = useLotesByEstanciaQuery(
+    estanciaId,
+    !isEdit && Boolean(estanciaId),
+  )
+  const lotes = isEdit ? editLotes : createLotesQuery.data || []
 
   const { createProductoMutation } = useProductosMutation()
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
@@ -49,38 +60,17 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
   const navigate = useNavigate()
 
-  const totalHectareas = getTotalHectareas(selectedLotes, lotesQuery.data)
+  const totalHectareas = getTotalHectareas(selectedLotes, lotes)
 
   const initializedRef = useRef(false);
 
   useEffect(() => {
-  const subscription = watch((values, info) => {
-    if (info.name === "cultivo_id") {
-      console.log("CULTIVO CHANGED", {
-        value: values.cultivo_id,
-        info,
-        allValues: values,
-      });
-    }
-  });
-
-  return () => subscription.unsubscribe();
-}, [watch]);
-  
-  useEffect(() => {
+    if (!isEdit) return;
     if (!isReady) return;
     if (initializedRef.current) return;
     form.reset(initialValues);
-    console.log("AFTER RESET", {
-    cultivoAfterReset: form.getValues("cultivo_id"),
-    valuesAfterReset: form.getValues(),
-  });
-
-
     initializedRef.current = true;
-
-
-  }, [isReady, initialValues, form]);
+  }, [isEdit, isReady, initialValues, form]);
 
   const handleProductoOpen = (productoOpen) => {
     setIsNuevoProductoOpen(productoOpen)
@@ -167,13 +157,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
           <FormField
             control={control}
             name="cultivo_id"
-            render={({ field }) => {
-              console.log("CULTIVO FIELD RENDER", {
-      value: field.value,
-      optionsCount: cultivos?.length,
-      optionsIds: cultivos?.map((cultivo) => String(cultivo.id)),
-    });
-              return(
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>Cultivo</FormLabel>
                 <FormControl>
@@ -182,7 +166,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
                 <FormDescription>Opcional</FormDescription>
                 <FormMessage />
               </FormItem>
-            )}}
+            )}
           />
 
           <FormField
@@ -250,7 +234,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
                     <SelectField
                       field={field}
                       label="Lote"
-                      options={lotesQuery.data || []}
+                      options={lotes}
                       getOptionLabel={(lote) => {
                         const nombre = lote.nombre_lote || lote.nombre || 'Sin nombre'
                         return `${nombre} - ${formatHectareas(lote.hectareas)}`
