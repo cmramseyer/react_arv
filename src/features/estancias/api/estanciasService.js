@@ -21,7 +21,7 @@ export const getEstancia = async(id) => {
 export const createEstancia = async (estancia) => {
   const res = await fetchWithAuth(API_URL, {
     method: 'POST',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ estancia }),
   })
   return handleResponse(res, 'Error creating estancia')
@@ -30,7 +30,7 @@ export const createEstancia = async (estancia) => {
 export const updateEstancia = async (id, estancia) => {
   const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'PATCH',
-    headers: getAuthOnlyHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ estancia }),
   })
   return handleResponse(res, 'Error updating estancia')

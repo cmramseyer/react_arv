@@ -1,15 +1,10 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import EstanciaForm from '@/components/EstanciaForm'
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
-}
+import EstanciaForm from '@/features/estancias/components/EstanciaForm'
 
 import { setupServer } from 'msw/node'
 import { estanciaHandlers } from '@/features/estancias/mocks/estanciaHandlers'
@@ -71,9 +66,25 @@ describe('EstanciaForm', () => {
       await user.click(screen.getByRole("button", { name: /grabar/i }));
 
       expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
-      expect(await screen.findByText('El contacto es requerido')).toBeInTheDocument()
-      expect(await screen.findByText('El telefono es requerido')).toBeInTheDocument()
-      expect(await screen.findByText('El email es requerido')).toBeInTheDocument()
+      expect(screen.queryByText('El contacto es requerido')).not.toBeInTheDocument()
+      expect(screen.queryByText('El telefono es requerido')).not.toBeInTheDocument()
+      expect(screen.queryByText('El email es requerido')).not.toBeInTheDocument()
+    })
+
+    it('validates optional field format when present', async () => {
+      renderWithQueryClient(
+        <MemoryRouter>
+          <EstanciaForm formAction="create" />
+        </MemoryRouter>
+      )
+
+      await user.type(screen.getByLabelText('Nombre'), 'Estancia nueva')
+      await user.type(screen.getByLabelText('Telefono'), 'abc')
+      await user.type(screen.getByLabelText('Email'), 'email-invalido')
+      await user.click(screen.getByRole("button", { name: /grabar/i }));
+
+      expect(await screen.findByText('El telefono debe ser numerico')).toBeInTheDocument()
+      expect(await screen.findByText('El email no es valido')).toBeInTheDocument()
     })
   })
 

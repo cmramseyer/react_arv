@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useEstanciaQueryById, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
+import { estanciaSchema } from '@/features/estancias/schemas/estanciaSchema'
 
 
 export default function EstanciaForm({ estanciaId = null, formAction }) {
@@ -25,6 +27,7 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
   const defaultValues = isEdit ? estanciaQuery.data : emptyValues
 
   const form = useForm({
+    resolver: zodResolver(estanciaSchema),
     defaultValues: defaultValues
   })
 
@@ -37,9 +40,9 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
   const isError = createMutation.isError || updateMutation.isError
   const errorMessage = createMutation.error?.message || updateMutation.error?.message || 'Error desconocido'
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (data) => {
     try {
-      await updateMutation.mutateAsync({id: estanciaId, payload: form.getValues()})
+      await updateMutation.mutateAsync({id: estanciaId, payload: data})
       navigate('/estancias')
     } catch(error) {
       console.log(`error en el try: ${error}`)
@@ -47,9 +50,9 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
     
   }
   
-  const handleCreate = async () => { 
+  const handleCreate = async (data) => { 
     try {
-      await createMutation.mutateAsync(form.getValues())
+      await createMutation.mutateAsync(data)
       navigate('/estancias')
     } catch(error) {
       console.log(`error en el try: ${error}`)
@@ -68,11 +71,10 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+        <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
           <FormField
             control={control}
             name="nombre"
-            rules={{ required: 'El nombre es requerido' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre</FormLabel>
@@ -87,10 +89,6 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
           <FormField
             control={control}
             name="contacto"
-            rules={{ required: 'El contacto es requerido',
-              validate: (value) =>
-                String(value ?? '').trim().length > 0 || 'El nombre es requerido',
-             }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Contacto</FormLabel>
@@ -105,7 +103,6 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
           <FormField
             control={control}
             name="telefono"
-            rules={{ required: 'El telefono es requerido' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Telefono</FormLabel>
@@ -120,13 +117,6 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
           <FormField
             control={control}
             name="email"
-            rules={{
-              required: 'El email es requerido',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'El email no es valido'
-              }
-            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
