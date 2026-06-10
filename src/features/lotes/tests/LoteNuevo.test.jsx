@@ -2,23 +2,29 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Mockear los servicios
-vi.mock('../services/lotesService', () => ({
+vi.mock('@/features/lotes/api/lotesService', () => ({
   getLotes: vi.fn(() => Promise.resolve([])),
+  getLote: vi.fn(() => Promise.resolve(null)),
+  getLotesPorEstancia: vi.fn(() => Promise.resolve([])),
   createLote: vi.fn(() => Promise.resolve()),
   updateLote: vi.fn(() => Promise.resolve()),
-  deleteLote: vi.fn(() => Promise.resolve())
+  deleteLote: vi.fn(() => Promise.resolve()),
+  getAdjuntosLote: vi.fn(() => Promise.resolve([])),
+  uploadAdjuntoLote: vi.fn(() => Promise.resolve()),
+  deleteAdjuntoLote: vi.fn(() => Promise.resolve()),
 }))
 
-vi.mock('../services/estanciasService', () => ({
+vi.mock('@/features/estancias/api/estanciasService', () => ({
   getEstancias: vi.fn(() => Promise.resolve([]))
 }))
 
-import { getLotes, createLote } from '../services/lotesService'
-import { getEstancias } from '../services/estanciasService'
+import { getLotes, createLote } from '@/features/lotes/api/lotesService'
+import { getEstancias } from '@/features/estancias/api/estanciasService'
 
-import LoteNuevo from './LoteNew'
+import LoteNuevo from '@/features/lotes/pages/LoteNew'
 
 const mockLotes = () => {
   getLotes.mockResolvedValueOnce([
@@ -46,6 +52,21 @@ function LocationDisplay() {
 
 let user
 
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
+}
+
 describe('Lotes Form', () => {
   beforeEach(() => {
     user = userEvent.setup()
@@ -56,7 +77,7 @@ describe('Lotes Form', () => {
   })
 
   it('renders the form', async () => {
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <LoteNuevo />
       </MemoryRouter>
@@ -71,14 +92,14 @@ describe('Lotes Form', () => {
     expect(screen.getByLabelText('Longitud')).toBeInTheDocument()
     expect(screen.getByLabelText('Link mapa')).toBeInTheDocument()
     expect(screen.getByLabelText('Hectareas')).toBeInTheDocument()
-    expect(screen.getByText('Crear')).toBeInTheDocument()
+    expect(screen.getByText('Guardar')).toBeInTheDocument()
   })
 
   it('creates a new Lote', async () => {
 
     mockLotes()
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes/nuevo']}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />
@@ -94,7 +115,7 @@ describe('Lotes Form', () => {
     await user.type(screen.getByLabelText('Link mapa'), 'http://mapa3.com')
     await user.type(screen.getByLabelText('Hectareas'), '15')
 
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
+    const botonCrear = screen.getByRole('button', { name: /guardar/i })
     fireEvent.click(botonCrear)
 
     expect(await screen.findByText('La estancia es obligatoria')).toBeInTheDocument()
@@ -120,7 +141,7 @@ describe('Lotes Form', () => {
 
   it('completes the multiselect form Estancia', async () => {
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <LoteNuevo />
       </MemoryRouter>
@@ -135,7 +156,7 @@ describe('Lotes Form', () => {
   })
 
   it('returns to Lotes without extra requests when clicking Volver', async () => {
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes', '/lotes/nuevo']} initialIndex={1}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />

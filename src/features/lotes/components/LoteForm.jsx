@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 
 import { useLoteQueryById, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
+import { loteSchema } from '@/features/lotes/schemas/loteSchema'
 
 export default function LoteForm({ formAction, loteId = null }) {
 
@@ -40,8 +42,9 @@ export default function LoteForm({ formAction, loteId = null }) {
     hectareas: loteQuery.data?.hectareas ?? '',
     estancia_id: loteQuery.data?.estancia_id ? String(loteQuery.data?.estancia_id) : '',
   }
-  
+   
   const form = useForm({
+    resolver: zodResolver(loteSchema),
     defaultValues: emptyValues
   })
   const { handleSubmit, reset, control, formState } = form
@@ -95,7 +98,7 @@ export default function LoteForm({ formAction, loteId = null }) {
   }
 
   const handleUpdate = async (formData) => {
-    const {id, created_at, updated_at, ...data} = internalData(formData)
+    const data = internalData(formData)
 
     console.log(`formData: ${JSON.stringify(formData)}`)
     console.log(`data: ${JSON.stringify(data)}`)
@@ -113,11 +116,10 @@ export default function LoteForm({ formAction, loteId = null }) {
     <>
       <h2 className="text-xl font-bold mb-4">lalala</h2>
       <Form {...form}>
-        <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+        <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
           <FormField
             control={control}
             name="estancia_id"
-            rules={{ required: 'La estancia es obligatoria' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estancia</FormLabel>
@@ -132,7 +134,6 @@ export default function LoteForm({ formAction, loteId = null }) {
           <FormField
             control={control}
             name="nombre"
-            rules={{ required: 'El nombre es obligatorio' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre del lote</FormLabel>
@@ -189,11 +190,6 @@ export default function LoteForm({ formAction, loteId = null }) {
           <FormField
             control={control}
             name="hectareas"
-            rules={{
-              required: 'Las hectareas son obligatorias',
-              min: { value: 0.01, message: 'Debe ser mayor a 0' },
-              max: { value: 10000, message: 'Debe ser menor a 10000' }
-            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Hectareas</FormLabel>

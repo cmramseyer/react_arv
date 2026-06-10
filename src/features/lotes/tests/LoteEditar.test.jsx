@@ -2,19 +2,27 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('../services/lotesService', () => ({
+vi.mock('@/features/lotes/api/lotesService', () => ({
   getLote: vi.fn(),
+  getLotes: vi.fn(() => Promise.resolve([])),
+  getLotesPorEstancia: vi.fn(() => Promise.resolve([])),
+  createLote: vi.fn(() => Promise.resolve()),
   updateLote: vi.fn(),
+  deleteLote: vi.fn(() => Promise.resolve()),
+  getAdjuntosLote: vi.fn(() => Promise.resolve([])),
+  uploadAdjuntoLote: vi.fn(() => Promise.resolve()),
+  deleteAdjuntoLote: vi.fn(() => Promise.resolve()),
 }))
 
-vi.mock('../services/estanciasService', () => ({
+vi.mock('@/features/estancias/api/estanciasService', () => ({
   getEstancias: vi.fn(),
 }))
 
-import { getLote, updateLote } from '../services/lotesService'
-import { getEstancias } from '../services/estanciasService'
-import LoteEditar from './LoteEdit'
+import { getLote, updateLote } from '@/features/lotes/api/lotesService'
+import { getEstancias } from '@/features/estancias/api/estanciasService'
+import LoteEditar from '@/features/lotes/pages/LoteEdit'
 
 const loteFixture = {
   id: 1,
@@ -36,6 +44,21 @@ const LocationDisplay = () => {
   return <div data-testid="location">{location.pathname}</div>
 }
 
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
+}
+
 const prepareMocks = (loteData = loteFixture, estanciasData = estanciasFixture) => {
   getLote.mockResolvedValueOnce(loteData)
   getEstancias.mockResolvedValueOnce(estanciasData)
@@ -52,7 +75,7 @@ describe('LoteEditar', () => {
   it('renders the form with fetched data', async () => {
     prepareMocks()
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes/1/editar']}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />
@@ -71,7 +94,7 @@ describe('LoteEditar', () => {
   it('submits the updated lote and navigates back', async () => {
     prepareMocks()
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes/1/editar']}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />
@@ -126,7 +149,7 @@ describe('LoteEditar', () => {
   it('returns to Lotes without extra requests when clicking Volver', async () => {
     prepareMocks()
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes', '/lotes/1/editar']} initialIndex={1}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />
@@ -149,11 +172,11 @@ describe('LoteEditar', () => {
     expect(getEstancias).toHaveBeenCalledTimes(getEstanciasCalls)
   })
 
-  it('shows not found message when lote data is missing', async () => {
+  it('renders an empty form when lote data is missing', async () => {
     getLote.mockResolvedValueOnce(null)
     getEstancias.mockResolvedValueOnce(estanciasFixture)
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/lotes/1/editar']}>
         <Routes>
           <Route path="/lotes" element={<div>Lotes Page</div>} />
@@ -162,7 +185,8 @@ describe('LoteEditar', () => {
       </MemoryRouter>
     )
 
-    expect(await screen.findByText('No se encontró el lote')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /actualizar/i })).toBeInTheDocument()
+    expect(screen.getByLabelText('Nombre del lote')).toHaveValue('')
     expect(updateLote).not.toHaveBeenCalled()
   })
 })
