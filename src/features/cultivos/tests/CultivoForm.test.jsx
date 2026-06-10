@@ -1,16 +1,11 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import CultivoForm from '@/components/CultivoForm'
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
-}
+import CultivoForm from '@/features/cultivos/components/CultivoForm'
 
 import { setupServer } from 'msw/node'
 import { cultivoHandlers } from '@/features/cultivos/mocks/cultivoHandlers'

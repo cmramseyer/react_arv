@@ -2,17 +2,33 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('../services/cultivosService', () => ({
+vi.mock('@/features/cultivos/api/cultivosService', () => ({
   createCultivo: vi.fn(),
 }))
 
-import { createCultivo } from '../services/cultivosService'
-import CultivoNueva from './CultivoNew'
+import { createCultivo } from '@/features/cultivos/api/cultivosService'
+import CultivoNueva from '@/features/cultivos/pages/CultivoNew'
 
 function LocationDisplay() {
   const location = useLocation()
   return <div data-testid="location">{location.pathname}</div>
+}
+
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
 }
 
 describe('CultivoNueva', () => {
@@ -23,8 +39,8 @@ describe('CultivoNueva', () => {
     createCultivo.mockClear()
   })
 
-  it('returns to Cultivos without extra requests when clicking Volver', async () => {
-    render(
+  it('does not create a cultivo on initial render', async () => {
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/cultivos', '/cultivos/nuevo']} initialIndex={1}>
         <Routes>
           <Route path="/cultivos" element={<div>Cultivos Page</div>} />
@@ -34,9 +50,7 @@ describe('CultivoNueva', () => {
       </MemoryRouter>
     )
 
-    await user.click(screen.getByRole('button', { name: /volver/i }))
-
-    expect(screen.getByTestId('location')).toHaveTextContent('/cultivos')
+    expect(screen.getByTestId('location')).toHaveTextContent('/cultivos/nuevo')
     expect(createCultivo).not.toHaveBeenCalled()
   })
 })

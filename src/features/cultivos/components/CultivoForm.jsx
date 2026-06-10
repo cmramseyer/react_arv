@@ -1,17 +1,20 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useCultivoQuery, useCultivoMutation } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { cultivoSchema } from '@/features/cultivos/schemas/cultivoSchema'
 
 export default function CultivoForm({ formAction, id }) {
   const navigate = useNavigate()
   const isEdit = formAction === 'edit'
   
   const form = useForm({
+    resolver: zodResolver(cultivoSchema),
     defaultValues: {
       nombre: '',
     }
@@ -28,27 +31,26 @@ export default function CultivoForm({ formAction, id }) {
     reset(cultivoQuery.data)
   }, [cultivoQuery.data, reset])
 
-  const handleCreate = async () => {
+  const handleCreate = async (data) => {
     try {
-      await createMutation.mutateAsync(form.getValues())
+      await createMutation.mutateAsync(data)
       navigate('/cultivos')
     } catch {}
   }
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (data) => {
     try {
-      await updateMutation.mutateAsync({id, data: form.getValues()})
+      await updateMutation.mutateAsync({id, data})
       navigate('/cultivos')
     } catch {}
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
-          rules={{ required: 'El nombre es requerido' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nombre</FormLabel>
