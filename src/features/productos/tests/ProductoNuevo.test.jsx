@@ -2,15 +2,16 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Mockear los servicios
-vi.mock('../services/productosService', () => ({
+vi.mock('@/features/productos/api/productosService', () => ({
   createProducto: vi.fn(() => Promise.resolve()),
 }))
 
-import { createProducto } from '../services/productosService'
+import { createProducto } from '@/features/productos/api/productosService'
 
-import ProductoNuevo from './ProductoNew'
+import ProductoNuevo from '@/features/productos/pages/ProductoNew'
 
 function ProductosMock() {
   return <h1>Productos</h1>
@@ -23,6 +24,21 @@ function LocationDisplay() {
 
 let user
 
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
+}
+
 describe('Nuevo Producto', () => {
   beforeEach(() => {
     user = userEvent.setup()
@@ -31,7 +47,7 @@ describe('Nuevo Producto', () => {
 
   it('creates a new Producto', async () => {
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/productos/nuevo']}>
         <Routes>
           <Route path="/productos/nuevo" element={<ProductoNuevo />} />
@@ -45,7 +61,7 @@ describe('Nuevo Producto', () => {
     await user.type(screen.getByLabelText('Nombre'), 'Roundup')
     await user.type(screen.getByLabelText('Tipo de producto'), 'Agroquimico')
 
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
+    const botonCrear = screen.getByRole('button', { name: /guardar/i })
 
     await user.click(botonCrear)
 
@@ -65,13 +81,13 @@ describe('Nuevo Producto', () => {
 
   it('show errors when form is not complete', async () => {
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <ProductoNuevo />
       </MemoryRouter>
     )
 
-    const botonCrear = screen.getByRole('button', { name: /crear/i })
+    const botonCrear = screen.getByRole('button', { name: /guardar/i })
     await user.click(botonCrear)
   
     expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument()
@@ -79,8 +95,8 @@ describe('Nuevo Producto', () => {
     expect(await screen.findByText('La unidad de medida es obligatoria')).toBeInTheDocument()
   })
 
-  it('returns to Productos without extra requests when clicking Volver', async () => {
-    render(
+  it('does not create a product on initial render', async () => {
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/productos', '/productos/nuevo']} initialIndex={1}>
         <Routes>
           <Route path="/productos" element={<ProductosMock />} />
@@ -90,9 +106,7 @@ describe('Nuevo Producto', () => {
       </MemoryRouter>
     )
 
-    await user.click(screen.getByRole('button', { name: /volver/i }))
-
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos')
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/nuevo')
     expect(createProducto).not.toHaveBeenCalled()
   })
 

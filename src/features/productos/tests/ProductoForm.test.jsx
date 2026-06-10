@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
-import ProductoForm from "@/components/ProductoForm";
+import ProductoForm from '@/features/productos/components/ProductoForm'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 

@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useProductoQuery, useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { productoSchema } from '@/features/productos/schemas/productoSchema'
 import {
   Select,
   SelectContent,
@@ -35,6 +37,7 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
   const productoQuery = useProductoQuery(id, isEdit)
   
   const form = useForm({
+    resolver: zodResolver(productoSchema),
     defaultValues: emptyValues
   })
 
@@ -55,9 +58,9 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
     }
   }
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (payload) => {
     try {
-      await updateMutation.mutateAsync({id, payload: form.getValues()})
+      await updateMutation.mutateAsync({id, payload})
       navigate('/productos')
     } catch {
       console.log('error update')
@@ -73,11 +76,10 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
-          rules={{ required: 'El nombre es obligatorio' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nombre</FormLabel>
@@ -92,7 +94,6 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
         <FormField
           control={control}
           name="tipo_producto"
-          rules={{ required: 'El tipo de producto es obligatorio' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tipo de producto</FormLabel>
@@ -107,7 +108,6 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
         <FormField
           control={control}
           name="unidad_medida"
-          rules={{ required: 'La unidad de medida es obligatoria' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Unidad de medida</FormLabel>
