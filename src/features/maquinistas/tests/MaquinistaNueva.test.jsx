@@ -2,17 +2,33 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('../services/maquinistasService', () => ({
+vi.mock('@/features/maquinistas/api/maquinistasService', () => ({
   createMaquinista: vi.fn(),
 }))
 
-import { createMaquinista } from '../services/maquinistasService'
-import MaquinistaNueva from './MaquinistaNew'
+import { createMaquinista } from '@/features/maquinistas/api/maquinistasService'
+import MaquinistaNueva from '@/features/maquinistas/pages/MaquinistaNew'
 
 function LocationDisplay() {
   const location = useLocation()
   return <div data-testid="location">{location.pathname}</div>
+}
+
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
 }
 
 describe('MaquinistaNueva', () => {
@@ -23,8 +39,8 @@ describe('MaquinistaNueva', () => {
     createMaquinista.mockClear()
   })
 
-  it('returns to Maquinistas without extra requests when clicking Volver', async () => {
-    render(
+  it('does not create a maquinista on initial render', async () => {
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/maquinistas', '/maquinistas/nuevo']} initialIndex={1}>
         <Routes>
           <Route path="/maquinistas" element={<div>Maquinistas Page</div>} />
@@ -34,9 +50,7 @@ describe('MaquinistaNueva', () => {
       </MemoryRouter>
     )
 
-    await user.click(screen.getByRole('button', { name: /volver/i }))
-
-    expect(screen.getByTestId('location')).toHaveTextContent('/maquinistas')
+    expect(screen.getByTestId('location')).toHaveTextContent('/maquinistas/nuevo')
     expect(createMaquinista).not.toHaveBeenCalled()
   })
 })

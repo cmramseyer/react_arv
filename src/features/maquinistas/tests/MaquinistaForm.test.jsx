@@ -1,16 +1,10 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import MaquinistaForm from '@/components/MaquinistaForm'
-
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
-}
+import MaquinistaForm from '@/features/maquinistas/components/MaquinistaForm'
 
 import { setupServer } from 'msw/node'
 import { maquinistaHandlers } from '@/features/maquinistas/mocks/maquinistaHandlers'

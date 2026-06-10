@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMaquinistaQuery, useMaquinistaMutation } from '@/features/maquinistas/hooks/useMaquinistaQuery'
 import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { maquinistaSchema } from '@/features/maquinistas/schemas/maquinistaSchema'
 
 export default function MaquinistaForm({ formAction, id }) {
 
@@ -15,6 +17,7 @@ export default function MaquinistaForm({ formAction, id }) {
   const isEdit = formAction === 'edit'
 
   const form = useForm({
+    resolver: zodResolver(maquinistaSchema),
     defaultValues: {
       nombre: '',
     }
@@ -30,18 +33,18 @@ export default function MaquinistaForm({ formAction, id }) {
     reset(maquinistaQuery.data)
   }, [maquinistaQuery.data, reset])
 
-  const handleCreate = async () => {
+  const handleCreate = async (data) => {
     try {
-      await createMutation.mutateAsync(form.getValues())
+      await createMutation.mutateAsync(data)
       navigate('/maquinistas')
     } catch (error) {
       console.log('error create')
     }
   }
   
-  const handleUpdate = async () => {
+  const handleUpdate = async (data) => {
     try {
-      await updateMutation.mutateAsync({id, data: form.getValues()})
+      await updateMutation.mutateAsync({id, data})
       navigate('/maquinistas')
     } catch (error) {
       console.log('error create')
@@ -50,11 +53,10 @@ export default function MaquinistaForm({ formAction, id }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
-          rules={{ required: 'El nombre es requerido' }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nombre</FormLabel>
