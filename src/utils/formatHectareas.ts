@@ -1,5 +1,27 @@
+type HectareasFormInput = number | string | null | undefined
+type ImporteFormInput = number | string | null | undefined
+type DateFormInput = string | null | undefined
+type ParsedImporte = number | null
+type ParsedHectareas = number | null
+
+type SelectedLotes = { 
+  id: string | number,
+  lote_id: string | number,
+  hectareas: number | string,
+  hectareas_reales: number | string
+}
+
+type LotesDisponibles = {
+  id: string | number,
+  lote_id: string | number,
+  hectareas: number | string,
+  hectareas_reales: number | string
+}
+
+type JoinString = string | null | undefined
+
 // Parses hectare values from numbers or localized strings.
-export const parseHectareas = (value) => {
+export const parseHectareas = (value: HectareasFormInput): ParsedHectareas => {
   if (value === null || value === undefined || value === '') return null
   if (typeof value === 'string') {
     const trimmed = value.trim()
@@ -15,7 +37,7 @@ export const parseHectareas = (value) => {
 }
 
 // Formats hectares for display with the AR locale and unit suffix.
-export const formatHectareas = (value) => {
+export const formatHectareas = (value: HectareasFormInput): string => {
   const numericValue = parseHectareas(value)
   if (numericValue === null) return 'Sin datos'
   const formattedValue = Number.isInteger(numericValue)
@@ -28,7 +50,7 @@ export const formatHectareas = (value) => {
 }
 
 // Sums selected lot hectares using actual hectares when available.
-export const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
+export const getTotalHectareas = (selectedLotes: SelectedLotes[] | null | undefined, lotesDisponibles: LotesDisponibles[] | null | undefined): number => {
   if (!Array.isArray(selectedLotes) || !Array.isArray(lotesDisponibles)) return 0
   const lotesById = new Map(lotesDisponibles.map((lote) => [String(lote.id), lote]))
 
@@ -47,7 +69,7 @@ export const getTotalHectareas = (selectedLotes, lotesDisponibles) => {
 }
 
 // Parses raw hectare values into numbers or null.
-export const parseHectareasValue = (value) => {
+export const parseHectareasValue = (value: HectareasFormInput): ParsedHectareas => {
   if (value === null || value === undefined || value === '') return null
   if (typeof value === 'string') {
     const trimmed = value.trim()
@@ -63,7 +85,7 @@ export const parseHectareasValue = (value) => {
 }
 
 // Formats ISO-like dates into dd/mm/yyyy display format.
-export const formatDate = (value) => {
+export const formatDate = (value: DateFormInput): string => {
   if (!value) return 'Sin fecha'
   const dateString = String(value)
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return dateString
@@ -74,17 +96,17 @@ export const formatDate = (value) => {
 }
 
 // Joins two display values with a separator, using fallbacks.
-export const joinWith = (string1, string2, separator) => {
+export const joinWith = (string1: JoinString, string2: JoinString, separator: string) => {
   const left = string1 ? String(string1) : 'Sin datos'
   const right = string2 ? String(string2) : 'Sin datos'
   return `${left} ${separator} ${right}`
 }
 
 // Validates AR decimal currency input with exactly two decimals.
-export const importeEsValido = (importe) => /^\d+,\d{2}$/.test(importe)
+export const importeEsValido = (importe: string): boolean => /^\d+,\d{2}$/.test(importe)
 
 // Parses localized amount strings into numeric values.
-export const parseImporte = (importe) => {
+export const parseImporte = (importe: ImporteFormInput): ParsedImporte => {
   if (importe === null || importe === undefined) return null
   const raw = String(importe).trim()
   if (raw === '') return null
@@ -103,7 +125,7 @@ export const parseImporte = (importe) => {
 }
 
 // Formats amounts as ARS currency without spacing.
-export const formatImporte = (importe) => {
+export const formatImporte = (importe: ImporteFormInput): string => {
   const numero = parseImporte(importe)
   if (numero === null) return ''
 
