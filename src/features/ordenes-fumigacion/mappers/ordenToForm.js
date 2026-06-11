@@ -19,7 +19,7 @@ export const ordenToForm = (data) => {
         dosis: e.dosis.map((d) => { 
           return {
             orden_lote_dosis_id: d.id,
-            producto_id: d.producto_id,
+            producto_id: String(d.producto_id),
             cantidad: d.cantidad 
           }
         })
