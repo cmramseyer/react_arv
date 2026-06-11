@@ -16,3 +16,5 @@ export const estanciaSchema = z.object({
     .optional()
     .or(z.literal('')),
 })
+
+export type EstanciaFormValues = z.infer<typeof estanciaSchema>

@@ -5,14 +5,14 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-export function handleResponse(response, errorMessage) {
+export function handleResponse<T>(response: Response, errorMessage: string): Promise<T> {
   if (!response.ok) {
     throw new Error(errorMessage)
   }
 
   if (response.status === 204) {
-    return null
+    return Promise.resolve(null as T)
   }
 
-  return response.json()
+  return response.json() as Promise<T>
 }
