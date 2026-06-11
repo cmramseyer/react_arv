@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
@@ -15,12 +16,14 @@ import { useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/
 import { useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
+import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 
 
 export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const isEdit = formAction === 'edit'
 
   const form = useForm({
+    resolver: zodResolver(ordenFumigacionSchema),
     defaultValues: {
       estancia_id: '',
       cultivo_id: '',
@@ -138,7 +141,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={control}
             name="estancia_id"

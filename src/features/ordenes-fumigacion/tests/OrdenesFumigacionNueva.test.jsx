@@ -2,38 +2,70 @@ import React from 'react'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('../services/estanciasService', () => ({
+vi.mock('@/features/estancias/api/estanciasService', () => ({
   getEstancias: vi.fn(),
 }))
 
-vi.mock('../services/lotesService', () => ({
+vi.mock('@/features/lotes/api/lotesService', () => ({
+  getLote: vi.fn(),
+  getLotes: vi.fn(),
   getLotesPorEstancia: vi.fn(),
+  createLote: vi.fn(),
+  updateLote: vi.fn(),
+  deleteLote: vi.fn(),
 }))
 
-vi.mock('../services/productosService', () => ({
+vi.mock('@/features/productos/api/productosService', () => ({
   getProductos: vi.fn(),
   createProducto: vi.fn(),
+  getProducto: vi.fn(),
+  updateProducto: vi.fn(),
+  deleteProducto: vi.fn(),
 }))
 
-vi.mock('../services/cultivosService', () => ({
+vi.mock('@/features/cultivos/api/cultivosService', () => ({
   getCultivos: vi.fn(),
+  getCultivo: vi.fn(),
+  createCultivo: vi.fn(),
+  updateCultivo: vi.fn(),
+  deleteCultivo: vi.fn(),
 }))
 
-vi.mock('../services/ordenesFumigacionService', () => ({
+vi.mock('@/features/ordenes-fumigacion/api/ordenesFumigacionService', () => ({
+  getOrdenFumigacion: vi.fn(),
+  getOrdenesFumigacion: vi.fn(),
   createOrdenFumigacion: vi.fn(),
+  updateOrdenFumigacion: vi.fn(),
+  deleteOrdenFumigacion: vi.fn(),
 }))
 
-import { getEstancias } from '../services/estanciasService'
-import { getLotesPorEstancia } from '../services/lotesService'
-import { createProducto, getProductos } from '../services/productosService'
-import { getCultivos } from '../services/cultivosService'
-import { createOrdenFumigacion } from '../services/ordenesFumigacionService'
-import OrdenesFumigacionNueva from './OrdenesFumigacionNueva'
+import { getEstancias } from '@/features/estancias/api/estanciasService'
+import { getLotesPorEstancia } from '@/features/lotes/api/lotesService'
+import { createProducto, getProductos } from '@/features/productos/api/productosService'
+import { getCultivos } from '@/features/cultivos/api/cultivosService'
+import { createOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
+import OrdenesFumigacionNueva from '@/features/ordenes-fumigacion/pages/OrdenFumigacionNew'
 
 function LocationDisplay() {
   const location = useLocation()
   return <div data-testid="location">{location.pathname}</div>
+}
+
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity },
+      mutations: { retry: false },
+    },
+  })
+
+const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
+  return {
+    queryClient,
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  }
 }
 
 describe('OrdenesFumigacionNueva', () => {
@@ -50,7 +82,7 @@ describe('OrdenesFumigacionNueva', () => {
   })
 
   it('returns to Ordenes without extra requests when clicking Volver', async () => {
-    render(
+    renderWithQueryClient(
       <MemoryRouter initialEntries={['/ordenes_fumigacion', '/ordenes_fumigacion/nueva']} initialIndex={1}>
         <Routes>
           <Route path="/ordenes_fumigacion" element={<div>Ordenes Page</div>} />
@@ -91,7 +123,7 @@ describe('OrdenesFumigacionNueva', () => {
         { id: 2, nombre: 'Roundup', unidad_medida: 'kg' },
       ])
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <OrdenesFumigacionNueva />
       </MemoryRouter>
@@ -111,7 +143,7 @@ describe('OrdenesFumigacionNueva', () => {
     await user.click(within(dialog).getByRole('combobox'))
     await user.click(await screen.findByRole('option', { name: 'Kilogramos' }))
 
-    await user.click(within(dialog).getByRole('button', { name: /^crear$/i }))
+    await user.click(within(dialog).getByRole('button', { name: /guardar/i }))
 
     await waitFor(() => {
       expect(createProducto).toHaveBeenCalledTimes(1)
@@ -142,7 +174,7 @@ describe('OrdenesFumigacionNueva', () => {
       { id: 3, nombre: 'Super Prod Mix', unidad_medida: 'ml' },
     ])
 
-    render(
+    renderWithQueryClient(
       <MemoryRouter>
         <OrdenesFumigacionNueva />
       </MemoryRouter>

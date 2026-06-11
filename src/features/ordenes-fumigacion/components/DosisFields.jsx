@@ -45,7 +45,6 @@ export default function DosisFields({
             <FormField
               control={control}
               name={`${name}.${index}.producto_id`}
-              rules={{ required: 'El producto es obligatorio' }}
               render={({ field }) => (
                 <FormItem className="min-w-[260px] flex-1">
                   {showNuevoProductoButton && index === 0 && typeof onNuevoProducto === 'function' ? (
@@ -89,10 +88,6 @@ export default function DosisFields({
             <FormField
               control={control}
               name={`${name}.${index}.cantidad`}
-              rules={{
-                required: 'La cantidad es obligatoria',
-                min: { value: 0.01, message: 'Debe ser mayor a 0' }
-              }}
               render={({ field }) => (
                 <FormItem className="w-32">
                   <FormLabel>Cantidad</FormLabel>
