@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
-const optionalValue = (value) => {
+const optionalValue = (value: unknown) => {
   if (value === '' || value === null || value === undefined) return undefined
   return value
 }
 
-const optionalNumber = (message) =>
+const optionalNumber = (message: string) =>
   z.preprocess(
     optionalValue,
     z.coerce.number({ invalid_type_error: message }).optional()
@@ -27,3 +27,5 @@ export const loteSchema = z.object({
   }).min(0.01, 'Debe ser mayor a 0').max(10000, 'Debe ser menor a 10000')),
   adjuntos: z.any().optional(),
 })
+
+export type LoteFormValues = z.infer<typeof loteSchema>

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 import { loteSchema } from '@/features/lotes/schemas/loteSchema'
+import { mapLoteFormValuesToFormData } from '@/features/lotes/mappers/loteMappers'
 
 export default function LoteForm({ formAction, loteId = null }) {
 
@@ -60,7 +61,7 @@ export default function LoteForm({ formAction, loteId = null }) {
   const { createMutation, updateMutation } = useLoteMutation()
 
   const handleCreate = async (formData) => {
-    const data = internalData(formData)
+    const data = mapLoteFormValuesToFormData(formData)
     
     console.log(`formData: ${JSON.stringify(formData)}`)
     console.log(`data: ${JSON.stringify(data)}`)
@@ -74,31 +75,8 @@ export default function LoteForm({ formAction, loteId = null }) {
     }
   }
 
-  const internalData = (data) => {
-    const formData = new FormData()
-
-    Object.keys(data).forEach((key) => {
-      if (key === 'adjuntos') {
-        if (showAdjuntos) {
-          const files = data.adjuntos
-          if (files && files.length) {
-            for (let i = 0; i < files.length; i++) {
-              formData.append('lote[adjuntos][]', files[i])
-            }
-          }
-        }
-      } else {
-        // importante: en selects/inputs vacíos puede venir "" — lo mandamos igual
-        formData.append(`lote[${key}]`, data[key] ?? '')
-      }
-    })
-
-    return formData
-
-  }
-
   const handleUpdate = async (formData) => {
-    const data = internalData(formData)
+    const data = mapLoteFormValuesToFormData(formData, { includeAdjuntos: showAdjuntos })
 
     console.log(`formData: ${JSON.stringify(formData)}`)
     console.log(`data: ${JSON.stringify(data)}`)
