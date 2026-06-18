@@ -4,17 +4,7 @@ import { fetchWithAuth } from "@/services/fetchWithAuth"
 import { handleResponse } from "@/lib/utils"
 import { getAuthOnlyHeaders, getAuthJsonHeaders } from "@/services/authHelpers"
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
-
-
-export type Estancia = {
-  id: number,
-  nombre: string,
-  contacto: string | null,
-  telefono: string | null,
-  email: string | null,
-  created_at: string | null,
-  updated_at: string | null
-}
+import type { Estancia } from '@/features/estancias/types'
 
 export const getEstancias = async (): Promise<Estancia[]> => {
   const res = await fetchWithAuth(API_URL, {
