@@ -2,7 +2,16 @@ import { handleResponse } from '../lib/utils'
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}`
 
-export const signIn = async(data) => {
+type LoginCredentials = {
+  email: string,
+  password: string
+}
+
+type LoginResponse = {
+  token: string
+}
+
+export const signIn = async (data: LoginCredentials): Promise<LoginResponse> => {
   const res = await fetch(`${API_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -10,5 +19,5 @@ export const signIn = async(data) => {
     body: JSON.stringify({user: data})
   })
 
-  return handleResponse(res, 'Error signin in')
+  return handleResponse<LoginResponse>(res, 'Error signin in')
 }
