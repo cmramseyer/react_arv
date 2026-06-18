@@ -1,17 +1,17 @@
 import { z } from 'zod'
 
-const optionalValue = (value) => {
+const optionalValue = (value: unknown) => {
   if (value === '' || value === null || value === undefined) return undefined
   return value
 }
 
-const optionalNumber = (message) =>
+const optionalNumber = (message: string) =>
   z.preprocess(
     optionalValue,
     z.coerce.number({ invalid_type_error: message }).optional()
   )
 
-const requiredPositiveNumber = (message) =>
+const requiredPositiveNumber = (message: string) =>
   z.preprocess((value) => {
     const normalizedValue = optionalValue(value)
     if (normalizedValue === undefined) return undefined
@@ -47,3 +47,5 @@ export const ordenFumigacionSchema = z.object({
   maquinista_id: z.string().trim().optional().or(z.literal('')),
   creator: z.string().optional(),
 })
+
+export type OrdenFumigacionFormValues = z.infer<typeof ordenFumigacionSchema>

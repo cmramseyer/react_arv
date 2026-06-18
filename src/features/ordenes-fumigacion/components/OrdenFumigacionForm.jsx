@@ -17,6 +17,7 @@ import { useProductosMutation } from '@/features/productos/hooks/useProductoQuer
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
+import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
 
 
 export default function OrdenFumigacionForm({ formAction, ordenId }) {
@@ -81,42 +82,10 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
 
   const onSubmit = async (data) => {
-    const payload = {
-      orden_fumigacion: {
-        estancia_id: data.estancia_id,
-        sensible: data.sensible ?? false,
-        comentarios: data.comentarios ?? '',
-        lotes: (data.lotes || [])
-          .filter(lote => lote.lote_id)
-          .map(lote => {
-            const loteData = {
-              id: lote?.orden_lote_id || null,
-              lote_id: lote.lote_id,
-              dosis: (lote.dosis || [])
-              .filter(dosis => dosis.producto_id && dosis.cantidad !== '' && dosis.cantidad !== null)
-              .map(dosis => ({
-                id: dosis.orden_lote_dosis_id || null,
-                producto_id: dosis.producto_id,
-                cantidad: dosis.cantidad
-              }))
-            }
-
-            if (lote.hectareas_reales !== '' && lote.hectareas_reales !== null && lote.hectareas_reales !== undefined) {
-              loteData.hectareas_reales = lote.hectareas_reales
-            }
-
-            return loteData
-          })
-      }
-    }
-
-    if (data.cultivo_id) {
-      payload.orden_fumigacion.cultivo_id = data.cultivo_id
-    }
+    const payload = mapOrdenFumigacionFormValuesToPayload(data)
 
     try {
       if (isEdit) {
-        payload.orden_fumigacion.id = data.id
         await updateOrdenFumigacionMutation.mutateAsync({id: ordenId, payload})
         navigate(`/ordenes_fumigacion`)
         return
