@@ -2,7 +2,7 @@ import { handleResponse } from '../lib/utils'
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}`
 
-type LoginCredentials = {
+export type LoginCredentials = {
   email: string,
   password: string
 }

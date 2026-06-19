@@ -1,7 +1,7 @@
 import { logoutAndRedirect } from './authHelpers'
 import { refreshToken } from './refreshService'
 
-// TODO: implementar interceptor con axios
+type FetchWithAuthOptions = RequestInit & { retryOnUnauthorized?: boolean }
 
 let refreshPromise = null
 
@@ -15,7 +15,7 @@ const getRefreshedToken = async () => {
   return refreshPromise
 }
 
-export const fetchWithAuth = async (url, options = {}) => {
+export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions = {}) => {
   const { retryOnUnauthorized = true, ...restOptions } = options
   const token = localStorage.getItem('arv_token')
 
