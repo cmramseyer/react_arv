@@ -12,6 +12,7 @@ import {
   terminarOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 
 import type {
+  OrdenFumigacion,
   OrdenFumigacionId,
   OrdenFumigacionFilters,
   OrdenFumigacionAdjunto,
@@ -38,7 +39,7 @@ export const ordenesPendientesFacturacionQueryKey = () => ['ordenesPendientesFac
 
 // GET /ordenes_fumigacion
 export function useOrdenesFumigacionQuery(filters: OrdenFumigacionFilters = {}) {
-  return useQuery<OrdenFumigacionListItem[], Error>({
+  return useQuery<OrdenFumigacion[], Error>({
     queryKey: ordenesFumigacionQueryKey(filters),
     queryFn: () => getOrdenesFumigacion(filters)
   })
@@ -46,7 +47,7 @@ export function useOrdenesFumigacionQuery(filters: OrdenFumigacionFilters = {}) 
 
 // GET /ordenes_fumigacion/:id
 export function useOrdenFumigacionQuery(id: OrdenFumigacionId, enabled = true) {
-  return useQuery<OrdenFumigacionListItem>({
+  return useQuery<OrdenFumigacion>({
     queryKey: ordenFumigacionQueryKey(id),
     queryFn: () => getOrdenFumigacion(id),
     enabled: Boolean(id) && enabled
@@ -83,14 +84,14 @@ export function useOrdenFumigacionMutation() {
   
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation<OrdenFumigacionListItem, Error, OrdenFumigacionPayload>({
+  const createMutation = useMutation<OrdenFumigacion, Error, OrdenFumigacionPayload>({
     mutationFn: createOrdenFumigacion,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
     }
   })
 
-  const updateMutation = useMutation<OrdenFumigacionListItem, Error, UpdateOrdenFumigacionMutationVariables>({
+  const updateMutation = useMutation<OrdenFumigacion, Error, UpdateOrdenFumigacionMutationVariables>({
     mutationFn: ({id, payload}) => updateOrdenFumigacion(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
@@ -105,7 +106,7 @@ export function useOrdenFumigacionMutation() {
     }
   })
 
-  const terminarMutation = useMutation<OrdenFumigacionListItem, Error, TerminarOrdenFumigacionMutationVariables>({
+  const terminarMutation = useMutation<OrdenFumigacion, Error, TerminarOrdenFumigacionMutationVariables>({
     mutationFn: ({id, payload}) => terminarOrdenFumigacion(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})

@@ -6,7 +6,35 @@ import { useCultivosQuery } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { ordenToForm } from '../mappers/ordenToForm'
 
-export function useOrdenFumigacionEditLoader(ordenId) {
+import { OrdenFumigacionId } from '@/features/ordenes-fumigacion/types'
+import { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
+import { Estancia } from '@/features/estancias/types'
+import { Producto } from '@/features/productos/types'
+import { Cultivo } from '@/features/cultivos/types'
+import { Lote } from '@/features/lotes/types'
+
+type EditLoaderResponse = {
+  isReady: boolean,
+  isLoading: boolean,
+  error: Error | null,
+  initialValues: OrdenFumigacionFormValues | null,
+  options: {
+    estancias: Estancia[],
+    productos: Producto[],
+    cultivos: Cultivo[],
+    lotes: Lote[]
+  },
+  queries: {
+    ordenFumigacionQuery: ReturnType<typeof useOrdenFumigacionQuery>,
+    estanciasQuery: ReturnType<typeof useEstanciasQuery>,
+    productosQuery: ReturnType<typeof useProductosQuery>,
+    cultivosQuery: ReturnType<typeof useCultivosQuery>,
+    lotesQuery: ReturnType<typeof useLotesByEstanciaQuery>
+
+  }
+}
+
+export function useOrdenFumigacionEditLoader(ordenId: OrdenFumigacionId): EditLoaderResponse {
   const ordenFumigacionQuery = useOrdenFumigacionQuery(ordenId, Boolean(ordenId))
   const estanciasQuery = useEstanciasQuery()
   const productosQuery = useProductosQuery()
