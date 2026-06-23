@@ -11,23 +11,42 @@ import {
   deleteOrdenFumigacion,
   terminarOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 
-export const ordenesFumigacionQueryKey = () => ['ordenesFumigacion']
-export const ordenFumigacionQueryKey = (ordenId) => ['ordenFumigacion', ordenId]
-export const ordenFumigacionAdjuntosQueryKey = (ordenId) => ['ordenFumigacionAdjuntos', ordenId]
-export const ordenFumigacionImprimirQueryKey = (ordenId) => ['ordenFumigacionImprimir', ordenId]
-export const ordenesPendientesFacturacionQueryKey = () => ['ordenesPendientesFacturacion']
+import type {
+  OrdenFumigacionId,
+  OrdenFumigacionFilters,
+  OrdenFumigacionAdjunto,
+  OrdenFumigacionPayload,
+  OrdenFumigacionTerminarPayload,
+  OrdenFumigacionListItem
+} from '@/features/ordenes-fumigacion/types'
+
+type UpdateOrdenFumigacionMutationVariables = {
+  id: OrdenFumigacionId,
+  payload: OrdenFumigacionPayload
+}
+
+type TerminarOrdenFumigacionMutationVariables = {
+  id: OrdenFumigacionId,
+  payload: OrdenFumigacionTerminarPayload
+}
+
+export const ordenesFumigacionQueryKey = (filters?: OrdenFumigacionFilters) => ['ordenesFumigacion', filters] as const
+export const ordenFumigacionQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacion', ordenId] as const
+export const ordenFumigacionAdjuntosQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacionAdjuntos', ordenId] as const
+export const ordenFumigacionImprimirQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacionImprimir', ordenId] as const
+export const ordenesPendientesFacturacionQueryKey = () => ['ordenesPendientesFacturacion'] as const
 
 // GET /ordenes_fumigacion
-export function useOrdenesFumigacionQuery(filters = {}) {
-  return useQuery({
-    queryKey: ordenesFumigacionQueryKey(),
+export function useOrdenesFumigacionQuery(filters: OrdenFumigacionFilters = {}) {
+  return useQuery<OrdenFumigacionListItem[], Error>({
+    queryKey: ordenesFumigacionQueryKey(filters),
     queryFn: () => getOrdenesFumigacion(filters)
   })
 }
 
 // GET /ordenes_fumigacion/:id
-export function useOrdenFumigacionQuery(id, enabled = true) {
-  return useQuery({
+export function useOrdenFumigacionQuery(id: OrdenFumigacionId, enabled = true) {
+  return useQuery<OrdenFumigacionListItem>({
     queryKey: ordenFumigacionQueryKey(id),
     queryFn: () => getOrdenFumigacion(id),
     enabled: Boolean(id) && enabled
@@ -35,8 +54,8 @@ export function useOrdenFumigacionQuery(id, enabled = true) {
 }
 
 // GET /ordenes_fumigacion/:id/adjuntos
-export function useOrdenFumigacionAdjuntosQuery(ordenId, enabled = true) {
-  return useQuery({
+export function useOrdenFumigacionAdjuntosQuery(ordenId: OrdenFumigacionId, enabled = true) {
+  return useQuery<OrdenFumigacionAdjunto[]>({
     queryKey: ordenFumigacionAdjuntosQueryKey(ordenId),
     queryFn: () => getAdjuntosOrden(ordenId),
     enabled: Boolean(ordenId) && enabled
@@ -44,7 +63,7 @@ export function useOrdenFumigacionAdjuntosQuery(ordenId, enabled = true) {
 }
 
 // GET /ordenes_fumigacion/:id/imprimir
-export function useOrdenFumigacionImprimirQuery(ordenId, enabled = true) {
+export function useOrdenFumigacionImprimirQuery(ordenId: OrdenFumigacionId, enabled = true) {
   return useQuery({
     queryKey: ordenFumigacionImprimirQueryKey(ordenId),
     queryFn: () => imprimirOrdenFumigacion(ordenId),
@@ -64,14 +83,14 @@ export function useOrdenFumigacionMutation() {
   
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<OrdenFumigacionListItem, Error, OrdenFumigacionPayload>({
     mutationFn: createOrdenFumigacion,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
     }
   })
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<OrdenFumigacionListItem, Error, UpdateOrdenFumigacionMutationVariables>({
     mutationFn: ({id, payload}) => updateOrdenFumigacion(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
@@ -79,14 +98,14 @@ export function useOrdenFumigacionMutation() {
     }
   })
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<null, Error, number | string>({
     mutationFn: deleteOrdenFumigacion,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})
     }
   })
 
-  const terminarMutation = useMutation({
+  const terminarMutation = useMutation<OrdenFumigacionListItem, Error, TerminarOrdenFumigacionMutationVariables>({
     mutationFn: ({id, payload}) => terminarOrdenFumigacion(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: ordenesFumigacionQueryKey()})

@@ -93,11 +93,12 @@ export const terminarOrdenFumigacion = async (id: number | string, payload: Orde
   return handleResponse<OrdenFumigacion>(res, 'Error updating orden de fumigación')
 }
 
-export const deleteOrdenFumigacion = async (id: number | string): Promise<void> => {
-  await fetchWithAuth(`${API_URL}/${id}`, {
+export const deleteOrdenFumigacion = async (id: number | string): Promise<null> => {
+  const res = await fetchWithAuth(`${API_URL}/${id}`, {
     method: 'DELETE',
     headers: getAuthOnlyHeaders(),
   })
+  return handleResponse<null>(res, 'Error deleting orden de fumigación')
 }
 
 export const getAdjuntosOrden = async (ordenId: number | string): Promise<OrdenFumigacionAdjunto[]> => {
