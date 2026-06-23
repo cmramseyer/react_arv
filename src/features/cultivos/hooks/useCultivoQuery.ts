@@ -1,18 +1,26 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { getCultivos, getCultivo, createCultivo, updateCultivo, deleteCultivo } from '@/features/cultivos/api/cultivosService'
 
-export const cultivosQueryKey = () => ['cultivos']
-export const cultivoQueryKey = (cultivoId) => ['cultivo', cultivoId]
+import type { Cultivo } from '@/features/cultivos/types'
+import type { CultivoFormValues } from '@/features/cultivos/schemas/cultivoSchema'
+
+type UpdateCultivoMutationVariables = {
+  id: number | string
+  payload: CultivoFormValues
+}
+
+export const cultivosQueryKey = () => ['cultivos'] as const
+export const cultivoQueryKey = (cultivoId: number | string) => ['cultivo', cultivoId] as const
 
 export const useCultivosQuery = () => {
-  return useQuery({
+  return useQuery<Cultivo[]>({
     queryKey: cultivosQueryKey(),
     queryFn: getCultivos
   })
 }
 
-export const useCultivoQuery = (id, enabled = true) => {
-  return useQuery({
+export const useCultivoQuery = (id: number | string, enabled = true) => {
+  return useQuery<Cultivo>({
     queryKey: cultivoQueryKey(id),
     queryFn: () => getCultivo(id),
     enabled: Boolean(id) && enabled
@@ -22,23 +30,23 @@ export const useCultivoQuery = (id, enabled = true) => {
 export const useCultivoMutation = () => {
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation({
-    mutationFn: (data) => createCultivo(data),
+  const createMutation = useMutation<Cultivo, Error, CultivoFormValues>({
+    mutationFn: createCultivo,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
   })
 
-  const updateMutation = useMutation({
-    mutationFn: ({id, data}) => updateCultivo(id, data),
+  const updateMutation = useMutation<Cultivo, Error, UpdateCultivoMutationVariables>({
+    mutationFn: ({id, payload}) => updateCultivo(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: cultivoQueryKey(variables.id)})
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
   })
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) => deleteCultivo(id),
+  const deleteMutation = useMutation<null, Error, number | string>({
+    mutationFn: deleteCultivo,
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
