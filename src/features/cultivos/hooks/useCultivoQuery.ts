@@ -31,7 +31,7 @@ export const useCultivoMutation = () => {
   const queryClient = useQueryClient()
 
   const createMutation = useMutation<Cultivo, Error, CultivoFormValues>({
-    mutationFn: createCultivo,
+    mutationFn: (payload) => createCultivo(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
@@ -46,7 +46,7 @@ export const useCultivoMutation = () => {
   })
 
   const deleteMutation = useMutation<null, Error, number | string>({
-    mutationFn: deleteCultivo,
+    mutationFn: (id) => deleteCultivo(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
