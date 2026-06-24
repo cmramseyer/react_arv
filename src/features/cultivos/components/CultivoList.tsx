@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 
 import { Button } from '@/components/ui/button'
+import type { EntityId } from '@/utils/types'
 
 export default function CultivoList() {
   const navigate = useNavigate()
@@ -19,7 +20,7 @@ export default function CultivoList() {
   
   const { deleteMutation } = useCultivoMutation()
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: EntityId) => {
     try {
       await deleteMutation.mutateAsync(id)
     } catch {
@@ -28,6 +29,8 @@ export default function CultivoList() {
   }
 
   if (cultivosQuery.isLoading) { return <div>Cargando...</div>}
+
+  const cultivos = cultivosQuery.data ?? []
 
   return (
     <Table>
@@ -39,7 +42,7 @@ export default function CultivoList() {
       </TableHeader>
 
       <TableBody>
-        {cultivosQuery.data.map((c) => (
+        {cultivos.map((c) => (
           <TableRow key={c.id}>
             <TableCell>{c.nombre}</TableCell>
             <TableCell>
