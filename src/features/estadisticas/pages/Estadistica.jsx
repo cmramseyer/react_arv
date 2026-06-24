@@ -35,8 +35,10 @@ export default function Estadistica() {
   const [range, setRange] = useState()
 
   const estadisticasQuery = useEstadisticasQuery(
-    range?.from ? formatApiDate(range.from) : null,
-    range?.to ? formatApiDate(range.to) : null,
+    {
+      fechaDesde: range?.from ? formatApiDate(range.from) : null,
+      fechaHasta: range?.to ? formatApiDate(range.to) : null
+    },
     Boolean(range?.from && range?.to)
   )
 
