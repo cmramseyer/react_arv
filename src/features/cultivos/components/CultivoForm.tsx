@@ -8,12 +8,25 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cultivoSchema } from '@/features/cultivos/schemas/cultivoSchema'
+import type { CultivoFormValues } from '@/features/cultivos/schemas/cultivoSchema'
 
-export default function CultivoForm({ formAction, id }) {
+type CultivoFormEditProps = {
+  formAction: 'edit',
+  id: number | string
+}
+
+type CultivoFormCreateProps = {
+  formAction: 'create',
+  id?: never
+}
+
+type CultivoFormProps = CultivoFormEditProps | CultivoFormCreateProps
+
+export default function CultivoForm({ formAction, id }: CultivoFormProps) {
   const navigate = useNavigate()
   const isEdit = formAction === 'edit'
   
-  const form = useForm({
+  const form = useForm<CultivoFormValues>({
     resolver: zodResolver(cultivoSchema),
     defaultValues: {
       nombre: '',
@@ -31,16 +44,16 @@ export default function CultivoForm({ formAction, id }) {
     reset(cultivoQuery.data)
   }, [cultivoQuery.data, reset])
 
-  const handleCreate = async (data) => {
+  const handleCreate = async (data: CultivoFormValues) => {
     try {
       await createMutation.mutateAsync(data)
       navigate('/cultivos')
     } catch {}
   }
 
-  const handleUpdate = async (data) => {
+  const handleUpdate = async (data: CultivoFormValues) => {
     try {
-      await updateMutation.mutateAsync({id, data})
+      await updateMutation.mutateAsync({id, payload: data})
       navigate('/cultivos')
     } catch {}
   }
