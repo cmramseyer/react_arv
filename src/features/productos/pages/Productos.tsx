@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import ProductoList from '@/features/productos/components/ProductoList'
 import { Button } from '@/components/ui/button'

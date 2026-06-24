@@ -7,6 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { productoSchema } from '@/features/productos/schemas/productoSchema'
+import type { ProductoFormValues } from '@/features/productos/schemas/productoSchema'
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import type { EntityId } from '@/utils/types'
 
 const unidadMedidaOptions = [
   { value: 'kg', label: 'Kilogramos' },
@@ -23,7 +25,21 @@ const unidadMedidaOptions = [
   { value: 'ml', label: 'Mililitros' }
 ]
 
-export default function ProductoForm({ formAction, id, onSuccess = null }) {
+type ProductoEditFormProps = {
+  formAction: 'edit',
+  id: EntityId,
+  onSuccess?: () => void
+}
+
+type ProductoCreateFormProps = {
+  formAction: 'create',
+  id?: never,
+  onSuccess?: () => void
+}
+
+type ProductoFormProps = ProductoEditFormProps | ProductoCreateFormProps
+
+export default function ProductoForm({ formAction, id, onSuccess }: ProductoFormProps) {
   
   const isEdit = formAction === 'edit'
   const navigate = useNavigate()
@@ -36,18 +52,18 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
 
   const productoQuery = useProductoQuery(id, isEdit)
   
-  const form = useForm({
+  const form = useForm<ProductoFormValues>({
     resolver: zodResolver(productoSchema),
     defaultValues: emptyValues
   })
 
-  const { control, handleSubmit, reset, formState } = form
+  const { control, handleSubmit, reset } = form
 
   const { createMutation, updateMutation } = useProductosMutation()
 
-  const isSubmitting = createMutation.isSubmitting || updateMutation.isSubmitting
+  const isSubmitting = createMutation.isPending || updateMutation.isPending
 
-  const handleCreate = async (payload) => {
+  const handleCreate = async (payload: ProductoFormValues) => {
     try {
       await createMutation.mutateAsync(payload)
       if (onSuccess) {
@@ -58,7 +74,7 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
     }
   }
 
-  const handleUpdate = async (payload) => {
+  const handleUpdate = async (payload: ProductoFormValues) => {
     try {
       await updateMutation.mutateAsync({id, payload})
       navigate('/productos')
@@ -68,8 +84,7 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
   }
 
   useEffect(() => {
-    console.log(productoQuery.data)
-    reset(productoQuery.data)
+    if(productoQuery.data) { reset(productoQuery.data) }
   }, [productoQuery.data, reset])
 
   if (productoQuery.isLoading) { return <div>Cargando...</div> }
@@ -131,7 +146,7 @@ export default function ProductoForm({ formAction, id, onSuccess = null }) {
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit" disabled={isSubmitting}>{isEdit ? "Actualizar" : 'Guardar'}</Button>
+          <Button type="submit" disabled={isSubmitting}>{isEdit ? "Actualizar" : "Guardar"}</Button>
         </div>
       </form>
     </Form>

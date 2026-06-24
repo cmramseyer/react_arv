@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 
 import { Button } from '@/components/ui/button'
+import { EntityId } from '@/utils/types'
 
 export default function ProductoList() {
   
@@ -20,7 +21,7 @@ export default function ProductoList() {
   const { data, isLoading, isError, error } = useProductosQuery()
   const { deleteMutation } = useProductosMutation()
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: EntityId) => {
     try {
       await deleteMutation.mutateAsync(id)
     } catch {

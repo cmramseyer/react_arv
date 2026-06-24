@@ -4,13 +4,16 @@ import { getProductos, getProducto, createProducto, updateProducto, deleteProduc
 import type { Producto } from '@/features/productos/types'
 import type { ProductoFormValues } from '@/features/productos/schemas/productoSchema'
 
+import type { EntityId, MaybeEntityId } from '@/utils/types'
+import { hasId } from '@/utils/types'
+
 type UpdateProductoMutationVariables = {
-  id: number | string
+  id: EntityId,
   payload: ProductoFormValues
 }
 
 export const productosQueryKey = () => ['productos'] as const
-export const productoQueryKey = (id: number | string) => ['producto', id] as const
+export const productoQueryKey = (id: EntityId) => ['producto', id] as const
 
 export const useProductosQuery = () => {
   return useQuery<Producto[]>({
@@ -19,11 +22,17 @@ export const useProductosQuery = () => {
   })
 }
 
-export const useProductoQuery = (id: number | string, enabled = true) => {
+export const useProductoQuery = (id: MaybeEntityId, enabled = true) => {
+  const queryEnabled = hasId(id) && enabled
   return useQuery<Producto>({
-    queryKey: productoQueryKey(id),
-    queryFn: () => getProducto(id),
-    enabled: Boolean(id) && enabled
+    queryKey: ['producto', id ?? null] as const,
+    queryFn: () => {
+      if(!hasId(id)) {
+        throw new Error('useProductoQuery requires id')
+      }
+      return getProducto(id)
+    },
+    enabled: queryEnabled
   })
 }
 
@@ -45,7 +54,7 @@ export const useProductosMutation = () => {
     }
   })
 
-  const deleteMutation = useMutation<null, Error, number | string>({
+  const deleteMutation = useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteProducto(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: productosQueryKey()})

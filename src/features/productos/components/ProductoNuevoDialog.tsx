@@ -1,9 +1,13 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import ProductoForm from '@/features/productos/components/ProductoForm'
-import { Button } from '@/components/ui/button'
 
-export default function ProductoNuevoDialog({ isNuevoProductoOpen, onCreate, onProductoOpen }) {
+type ProductoNuevoDialogProps = {
+  isNuevoProductoOpen: boolean,
+  onProductoOpen: (open: boolean) => void
+}
+
+export default function ProductoNuevoDialog({ isNuevoProductoOpen, onProductoOpen }: ProductoNuevoDialogProps) {
 
   return (
     <Dialog open={isNuevoProductoOpen} onOpenChange={(open) => onProductoOpen(open)}>
@@ -16,14 +20,8 @@ export default function ProductoNuevoDialog({ isNuevoProductoOpen, onCreate, onP
         </DialogHeader>
 
         <ProductoForm
-          onSubmit={onCreate}
-          submitLabel="Crear"
+          formAction='create'
           onSuccess={() => onProductoOpen(false)}
-          actions={(
-            <Button type="button" variant="secondary" onClick={() => onProductoOpen(false)}>
-              Cancelar
-            </Button>
-          )}
         />
       </DialogContent>
     </Dialog>
