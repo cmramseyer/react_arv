@@ -3,7 +3,8 @@ import FacturaPendiente from "@/features/facturacion/components/FacturaPendiente
 import PagoPendiente from "@/features/facturacion/components/PagoPendiente";
 import {
   useFacturacionMutation,
-  useFacturacionQuery,
+  useFacturasPagoQuery,
+  useOrdenesPendientesFacturacionQuery,
 } from "@/features/facturacion/hooks/useFacturacionQuery";
 import {
   mapFacturacionPayload,
@@ -29,10 +30,14 @@ export default function Facturacion() {
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
   const [fechaPago, setFechaPago] = useState();
 
-  const { data: ordenesPorEstancia = [], isFetching: loading } =
-    useFacturacionQuery(modoPago);
+  const ordenesPendientesQuery = useOrdenesPendientesFacturacionQuery(!modoPago);
+  const facturasPagoQuery = useFacturasPagoQuery(modoPago);
   const { facturarMutation, marcarFacturaPagadaMutation } =
     useFacturacionMutation();
+
+  const activeQuery = modoPago ? facturasPagoQuery : ordenesPendientesQuery;
+  const ordenesPorEstancia = activeQuery.data ?? [];
+  const loading = activeQuery.isFetching;
 
   const cantidadSeleccionadas = ordenesSeleccionadas.size;
 
