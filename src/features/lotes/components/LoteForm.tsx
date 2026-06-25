@@ -14,8 +14,21 @@ import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 import { loteSchema } from '@/features/lotes/schemas/loteSchema'
 import { mapLoteFormValuesToFormData } from '@/features/lotes/mappers/loteMappers'
+import type { EntityId } from '@/utils/types'
 
-export default function LoteForm({ formAction, loteId = null }) {
+type LoteFormEditProps = {
+  formAction: 'edit',
+  loteId: EntityId
+}
+
+type LoteFormCreateProps = {
+  formAction: 'create',
+  loteId?: never
+}
+
+type LoteFormProps = LoteFormEditProps | LoteFormCreateProps
+
+export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
   const navigate = useNavigate()
 

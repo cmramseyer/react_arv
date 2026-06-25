@@ -7,10 +7,12 @@ import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 import LoteList from '@/features/lotes/components/LoteList'
 import { Button } from '@/components/ui/button'
 import EstanciaFilterSelect from '@/features/estancias/components/EstanciaFilterSelect'
+import type { EntityId } from '@/utils/types'
+import type { Lote } from '@/features/lotes/types'
 
 export default function Lotes() {
 
-  const [ selectedEstanciaId, setSelectedEstanciaId ] = useState('all')
+  const [ selectedEstanciaId, setSelectedEstanciaId ] = useState<number | string>('all')
 
   const navigate = useNavigate()
 
@@ -21,10 +23,10 @@ export default function Lotes() {
 
   const estanciasQuery = useEstanciasQuery()
 
-  const { deleteLoteQuery } = useLoteMutation()
+  const { deleteMutation: deleteLoteQuery } = useLoteMutation()
 
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: EntityId) => {
     try {
       await deleteLoteQuery.mutateAsync(id)
     } catch (error) {
@@ -32,11 +34,11 @@ export default function Lotes() {
     }
   }
 
-  const handleShow = (lote) => {
+  const handleShow = (lote: Lote) => {
     navigate(`/lotes/${lote.id}`)
   }
 
-  const handleSelectEstancia = (id) => {
+  const handleSelectEstancia = (id: EntityId) => {
     setSelectedEstanciaId(id)
   }
 

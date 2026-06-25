@@ -9,11 +9,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { Estancia } from '@/features/estancias/types'
+import { EntityId } from '@/utils/types'
 
 type EstanciaFilterSelectProps = {
   estancias: Estancia[],
   selectedEstanciaId: number | string,
-  onSelect: () => void,
+  onSelect: (id: EntityId) => void,
   onResetSelect: () => void
 }
 

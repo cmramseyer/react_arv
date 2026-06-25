@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import {
   Card,
@@ -18,8 +17,16 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { formatHectareas } from '@/utils/formatHectareas'
+import type { Lote } from '@/features/lotes/types'
+import type { EntityId } from '@/utils/types'
 
-export default function LoteList({ lotes, onShow, onDelete }) {
+type LoteListProps = {
+  lotes: Lote[],
+  onShow: (lote: Lote) => void,
+  onDelete: (id: EntityId) => void
+}
+
+export default function LoteList({ lotes, onShow, onDelete }: LoteListProps) {
   const navigate = useNavigate()
 
   return (
@@ -96,10 +103,4 @@ export default function LoteList({ lotes, onShow, onDelete }) {
       </div>
     </div>
   )
-}
-
-LoteList.propTypes = {
-  lotes: PropTypes.array.isRequired,
-  onShow: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }

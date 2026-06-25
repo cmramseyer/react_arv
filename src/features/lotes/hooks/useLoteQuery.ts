@@ -1,16 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getLote, getLotes, getLotesPorEstancia, updateLote, createLote, deleteLote } from '@/features/lotes/api/lotesService'
+import { hasId } from '@/utils/types'
 
 import type { Lote } from '@/features/lotes/types'
+import type { EntityId, MaybeEntityId } from '@/utils/types'
 
 type UpdateLoteMutationVariables = {
-  id: number | string
+  id: EntityId
   payload: FormData
 }
 
 export const lotesQueryKey = () => ['lotes'] as const
-export const loteByIdQueryKey = (loteId: number | string) => ['lote', loteId] as const
-export const lotesByEstanciaIdQueryKey = (estanciaId: number | string) => ['lotes', 'estanciaId', estanciaId] as const
+export const loteByIdQueryKey = (loteId: EntityId) => ['lote', loteId] as const
+export const lotesByEstanciaIdQueryKey = (estanciaId: EntityId) => ['lotes', 'estanciaId', estanciaId] as const
 
 export function useLotesQuery() {
   return useQuery<Lote[]>({
@@ -19,19 +21,35 @@ export function useLotesQuery() {
   })
 }
 
-export function useLoteQueryById(loteId: number | string, enabled = true) {
+export function useLoteQueryById(loteId: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(loteId) && enabled
+
   return useQuery<Lote>({
-    queryKey: loteByIdQueryKey(loteId),
-    queryFn: () => getLote(loteId),
-    enabled: Boolean(loteId) && enabled
+    queryKey: ['lote', loteId ?? null] as const,
+    queryFn: () => {
+      if (!hasId(loteId)) {
+        throw new Error('useLoteQueryById requires loteId')
+      }
+
+      return getLote(loteId)
+    },
+    enabled: queryEnabled
   })
 }
 
-export function useLotesByEstanciaQuery(estanciaId: number | string, enabled = true) {
+export function useLotesByEstanciaQuery(estanciaId: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(estanciaId) && enabled
+
   return useQuery<Lote[]>({
-    queryKey: lotesByEstanciaIdQueryKey(estanciaId),
-    queryFn: () => getLotesPorEstancia(estanciaId),
-    enabled: Boolean(estanciaId) && enabled
+    queryKey: ['lotes', 'estanciaId', estanciaId ?? null] as const,
+    queryFn: () => {
+      if (!hasId(estanciaId)) {
+        throw new Error('useLotesByEstanciaQuery requires estanciaId')
+      }
+
+      return getLotesPorEstancia(estanciaId)
+    },
+    enabled: queryEnabled
   })
 }
 
@@ -53,7 +71,7 @@ export function useLoteMutation() {
     }
   })
 
-  const deleteMutation = useMutation<null, Error, number | string>({
+  const deleteMutation = useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteLote(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: lotesQueryKey()})
