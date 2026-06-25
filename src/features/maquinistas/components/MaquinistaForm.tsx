@@ -8,15 +8,27 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { maquinistaSchema } from '@/features/maquinistas/schemas/maquinistaSchema'
+import type { MaquinistaFormValues } from '@/features/maquinistas/schemas/maquinistaSchema'
+import type { EntityId } from '@/utils/types'
 
-export default function MaquinistaForm({ formAction, id }) {
+type MaquinistaEditFormProps = {
+  formAction: 'edit',
+  id: EntityId
+}
 
-  console.log(id)
+type MaquinistaCreateFormProps = {
+  formAction: 'create',
+  id?: never
+}
+
+type MaquinistaFormProps = MaquinistaEditFormProps | MaquinistaCreateFormProps
+
+export default function MaquinistaForm(props: MaquinistaFormProps) {
 
   const navigate = useNavigate()
-  const isEdit = formAction === 'edit'
+  const isEdit = props.formAction === 'edit'
 
-  const form = useForm({
+  const form = useForm<MaquinistaFormValues>({
     resolver: zodResolver(maquinistaSchema),
     defaultValues: {
       nombre: '',
@@ -26,28 +38,29 @@ export default function MaquinistaForm({ formAction, id }) {
   const { handleSubmit, control, reset } = form
 
   const enabled = isEdit
-  const maquinistaQuery = useMaquinistaQuery(id, enabled)
+  const maquinistaQuery = useMaquinistaQuery(isEdit ? props.id : null, enabled)
   const { createMutation, updateMutation } = useMaquinistaMutation()
 
   useEffect(() => {
-    reset(maquinistaQuery.data)
+    if(maquinistaQuery.data) reset(maquinistaQuery.data)
   }, [maquinistaQuery.data, reset])
 
-  const handleCreate = async (data) => {
+  const handleCreate = async (data: MaquinistaFormValues) => {
     try {
       await createMutation.mutateAsync(data)
       navigate('/maquinistas')
     } catch (error) {
-      console.log('error create')
+      console.log(`error create: ${error.message}`)
     }
   }
   
-  const handleUpdate = async (data) => {
+  const handleUpdate = async (data: MaquinistaFormValues) => {
+    if (!isEdit) return
     try {
-      await updateMutation.mutateAsync({id, data})
+      await updateMutation.mutateAsync({id: props.id, payload: data})
       navigate('/maquinistas')
     } catch (error) {
-      console.log('error create')
+      console.log(`error update: ${error.message}`)
     }
   }
 

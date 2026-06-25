@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import type { EntityId } from '@/utils/types'
 
 import { Button } from '@/components/ui/button'
 
@@ -18,7 +19,7 @@ export default function MaquinistaList() {
   const maquinistasQuery = useMaquinistasQuery()
   const { deleteMutation } = useMaquinistaMutation()
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: EntityId) => {
     try {
       await deleteMutation.mutateAsync(id)
     } catch {
@@ -27,6 +28,8 @@ export default function MaquinistaList() {
   }
 
   if ( maquinistasQuery.isLoading ) { return <div>Cargando...</div> }
+
+  const maquinistas = maquinistasQuery.data ?? []
 
   return (
     <Table>
@@ -38,7 +41,7 @@ export default function MaquinistaList() {
       </TableHeader>
 
       <TableBody>
-        {maquinistasQuery.data.map((m) => (
+        {maquinistas.map((m) => (
           <TableRow key={m.id}>
             <TableCell>{m.nombre}</TableCell>
             <TableCell>

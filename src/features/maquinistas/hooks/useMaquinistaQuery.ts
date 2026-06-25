@@ -3,14 +3,16 @@ import { getMaquinistas, getMaquinista, createMaquinista, updateMaquinista, dele
 
 import type { Maquinista } from '@/features/maquinistas/types'
 import type { MaquinistaFormValues } from '@/features/maquinistas/schemas/maquinistaSchema'
+import type { EntityId, MaybeEntityId } from '@/utils/types'
+import { hasId } from '@/utils/types'
 
 type UpdateMaquinistaMutationFormValues = {
-  id: number | string,
+  id: EntityId,
   payload: MaquinistaFormValues
 }
 
 export const maquinistasQueryKey = () => ['maquinistas'] as const
-export const maquinistaQueryKey = (id: number | string) => ['maquinista', id] as const
+export const maquinistaQueryKey = (id: EntityId) => ['maquinista', id] as const
 
 export const useMaquinistasQuery = () => {
   return useQuery<Maquinista[]>({
@@ -19,11 +21,17 @@ export const useMaquinistasQuery = () => {
   })
 }
 
-export const useMaquinistaQuery = (id: number | string, enabled = true) => {
+export const useMaquinistaQuery = (id: MaybeEntityId, enabled = true) => {
+  const queryEnabled = hasId(id) && enabled
   return useQuery<Maquinista>({
-    queryKey: maquinistaQueryKey(id),
-    queryFn: () => getMaquinista(id),
-    enabled: Boolean(id) && enabled
+    queryKey: ['maquinista', id ?? null] as const,
+    queryFn: () => {
+      if(!hasId(id)) {
+        throw new Error('useMaquinistaQuery required id')
+      }
+      return getMaquinista(id)
+    },
+    enabled: queryEnabled
   })
 }
 
@@ -45,7 +53,7 @@ export const useMaquinistaMutation = () => {
     }
   })
 
-  const deleteMutation = useMutation<null, Error, number | string>({
+  const deleteMutation = useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteMaquinista(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: maquinistasQueryKey()})
@@ -54,4 +62,3 @@ export const useMaquinistaMutation = () => {
 
   return { createMutation, updateMutation, deleteMutation }
 }
-
