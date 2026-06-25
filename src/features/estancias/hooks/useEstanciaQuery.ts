@@ -3,11 +3,13 @@ import { getEstancia, getEstancias, updateEstancia, createEstancia, deleteEstanc
 
 import type { Estancia } from '@/features/estancias/types'
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
+import type { EntityId, MaybeEntityId } from '@/utils/types'
+import { hasId } from '@/utils/types'
 
-type UpdateEstanciaMutationVariables = { id: string | number, payload: EstanciaFormValues }
+type UpdateEstanciaMutationVariables = { id: EntityId, payload: EstanciaFormValues }
 
 export const estanciasQueryKey = () => ['estancias'] as const
-export const estanciaByIdQueryKey = (estanciaId: number | string) => ['estancia', estanciaId] as const
+export const estanciaByIdQueryKey = (estanciaId: EntityId) => ['estancia', estanciaId] as const
 
 export function useEstanciasQuery() {
   return useQuery<Estancia[]>({
@@ -16,11 +18,17 @@ export function useEstanciasQuery() {
   })
 }
 
-export function useEstanciaQueryById(estanciaId: string | number, enabled = true) {
+export function useEstanciaQueryById(estanciaId: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(estanciaId) && enabled
   return useQuery<Estancia>({
-    queryKey: estanciaByIdQueryKey(estanciaId),
-    queryFn: () => getEstancia(estanciaId),
-    enabled: Boolean(estanciaId) && enabled
+    queryKey: ['estancia', estanciaId ?? null],
+    queryFn: () => {
+      if(!hasId(estanciaId)){
+        throw new Error('useEstanciaQueryById requires estanciaId')
+      }
+      return getEstancia(estanciaId)
+    },
+    enabled: queryEnabled
   })
 }
 
@@ -42,7 +50,7 @@ export function useMutationsEstancia() {
     },
   })
 
-  const deleteMutation = useMutation<null, Error, number | string>({
+  const deleteMutation = useMutation<null, Error, EntityId>({
     mutationFn: deleteEstancia,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: estanciasQueryKey() })

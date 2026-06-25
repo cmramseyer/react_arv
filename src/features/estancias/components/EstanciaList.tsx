@@ -1,6 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
 import {
   Table,
   TableBody,
@@ -9,12 +7,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import type { Estancia } from '@/features/estancias/types'
+import type { EntityId } from '@/utils/types'
 
 import { Button } from '@/components/ui/button'
 
-export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorMessage }) {
-  const navigate = useNavigate()
+type EstanciaListProps = {
+  estancias: Estancia[],
+  onDelete: (id: EntityId) => void,
+  onEdit: (id: EntityId) => void,
+  deleteErrorMessage: string
+}
 
+export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorMessage }: EstanciaListProps) {
 
   return (
     <Table>
@@ -51,7 +56,3 @@ export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorM
   )
 }
 
-EstanciaList.propTypes = {
-  estancias: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
-}

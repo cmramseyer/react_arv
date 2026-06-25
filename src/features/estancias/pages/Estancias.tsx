@@ -1,41 +1,9 @@
-import React, { useEffect, useState, useReducer } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import EstanciaList from '@/features/estancias/components/EstanciaList'
 import { Button } from '@/components/ui/button'
 import { useEstanciasQuery, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
-
-const estanciaReducer = (state, action) => {
-  switch (action.type) {
-    case 'SET_ESTANCIAS':
-      return { ...state, 
-        modo: 'list',
-        selectedId: null
-      }
-    case 'EDIT_ESTANCIA':
-      return { ...state, 
-        modo: 'edit',
-        selectedId: action.payload
-      }
-    case 'CREATE_ESTANCIA':
-      return { ...state, 
-        modo: 'create',
-        selectedId: null
-      }
-    case 'SAVED':
-      return { ...state, 
-        modo: 'list',
-        selectedId: null
-      }
-    case 'CANCEL':
-      return { ...state, 
-        modo: 'list',
-        selectedId: null
-      }
-    default:
-      return state
-  }
-}
+import type { EntityId } from '@/utils/types'
 
 export default function Estancias() {
   
@@ -45,13 +13,13 @@ export default function Estancias() {
 
   const { deleteMutation } = useMutationsEstancia()
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: EntityId) => {
     deleteMutation.mutate(id)
   }
 
-  const deleteErrorMessage = deleteMutation.error?.message
+  const deleteErrorMessage = deleteMutation.error?.message ?? ''
 
-  const handleEdit = (id) => {
+  const handleEdit = (id: EntityId) => {
     navigate(`/estancias/${id}/edit`)
   }
 
@@ -67,7 +35,7 @@ export default function Estancias() {
 
         { estanciasQuery.isPending ? <div>Cargando...</div> :
           <EstanciaList
-            estancias={estanciasQuery.data}
+            estancias={estanciasQuery.data ?? []}
             onEdit={handleEdit}
             onDelete={handleDelete}
             deleteErrorMessage={deleteErrorMessage}

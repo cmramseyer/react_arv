@@ -4,9 +4,11 @@ import EstanciaForm from '@/features/estancias/components/EstanciaForm'
 
 export default function EstanciaEdit() {
 
-  const estanciaId = useParams().id
+  const { id } = useParams<{id: string}>()
+
+  if (!id) { return <div>Error</div>}
 
   return (
-    <EstanciaForm formAction="edit" estanciaId={estanciaId} />
+    <EstanciaForm formAction="edit" estanciaId={id} />
   )
 }

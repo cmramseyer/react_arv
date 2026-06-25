@@ -7,9 +7,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useEstanciaQueryById, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
 import { estanciaSchema } from '@/features/estancias/schemas/estanciaSchema'
+import { EntityId } from '@/utils/types'
+import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
+import { mapEstanciaForm } from '@/features/estancias/mappers/estanciaMappers'
 
+type EstanciaFormEditProps = {
+  formAction: 'edit',
+  estanciaId: EntityId
+}
 
-export default function EstanciaForm({ estanciaId = null, formAction }) {
+type EstanciaFormCreateProps = {
+  formAction: 'create',
+  estanciaId?: never
+}
+
+type EstanciaFormProps = EstanciaFormEditProps | EstanciaFormCreateProps
+
+export default function EstanciaForm({ estanciaId, formAction }: EstanciaFormProps) {
 
   const navigate = useNavigate()
   const isEdit = formAction === 'edit'
@@ -24,23 +38,23 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
     telefono: '',
     email: ''
   }
-  const defaultValues = isEdit ? estanciaQuery.data : emptyValues
 
-  const form = useForm({
+  const form = useForm<EstanciaFormValues>({
     resolver: zodResolver(estanciaSchema),
-    defaultValues: defaultValues
+    defaultValues: emptyValues
   })
 
   const { handleSubmit, control, reset } = form
 
-  const { createMutation, updateMutation, deleteMutation } = useMutationsEstancia()
+  const { createMutation, updateMutation } = useMutationsEstancia()
 
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending
   const isError = createMutation.isError || updateMutation.isError
   const errorMessage = createMutation.error?.message || updateMutation.error?.message || 'Error desconocido'
 
-  const handleUpdate = async (data) => {
+  const handleUpdate = async (data: EstanciaFormValues) => {
+    if(!isEdit) return
     try {
       await updateMutation.mutateAsync({id: estanciaId, payload: data})
       navigate('/estancias')
@@ -50,7 +64,7 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
     
   }
   
-  const handleCreate = async (data) => { 
+  const handleCreate = async (data: EstanciaFormValues) => { 
     try {
       await createMutation.mutateAsync(data)
       navigate('/estancias')
@@ -60,7 +74,7 @@ export default function EstanciaForm({ estanciaId = null, formAction }) {
   }
 
   useEffect(() => {
-    if (estanciaQuery.data) reset(estanciaQuery.data)
+    if (estanciaQuery.data) reset(mapEstanciaForm(estanciaQuery.data))
   }, [estanciaQuery.data, reset])
 
   if (estanciaQuery.isLoading) return <div>Cargando...</div>

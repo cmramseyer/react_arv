@@ -8,9 +8,16 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
+import { Estancia } from '@/features/estancias/types'
 
+type EstanciaFilterSelectProps = {
+  estancias: Estancia[],
+  selectedEstanciaId: number | string,
+  onSelect: () => void,
+  onResetSelect: () => void
+}
 
-export default function EstanciaFilterSelect({ estancias, selectedEstanciaId, onSelect, onResetSelect }) {
+export default function EstanciaFilterSelect({ estancias, selectedEstanciaId, onSelect, onResetSelect }: EstanciaFilterSelectProps) {
 
   return (
     <>
