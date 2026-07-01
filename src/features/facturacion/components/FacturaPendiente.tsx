@@ -1,4 +1,3 @@
-import React from "react"
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +14,31 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import type { FacturacionGrupoPendiente } from "@/features/facturacion/types";
 import { formatHectareas } from "@/utils/formatHectareas";
+
+type OrdenId = number | string;
+
+type FacturaPendienteProps = {
+  loading: boolean;
+  ordenesPorEstancia: FacturacionGrupoPendiente[];
+  cantidadSeleccionadas: number;
+  nroFactura: string;
+  isFacturando: boolean;
+  tieneImportesInvalidos: boolean;
+  ordenesSeleccionadas: Set<OrdenId>;
+  importesPorOrden: Record<OrdenId, string>;
+  nroOrdenClientePorOrden: Record<OrdenId, string>;
+  onCambiarModo: (checked: boolean) => void;
+  onNroFacturaChange: (value: string) => void;
+  onFacturar: () => void;
+  onToggleOrden: (ordenId: OrdenId, nombreEstancia: string | undefined) => void;
+  onImporteChange: (ordenId: OrdenId, value: string) => void;
+  onNroOrdenClienteChange: (ordenId: OrdenId, value: string) => void;
+  importeEsValido: (importe: string) => boolean;
+  dialogoEstanciaAbierto: boolean;
+  onDialogoEstanciaOpenChange: (open: boolean) => void;
+};
 
 export default function FacturaPendiente({
   loading,
@@ -36,7 +59,7 @@ export default function FacturaPendiente({
   importeEsValido,
   dialogoEstanciaAbierto,
   onDialogoEstanciaOpenChange,
-}) {
+}: FacturaPendienteProps) {
   return (
     <>
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
