@@ -9,8 +9,8 @@ export type Lote = {
   nombre: string
   nombre_estancia?: string
   estancia_id: number | string
-  lat: number | string | null
-  long: number | string | null
+  lat: string | null
+  long: string | null
   link_mapa: string | null
   hectareas: number
   adjuntos?: AdjuntoLote[]

@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
@@ -15,6 +14,7 @@ import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 import { loteSchema } from '@/features/lotes/schemas/loteSchema'
 import { mapLoteFormValuesToFormData } from '@/features/lotes/mappers/loteMappers'
 import type { EntityId } from '@/utils/types'
+import type { LoteFormValues } from '@/features/lotes/schemas/loteSchema'
 
 type LoteFormEditProps = {
   formAction: 'edit',
@@ -27,6 +27,7 @@ type LoteFormCreateProps = {
 }
 
 type LoteFormProps = LoteFormEditProps | LoteFormCreateProps
+
 
 export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
@@ -41,23 +42,23 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
   const emptyValues = {
     nombre: '',
-    lat: '',
-    long: '',
+    lat: undefined,
+    long: undefined,
     link_mapa: '',
     hectareas: '',
     estancia_id: '',
   } 
   
-  const defaultValues = {
+  const defaultValues: LoteFormValues = {
     nombre: loteQuery.data?.nombre ?? '',
     lat: loteQuery.data?.lat ?? '',
     long: loteQuery.data?.long ?? '',
     link_mapa: loteQuery.data?.link_mapa ?? '',
-    hectareas: loteQuery.data?.hectareas ?? '',
+    hectareas: loteQuery.data?.hectareas ? String(loteQuery.data.hectareas) : '',
     estancia_id: loteQuery.data?.estancia_id ? String(loteQuery.data?.estancia_id) : '',
   }
    
-  const form = useForm({
+  const form = useForm<LoteFormValues>({
     resolver: zodResolver(loteSchema),
     defaultValues: emptyValues
   })
@@ -73,8 +74,8 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
   const { createMutation, updateMutation } = useLoteMutation()
 
-  const handleCreate = async (formData) => {
-    const data = mapLoteFormValuesToFormData(formData)
+  const handleCreate = async (formData: LoteFormValues) => {
+    const data: FormData = mapLoteFormValuesToFormData(formData)
     
     console.log(`formData: ${JSON.stringify(formData)}`)
     console.log(`data: ${JSON.stringify(data)}`)
@@ -88,8 +89,9 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
     }
   }
 
-  const handleUpdate = async (formData) => {
-    const data = mapLoteFormValuesToFormData(formData, { includeAdjuntos: showAdjuntos })
+  const handleUpdate = async (formData: LoteFormValues) => {
+    if(!isEdit) return
+    const data: FormData = mapLoteFormValuesToFormData(formData, { includeAdjuntos: showAdjuntos })
 
     console.log(`formData: ${JSON.stringify(formData)}`)
     console.log(`data: ${JSON.stringify(data)}`)
@@ -192,7 +194,7 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
                     step="0.01"
                     onChange={(event) => {
                       const value = event.target.value
-                      field.onChange(value === '' ? '' : Number(value))
+                      field.onChange(value)
                     }}
                   />
                 </FormControl>
@@ -236,13 +238,4 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
       </Button>
     </>
   )
-}
-
-LoteForm.propTypes = {
-  estancias: PropTypes.array.isRequired,
-  onSubmit: PropTypes.func.isRequired,       // recibe FormData ya armado
-  defaultValues: PropTypes.object,
-  submitLabel: PropTypes.string,
-  showAdjuntos: PropTypes.bool,
-  actions: PropTypes.node,
 }
