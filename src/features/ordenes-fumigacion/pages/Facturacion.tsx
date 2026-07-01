@@ -16,19 +16,31 @@ import {
   parseImporte,
 } from "@/utils/formatHectareas";
 
+type LalaOrdenImporte = {
+  [ordenId: number | string]: string
+}
+
+type LalaOrdenNroOrdenCliente = {
+  [ordenId: number | string]: string
+}
+
 export default function Facturacion() {
+  const importesOrden: LalaOrdenImporte = {}
+  const ordenesNroOrdenCliente: LalaOrdenNroOrdenCliente = {}
+  const nullDate: Date | undefined = undefined
+
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
-    () => new Set(),
+    () => new Set<number | string>(),
   );
-  const [importesPorOrden, setImportesPorOrden] = useState({});
-  const [nroOrdenClientePorOrden, setNroOrdenClientePorOrden] = useState({});
+  const [importesPorOrden, setImportesPorOrden] = useState(importesOrden);
+  const [nroOrdenClientePorOrden, setNroOrdenClientePorOrden] = useState(ordenesNroOrdenCliente);
   const [nroFactura, setNroFactura] = useState("");
   const [modoPago, setModoPago] = useState(false);
   const [dialogoEstanciaAbierto, setDialogoEstanciaAbierto] = useState(false);
   const [estanciaSeleccionada, setEstanciaSeleccionada] = useState(null);
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
-  const [fechaPago, setFechaPago] = useState();
+  const [fechaPago, setFechaPago] = useState(nullDate);
 
   const ordenesPendientesQuery = useOrdenesPendientesFacturacionQuery(!modoPago);
   const facturasPagoQuery = useFacturasPagoQuery(modoPago);
@@ -53,7 +65,7 @@ export default function Facturacion() {
 
   const handleToggleOrden = (ordenId, nombreEstancia) => {
     setOrdenesSeleccionadas((prev) => {
-      const next = new Set(prev);
+      const next = new Set<number | string>(prev);
       if (next.has(ordenId)) {
         next.delete(ordenId);
         setImportesPorOrden((prevImportes) => {
@@ -135,14 +147,14 @@ export default function Facturacion() {
 
   const handleAbrirDialogoPago = (facturaId) => {
     setFacturaPagoSeleccionada(facturaId);
-    setFechaPago();
+    setFechaPago(undefined);
     setDialogoPagoAbierto(true);
   };
 
   const handleCerrarDialogoPago = () => {
     setDialogoPagoAbierto(false);
     setFacturaPagoSeleccionada(null);
-    setFechaPago();
+    setFechaPago(undefined);
   };
 
   const handleConfirmarPago = async () => {
