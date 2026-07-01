@@ -23,9 +23,42 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import type { FacturaPago, FacturaPagoOrden } from "@/features/facturacion/types";
 import { formatHectareas } from "@/utils/formatHectareas";
 
-const formatDisplayDate = (date) => format(date, "dd/MM/yyyy");
+type ImporteInput = number | string | null | undefined;
+
+type PagoPendienteLote = {
+  nombre?: string | null;
+  hectareas?: ImporteInput;
+};
+
+type PagoPendienteOrden = Omit<FacturaPagoOrden, "lotes"> & {
+  lotes?: PagoPendienteLote[];
+};
+
+type PagoPendienteFactura = Omit<FacturaPago, "ordenes_fumigacion"> & {
+  nombre?: string;
+  ordenes_fumigacion: PagoPendienteOrden[];
+};
+
+type PagoPendienteProps = {
+  loading: boolean;
+  ordenesPorEstancia: PagoPendienteFactura[];
+  isPagando: boolean;
+  onAbrirDialogoPago: (facturaId: number | string) => void;
+  onCambiarModo: (checked: boolean) => void;
+  parseImporte: (importe: ImporteInput) => number | null;
+  formatImporte: (importe: number) => string;
+  dialogoPagoAbierto: boolean;
+  fechaPago: Date | undefined;
+  pagoEnProceso: boolean;
+  onFechaPagoChange: (fecha: Date | undefined) => void;
+  onCerrarDialogoPago: () => void;
+  onConfirmarPago: () => void;
+};
+
+const formatDisplayDate = (date: Date) => format(date, "dd/MM/yyyy");
 
 export default function PagoPendiente({
   loading,
@@ -41,7 +74,7 @@ export default function PagoPendiente({
   onFechaPagoChange,
   onCerrarDialogoPago,
   onConfirmarPago,
-}) {
+}: PagoPendienteProps) {
   return (
     <>
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -132,28 +165,24 @@ export default function PagoPendiente({
                         <div className="rounded-md border bg-muted/40 p-3 text-sm">
                           <div className="font-medium">Lotes</div>
                           <div className="mt-2 space-y-2">
-                            {orden.lotes.map((lote, loteIndex) => (
-                              <div
-                                key={`${orden.id}-lote-${loteIndex}`}
-                                className="flex flex-col gap-1"
-                              >
-                                {Object.entries(lote).map(([key, value]) => {
-                                  const displayValue =
-                                    key === "hectareas"
-                                      ? formatHectareas(value)
-                                      : value;
-
-                                  return (
-                                    <div
-                                      key={`${orden.id}-lote-${loteIndex}-${key}`}
-                                      className="text-muted-foreground"
-                                    >
-                                      {key}: {displayValue}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ))}
+                            {orden.lotes.map((lote, loteIndex) => {
+                              return (
+                                <>
+                                  <div
+                                    key={`${orden.id}-lote-${loteIndex}-nombre`}
+                                    className="text-muted-foreground"
+                                  >
+                                    Nombre: {lote.nombre}
+                                  </div>
+                                  <div
+                                    key={`${orden.id}-lote-${loteIndex}-hectareas`}
+                                    className="text-muted-foreground"
+                                  >
+                                    Has.: {formatHectareas(lote.hectareas)}
+                                  </div>
+                                </>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
