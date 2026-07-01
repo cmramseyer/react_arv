@@ -27,8 +27,6 @@ type LalaOrdenNroOrdenCliente = {
 export default function Facturacion() {
   const importesOrden: LalaOrdenImporte = {}
   const ordenesNroOrdenCliente: LalaOrdenNroOrdenCliente = {}
-  const nullDate: Date | undefined = undefined
-
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
     () => new Set<number | string>(),
   );
@@ -40,16 +38,18 @@ export default function Facturacion() {
   const [estanciaSeleccionada, setEstanciaSeleccionada] = useState(null);
   const [dialogoPagoAbierto, setDialogoPagoAbierto] = useState(false);
   const [facturaPagoSeleccionada, setFacturaPagoSeleccionada] = useState(null);
-  const [fechaPago, setFechaPago] = useState(nullDate);
+  const [fechaPago, setFechaPago] = useState<Date | undefined>(undefined);
 
   const ordenesPendientesQuery = useOrdenesPendientesFacturacionQuery(!modoPago);
   const facturasPagoQuery = useFacturasPagoQuery(modoPago);
   const { facturarMutation, marcarFacturaPagadaMutation } =
     useFacturacionMutation();
 
-  const activeQuery = modoPago ? facturasPagoQuery : ordenesPendientesQuery;
-  const ordenesPorEstancia = activeQuery.data ?? [];
-  const loading = activeQuery.isFetching;
+  const ordenesPendientes = ordenesPendientesQuery.data ?? [];
+  const facturasPago = facturasPagoQuery.data ?? [];
+  const loading = modoPago
+    ? facturasPagoQuery.isFetching
+    : ordenesPendientesQuery.isFetching;
 
   const cantidadSeleccionadas = ordenesSeleccionadas.size;
 
@@ -177,7 +177,7 @@ export default function Facturacion() {
       {modoPago ? (
         <PagoPendiente
           loading={loading}
-          ordenesPorEstancia={ordenesPorEstancia}
+          ordenesPorEstancia={facturasPago}
           isPagando={isPagando}
           onAbrirDialogoPago={handleAbrirDialogoPago}
           onCambiarModo={setModoPago}
@@ -193,7 +193,7 @@ export default function Facturacion() {
       ) : (
         <FacturaPendiente
           loading={loading}
-          ordenesPorEstancia={ordenesPorEstancia}
+          ordenesPorEstancia={ordenesPendientes}
           cantidadSeleccionadas={cantidadSeleccionadas}
           nroFactura={nroFactura}
           isFacturando={isFacturando}
