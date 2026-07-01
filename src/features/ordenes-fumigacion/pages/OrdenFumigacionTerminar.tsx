@@ -21,8 +21,8 @@ type OrdenFumigacionTerminarProps = {
   selectedOrdenId: EntityId,
   isTerminarDialogOpen: boolean,
   setIsTerminarDialogOpen: (flag: boolean) => void,
-  onOpenChange: (flag: boolean) => void,
-  onSuccess: () => void
+  onOpenChange?: (flag: boolean) => void,
+  onSuccess?: () => void
 }
 
 export default function OrdenFumigacionTerminar({

@@ -10,24 +10,8 @@ import {
   useOrdenFumigacionAdjuntosQuery,
 } from "@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import IconLabelBadge from "@/components/IconLabelBadge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { formatHectareas } from "@/utils/formatHectareas";
-import OrdenFumigacionInfoBadges from "@/features/ordenes-fumigacion/components/OrdenFumigacionInfoBadges";
 import DialogEditAdjunto from "@/features/ordenes-fumigacion/components/DialogEditAdjunto";
 import OrdenFumigacionAdjuntoParaImprimir from "@/features/ordenes-fumigacion/components/OrdenFumigacionAdjuntoParaImprimir";
 import OrdenFumigacionTerminar from "@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar";
@@ -84,10 +68,10 @@ export default function OrdenFumigacionShow() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState<string | URL>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false);
-  const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set());
+  const [selectedAdjuntos, setSelectedAdjuntos] = useState(new Set<string>());
   const [adjuntoEnEdicion, setAdjuntoEnEdicion] = useState(null);
   const [adjuntoEditando, setAdjuntoEditando] = useState(null);
 
@@ -103,7 +87,7 @@ export default function OrdenFumigacionShow() {
   );
 
   useEffect(() => {
-    setPdfUrl(orden?.orden_url ?? null);
+    setPdfUrl(orden?.orden_url ?? undefined);
   }, [orden?.orden_pdf_fecha_creacion, orden?.orden_url]);
 
   const handleEditar = () => {
@@ -115,6 +99,7 @@ export default function OrdenFumigacionShow() {
   };
 
   const handleBorrar = async () => {
+    if(!id) return
     if (confirm("¿Seguro quieres borrar esta orden?")) {
       await deleteOrdenFumigacion(id);
       navigate("/ordenes_fumigacion");
@@ -149,6 +134,7 @@ export default function OrdenFumigacionShow() {
   };
 
   const handleImprimir = async (attachmentIds) => {
+    if(!id) return
     const data = await imprimirOrdenFumigacion(id, attachmentIds);
     setPdfUrl(data.orden_url);
     setIsDialogOpen(false);
@@ -173,24 +159,7 @@ export default function OrdenFumigacionShow() {
       ? "Imprimir con planos"
       : "Imprimir sin planos";
 
-  const lotesOrden =
-    Array.isArray(orden?.lotes) && orden.lotes.length > 0 ? orden.lotes : [];
-  const facturasOrden = Array.isArray(orden?.facturas) ? orden.facturas : [];
 
-  const formatCantidad = (value) => {
-    if (value === null || value === undefined || value === "")
-      return "Sin datos";
-    const numericValue = Number(value);
-    if (Number.isNaN(numericValue)) return "Sin datos";
-    return numericValue.toLocaleString("es-AR", { maximumFractionDigits: 2 });
-  };
-
-  const getEstadoVariant = (estado) => {
-    const estadoNormalizado = (estado || "").toLowerCase();
-    if (estadoNormalizado === "activa") return "destructive";
-    if (estadoNormalizado === "terminada") return "success";
-    return "secondary";
-  };
 
   const botonVerPdf = !!pdfUrl && (
     <Button onClick={handleVerPdf} variant="default">
@@ -203,20 +172,13 @@ export default function OrdenFumigacionShow() {
   }
 
   const estadoOrden = (orden.estado_orden || "").toLowerCase();
-  const estadoLabel = estadoOrden
-    ? `${estadoOrden.charAt(0).toUpperCase()}${estadoOrden.slice(1)}`
-    : "Sin estado";
   const isTerminada = estadoOrden === "terminada";
-  const totalHectareas =
-    lotesOrden.length > 0
-      ? lotesOrden.reduce((acc, lote) => acc + Number(lote.hectareas ?? 0), 0)
-      : (orden.hectareas ?? orden.hectareas_reales);
-  const hectareasLabel = formatHectareas(totalHectareas);
-  const createdAtLabel = orden.created_at_locale || "Sin fecha";
+
+  if(!id) { return <div>Error</div>}
 
   return (
     <>
-    <OrdenFumigacionCard orden={orden} onTerminar={() => {}} />
+    <OrdenFumigacionCard orden={orden} onVerOrden={() => {}} onTerminar={() => {}} />
       <CardFooter className="flex flex-wrap gap-2">
         <Button onClick={handleEditar} variant="default">
           Editar
