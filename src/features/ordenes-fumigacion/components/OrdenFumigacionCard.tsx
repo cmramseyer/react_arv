@@ -17,6 +17,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { formatHectareas } from '@/utils/formatHectareas'
+import type { OrdenFumigacionListItem } from '@/features/ordenes-fumigacion/types'
+import type { EntityId } from '@/utils/types'
+
 
 const formatCantidad = (value) => {
   if (value === null || value === undefined || value === '') return 'Sin datos'
@@ -28,7 +31,7 @@ const formatCantidad = (value) => {
 const getEstadoVariant = (estado) => {
   const estadoNormalizado = (estado || '').toLowerCase()
   if (estadoNormalizado === 'activa') return 'destructive'
-  if (estadoNormalizado === 'terminada') return 'success'
+  if (estadoNormalizado === 'terminada') return 'default'
   return 'secondary'
 }
 
@@ -48,7 +51,13 @@ const joinWith = (string1, string2, separator) => {
   return `${left} ${separator} ${right}`
 }
 
-export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }) {
+type OrdenFumigacionCardProps = {
+  orden: OrdenFumigacionListItem,
+  onVerOrden: (id: EntityId) => void,
+  onTerminar: (id: EntityId) => void
+}
+
+export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }: OrdenFumigacionCardProps) {
   const estadoOrden = (orden.estado_orden || '').toLowerCase()
   const estadoLabel = estadoOrden
     ? `${estadoOrden.charAt(0).toUpperCase()}${estadoOrden.slice(1)}`
@@ -125,7 +134,7 @@ export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }) {
                 return (
                   <li key={loteKey} className="space-y-2">
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="success">Lote: {lote.nombre || 'Sin nombre'}</Badge>
+                      <Badge variant="default">Lote: {lote.nombre || 'Sin nombre'}</Badge>
                       <Badge variant="outline">{loteHectareas}</Badge>
                     </div>
                     <Accordion type="single" collapsible className="w-full">
@@ -168,7 +177,7 @@ export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }) {
             </ul>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Badge variant="success">Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}</Badge>
+              <Badge variant="default">Lote: {orden.nombre_lote || orden.temp_lotes || 'Sin lotes'}</Badge>
               <Badge variant="outline">{formatHectareas(orden.hectareas ?? orden.hectareas_reales)}</Badge>
             </div>
           )}
