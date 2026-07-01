@@ -1,10 +1,10 @@
 import { React } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import App from './App.jsx'
-import { AuthProvider } from './context/AuthContext'
-import Home from './pages/Home'
-import Login from './pages/Login'
+import App from './App.js'
+import { AuthProvider } from './context/AuthContext.js'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.js'
 import Estancias from '@/features/estancias/pages/Estancias'
 import EstanciaNew from '@/features/estancias/pages/EstanciaNew'
 import EstanciaEdit from '@/features/estancias/pages/EstanciaEdit'
@@ -19,7 +19,6 @@ import OrdenesFumigacion from '@/features/ordenes-fumigacion/pages/OrdenesFumiga
 import OrdenFumigacionNew from '@/features/ordenes-fumigacion/pages/OrdenFumigacionNew'
 import OrdenFumigacionShow from '@/features/ordenes-fumigacion/pages/OrdenFumigacionShow'
 import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEdit'
-import OrdenFumigacionTerminar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar'
 import BuscarOrden from '@/features/ordenes-fumigacion/pages/BuscarOrden'
 import Facturacion from '@/features/ordenes-fumigacion/pages/Facturacion'
 import Estadistica from '@/features/estadisticas/pages/Estadistica'
@@ -67,7 +66,6 @@ createRoot(document.getElementById('root')).render(
               <Route path="/ordenes_fumigacion/pendiente_factura" element={<Facturacion />} />
               <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
               <Route path="/ordenes_fumigacion/:id/edit" element={<OrdenFumigacionEdit />} />
-              <Route path="/ordenes_fumigacion/:id/terminar" element={<OrdenFumigacionTerminar />} />
             </Route>
           </Routes>
         </AuthProvider>
