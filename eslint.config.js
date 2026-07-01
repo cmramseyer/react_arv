@@ -3,17 +3,38 @@ import globals from "globals";
 import pluginReact from "eslint-plugin-react";
 import tanstackQueryPlugin from "@tanstack/eslint-plugin-query";
 import json from "@eslint/json";
+import tseslint from "typescript-eslint";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
+  {
+    ignores: [
+      "dist/**",
+      "coverage/**",
+      "node_modules/**",
+      ".opencode/**",
+      "package-lock.json",
+      "jest-results.json",
+    ],
+  },
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     plugins: { js },
     extends: ["js/recommended"],
   },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ["**/*.{ts,tsx}"],
+  })),
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
-    languageOptions: { globals: globals.browser },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.vitest,
+      },
+    },
     rules: {
       "no-unused-vars": [
         "error",
@@ -23,7 +44,34 @@ export default defineConfig([
       ],
     },
   },
-  pluginReact.configs.flat.recommended,
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.vitest,
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+  {
+    ...pluginReact.configs.flat.recommended,
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      ...pluginReact.configs.flat.recommended.rules,
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
+    },
+  },
   {
     files: ["**/*.{js,mjs,cjs,jsx,ts,tsx}"],
     settings: {
@@ -48,10 +96,11 @@ export default defineConfig([
     extends: ["json/recommended"],
   },
   {
-    files: ["**/*.{test,spec}.{js,jsx}"],
+    files: ["**/*.{test,spec}.{js,jsx,ts,tsx}"],
     languageOptions: {
       globals: {
         ...globals.jest,
+        ...globals.vitest,
       },
     },
   },
