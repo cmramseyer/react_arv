@@ -5,6 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import type { DateRange } from 'react-day-picker'
+
+type EstadisticasFilterProps = {
+  handleMesActual: () => void,
+  handleMesAnterior: () => void,
+  handleRangoHistorico: () => void,
+  range: DateRange,
+  setRange: () => void,
+  rangeLabel: string
+}
 
 export default function EstadisticaFilter({
   handleMesActual,
@@ -12,7 +22,7 @@ export default function EstadisticaFilter({
   handleRangoHistorico,
   range,
   setRange,
-  rangeLabel}) {
+  rangeLabel}: EstadisticasFilterProps) {
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
