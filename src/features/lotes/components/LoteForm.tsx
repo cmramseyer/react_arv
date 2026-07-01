@@ -18,7 +18,8 @@ import type { LoteFormValues } from '@/features/lotes/schemas/loteSchema'
 
 type LoteFormEditProps = {
   formAction: 'edit',
-  loteId: EntityId
+  loteId: EntityId,
+  showAdjuntos: true
 }
 
 type LoteFormCreateProps = {
