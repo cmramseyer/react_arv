@@ -18,12 +18,13 @@ import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
+import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 
 
 export default function OrdenFumigacionForm({ formAction, ordenId }) {
   const isEdit = formAction === 'edit'
 
-  const form = useForm({
+  const form = useForm<OrdenFumigacionFormValues>({
     resolver: zodResolver(ordenFumigacionSchema),
     defaultValues: {
       estancia_id: '',

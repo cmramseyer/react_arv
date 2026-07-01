@@ -48,4 +48,25 @@ export const ordenFumigacionSchema = z.object({
   creator: z.string().optional(),
 })
 
-export type OrdenFumigacionFormValues = z.infer<typeof ordenFumigacionSchema>
+export type OrdenFumigacionFormValues = {
+  id?: string
+  estancia_id: string
+  cultivo_id?: string
+  sensible: boolean
+  comentarios?: string
+  lotes: Array<{
+    orden_lote_id?: number | string
+    lote_id: string
+    hectareas_reales?: number | string
+    dosis: Array<{
+      orden_lote_dosis_id?: number | string
+      producto_id: string
+      cantidad: number | string
+    }>
+  }>
+  datos_clima?: string
+  info_trabajo?: string
+  fecha_trabajo?: string
+  maquinista_id?: string
+  creator?: string
+}
