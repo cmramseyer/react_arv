@@ -20,6 +20,8 @@ import type {
   OrdenFumigacionTerminarPayload,
   OrdenFumigacionListItem
 } from '@/features/ordenes-fumigacion/types'
+import type { MaybeEntityId } from '@/utils/types'
+import { hasId } from '@/utils/types'
 
 type UpdateOrdenFumigacionMutationVariables = {
   id: OrdenFumigacionId,
@@ -46,29 +48,53 @@ export function useOrdenesFumigacionQuery(filters: OrdenFumigacionFilters = {}) 
 }
 
 // GET /ordenes_fumigacion/:id
-export function useOrdenFumigacionQuery(id: OrdenFumigacionId, enabled = true) {
+export function useOrdenFumigacionQuery(id: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(id) && enabled
+
   return useQuery<OrdenFumigacion>({
-    queryKey: ordenFumigacionQueryKey(id),
-    queryFn: () => getOrdenFumigacion(id),
-    enabled: Boolean(id) && enabled
+    queryKey: ['ordenFumigacion', id ?? null] as const,
+    queryFn: () => {
+      if (!hasId(id)) {
+        throw new Error('useOrdenFumigacionQuery requires id')
+      }
+
+      return getOrdenFumigacion(id)
+    },
+    enabled: queryEnabled
   })
 }
 
 // GET /ordenes_fumigacion/:id/adjuntos
-export function useOrdenFumigacionAdjuntosQuery(ordenId: OrdenFumigacionId, enabled = true) {
+export function useOrdenFumigacionAdjuntosQuery(ordenId: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(ordenId) && enabled
+
   return useQuery<OrdenFumigacionAdjunto[]>({
-    queryKey: ordenFumigacionAdjuntosQueryKey(ordenId),
-    queryFn: () => getAdjuntosOrden(ordenId),
-    enabled: Boolean(ordenId) && enabled
+    queryKey: ['ordenFumigacionAdjuntos', ordenId ?? null] as const,
+    queryFn: () => {
+      if (!hasId(ordenId)) {
+        throw new Error('useOrdenFumigacionAdjuntosQuery requires ordenId')
+      }
+
+      return getAdjuntosOrden(ordenId)
+    },
+    enabled: queryEnabled
   })
 }
 
 // GET /ordenes_fumigacion/:id/imprimir
-export function useOrdenFumigacionImprimirQuery(ordenId: OrdenFumigacionId, enabled = true) {
+export function useOrdenFumigacionImprimirQuery(ordenId: MaybeEntityId, enabled = true) {
+  const queryEnabled = hasId(ordenId) && enabled
+
   return useQuery({
-    queryKey: ordenFumigacionImprimirQueryKey(ordenId),
-    queryFn: () => imprimirOrdenFumigacion(ordenId),
-    enabled: Boolean(ordenId) && enabled
+    queryKey: ['ordenFumigacionImprimir', ordenId ?? null] as const,
+    queryFn: () => {
+      if (!hasId(ordenId)) {
+        throw new Error('useOrdenFumigacionImprimirQuery requires ordenId')
+      }
+
+      return imprimirOrdenFumigacion(ordenId)
+    },
+    enabled: queryEnabled
   })
 }
 

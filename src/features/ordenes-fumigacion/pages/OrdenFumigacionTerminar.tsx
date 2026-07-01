@@ -15,6 +15,15 @@ import {
 } from "@/components/ui/select";
 import { formatHectareas } from "@/utils/formatHectareas";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import type { EntityId } from '@/utils/types'
+
+type OrdenFumigacionTerminarProps = {
+  selectedOrdenId: EntityId,
+  isTerminarDialogOpen: boolean,
+  setIsTerminarDialogOpen: (flag: boolean) => void,
+  onOpenChange: (flag: boolean) => void,
+  onSuccess: () => void
+}
 
 export default function OrdenFumigacionTerminar({
   selectedOrdenId,
@@ -22,7 +31,7 @@ export default function OrdenFumigacionTerminar({
   setIsTerminarDialogOpen,
   onOpenChange,
   onSuccess,
-}) {
+}: OrdenFumigacionTerminarProps) {
   const { register, handleSubmit, reset, control } = useForm({
     defaultValues: {
       datos_clima: "",
