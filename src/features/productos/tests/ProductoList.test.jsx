@@ -4,7 +4,7 @@ import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import ProductoList from '@/components/ProductoList'
+import ProductoList from '../components/ProductoList'
 
 import { setupServer } from 'msw/node'
 import { productoHandlers } from '@/features/productos/mocks/productoHandlers'
