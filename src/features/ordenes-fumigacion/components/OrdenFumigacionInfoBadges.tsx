@@ -1,8 +1,13 @@
 import React from "react";
 import IconLabelBadge from "@/components/IconLabelBadge";
 import { formatDate, joinWith } from "@/utils/formatHectareas";
+import type { OrdenFumigacionListItem } from "../types";
 
-export default function OrdenFumigacionInfoBadges({ orden }) {
+type OrdenFumigacionInfoBadgesProps = {
+  orden: OrdenFumigacionListItem
+}
+
+export default function OrdenFumigacionInfoBadges({ orden }: OrdenFumigacionInfoBadgesProps) {
   const isTerminada = orden?.estado_orden === 'terminada'
   return (
     <>

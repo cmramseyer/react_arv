@@ -2,10 +2,20 @@
 import React from 'react'
 import { useFieldArray, useWatch } from 'react-hook-form'
 import Select, { createFilter } from 'react-select'
+import type { Control } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import type { Producto } from '@/features/productos/types'
+
+type DosisFieldsProps = {
+  control: Control,
+  productos: Producto[],
+  name: string,
+  showNuevoProductoButton: boolean,
+  onNuevoProducto: () => void
+}
 
 export default function DosisFields({
   control,
@@ -13,7 +23,7 @@ export default function DosisFields({
   name = 'dosis',
   showNuevoProductoButton = false,
   onNuevoProducto,
-}) {
+}: DosisFieldsProps) {
 
   if (!productos) { return <div>Cargando...</div>}
 

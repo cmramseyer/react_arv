@@ -10,6 +10,31 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import type { OrdenFumigacionAdjunto, OrdenFumigacionId } from '@/features/ordenes-fumigacion/types'
+
+type PrintableAdjunto = OrdenFumigacionAdjunto & {
+  id: OrdenFumigacionId
+  filename: string
+  url: string
+}
+
+type OrdenFumigacionAdjuntoParaImprimirProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  isLoadingAdjuntos: boolean
+  hasAdjuntos: boolean
+  adjuntos: PrintableAdjunto[]
+  selectedAdjuntos: Set<string>
+  onToggleAdjunto: (adjuntoId: OrdenFumigacionId) => void
+  isImageAdjunto: (adjunto: PrintableAdjunto) => boolean
+  onEditarAdjunto: (adjunto: PrintableAdjunto) => void
+  isSavingAdjunto: boolean
+  adjuntoEditando: PrintableAdjunto | null
+  adjuntoEnEdicion: string | null
+  normalizeAdjuntoId: (adjuntoId: OrdenFumigacionId) => string
+  onImprimir: () => void | Promise<void>
+  labelImprimirSeleccion: string
+}
 
 export default function OrdenFumigacionAdjuntoParaImprimir({
   open,
@@ -27,7 +52,7 @@ export default function OrdenFumigacionAdjuntoParaImprimir({
   normalizeAdjuntoId,
   onImprimir,
   labelImprimirSeleccion,
-}) {
+}: OrdenFumigacionAdjuntoParaImprimirProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
