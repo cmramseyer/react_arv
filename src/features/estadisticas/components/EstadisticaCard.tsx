@@ -2,7 +2,7 @@ import React from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { formatHectareas } from '@/utils/formatHectareas'
+import type { Estadisticas } from '@/features/estadisticas/types'
 
 
 const createChartConfig = (colorVar) => ({
@@ -18,13 +18,21 @@ const formatAxisValue = (value) => {
   return parsed.toLocaleString('es-AR')
 }
 
+type EstadisticaCardProps = {
+  loading: boolean,
+  title: string,
+  data: Estadisticas[],
+  dataKey: string,
+  chart: null
+}
+
 export default function EstadisticaCard({
   loading,
   title,
   data,
   dataKey,
   chart 
-}) {
+}: EstadisticaCardProps) {
 
   if (loading) { return <div>Cargando...</div> }
 
@@ -56,7 +64,7 @@ export default function EstadisticaCard({
               tickMargin={8}
               tickFormatter={formatAxisValue}
             />
-            <ChartTooltip content={<ChartTooltipContent valueFormatter={formatHectareas} />} />
+            <ChartTooltip content={<ChartTooltipContent/>} />
             <Bar dataKey={dataKey} fill="var(--color-hectareas)" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ChartContainer>
