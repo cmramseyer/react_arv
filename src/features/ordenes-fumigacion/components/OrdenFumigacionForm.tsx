@@ -59,7 +59,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   )
   const lotes = isEdit ? editLotes : createLotesQuery.data || []
 
-  const { createProductoMutation } = useProductosMutation()
+  const { createMutation: createProductoMutation } = useProductosMutation()
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
@@ -269,7 +269,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
       { ordenFumigacionQuery.data && 
         estadoOrden === 'terminada' &&
-        <OrdenFumigacionEditForm ordenId={ordenFumigacionQuery.data} control={control} estadoOrden={estadoOrden} /> 
+        <OrdenFumigacionEditForm control={control} estadoOrden={estadoOrden} /> 
       }
 
       <ProductoNuevoDialog

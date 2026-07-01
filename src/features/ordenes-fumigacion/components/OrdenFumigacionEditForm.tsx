@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
+import { Control } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -11,10 +12,15 @@ import {
 } from '@/components/ui/select'
 
 import { useMaquinistasQuery } from "@/features/maquinistas/hooks/useMaquinistaQuery";
+import type { EntityId } from '@/utils/types'
 
+type OrdenFumigacionEditFormProps = {
+  control: Control
+  estadoOrden: string,
+  ordenId: EntityId
+}
 
-
-export default function OrdenFumigacionEditForm({control, estadoOrden}) {
+export default function OrdenFumigacionEditForm({control, estadoOrden}: OrdenFumigacionEditFormProps) {
   const maquinistasQuery = useMaquinistasQuery()
   
   const maquinistas = maquinistasQuery.data ?? []

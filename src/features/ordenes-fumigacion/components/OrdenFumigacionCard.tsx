@@ -54,7 +54,7 @@ const joinWith = (string1, string2, separator) => {
 type OrdenFumigacionCardProps = {
   orden: OrdenFumigacionListItem,
   onVerOrden: (id: EntityId) => void,
-  onTerminar: (id: EntityId) => void
+  onTerminar?: (id: EntityId) => void
 }
 
 export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }: OrdenFumigacionCardProps) {
