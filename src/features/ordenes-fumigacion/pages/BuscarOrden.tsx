@@ -24,23 +24,30 @@ import { getMaquinistas } from '@/features/maquinistas/api/maquinistasService'
 import { getOrdenesFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import OrdenFumigacionCard from '@/features/ordenes-fumigacion/components/OrdenFumigacionCard'
 
+import type { Estancia } from '@/features/estancias/types'
+import type { Lote } from '@/features/lotes/types'
+import type { Cultivo } from '@/features/cultivos/types'
+import type { Maquinista } from '@/features/maquinistas/types'
+import type { OrdenFumigacionListItem, OrdenFumigacionFilters } from '@/features/ordenes-fumigacion/types'
+import type { DateRange } from 'react-day-picker'
+
 const formatApiDate = (date) => format(date, 'yyyy-MM-dd')
-const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')
+const formatDisplayDate = (date: Date) => format(date, 'dd/MM/yyyy')
 
 export default function BuscarOrden() {
   const navigate = useNavigate()
-  const [estancias, setEstancias] = useState([])
-  const [lotes, setLotes] = useState([])
-  const [cultivos, setCultivos] = useState([])
-  const [maquinistas, setMaquinistas] = useState([])
+  const [estancias, setEstancias] = useState<Estancia[]>([])
+  const [lotes, setLotes] = useState<Lote[]>([])
+  const [cultivos, setCultivos] = useState<Cultivo[]>([])
+  const [maquinistas, setMaquinistas] = useState<Maquinista[]>([])
   const [estanciaId, setEstanciaId] = useState('')
   const [loteId, setLoteId] = useState('')
   const [cultivoId, setCultivoId] = useState('')
   const [maquinistaId, setMaquinistaId] = useState('')
   const [nroOrdenCliente, setNroOrdenCliente] = useState('')
   const [nroFactura, setNroFactura] = useState('')
-  const [range, setRange] = useState()
-  const [ordenes, setOrdenes] = useState([])
+  const [range, setRange] = useState<DateRange>()
+  const [ordenes, setOrdenes] = useState<OrdenFumigacionListItem[]>([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
 
@@ -66,7 +73,7 @@ export default function BuscarOrden() {
   }, [range])
 
   const handleBuscar = async () => {
-    const filters = {}
+    const filters: OrdenFumigacionFilters = {}
     if (estanciaId) filters.estancia_id = estanciaId
     if (loteId) filters.lote_id = loteId
     if (cultivoId) filters.cultivo_id = cultivoId
@@ -95,7 +102,7 @@ export default function BuscarOrden() {
     setMaquinistaId('')
     setNroOrdenCliente('')
     setNroFactura('')
-    setRange()
+    setRange(undefined)
     setOrdenes([])
     setHasSearched(false)
   }
@@ -141,7 +148,7 @@ export default function BuscarOrden() {
                 <SelectContent>
                   {lotes.map((lote) => (
                     <SelectItem key={String(lote.id)} value={String(lote.id)}>
-                      {lote.nombre_lote || lote.nombre || 'Sin nombre'}
+                      {lote.nombre || 'Sin nombre'}
                     </SelectItem>
                   ))}
                 </SelectContent>
