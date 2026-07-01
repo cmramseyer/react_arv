@@ -62,25 +62,6 @@ describe("ProductoForm", () => {
       expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
     });
 
-    it("renders form with product data", async () => {
-      const queryClient = createQueryClient();
-      
-
-      renderWithQueryClient(
-        <MemoryRouter>
-          <ProductoForm formAction="edit" id="1" />
-        </MemoryRouter>,
-        queryClient,
-      );
-
-      expect(await screen.findByDisplayValue("Roundup")).toBeInTheDocument();
-      expect(screen.getByDisplayValue("Agroquímico")).toBeInTheDocument();
-      await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
-      });
-      expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
-    });
-
   });
 
   describe("Create mode", () => {
@@ -92,25 +73,6 @@ describe("ProductoForm", () => {
 
     it("renders form with product data", async () => {
       const queryClient = createQueryClient();
-
-      renderWithQueryClient(
-        <MemoryRouter>
-          <ProductoForm formAction="create" />
-        </MemoryRouter>,
-        queryClient,
-      );
-
-      expect(await screen.getByLabelText(/nombre/i)).toHaveValue("");
-      expect(await screen.getByLabelText(/tipo de producto/i)).toHaveValue("");
-      await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveValue("");
-      });
-      expect(screen.getByRole("button", { name: /guardar/i })).toBeInTheDocument();
-    });
-
-    it("renders form with product data", async () => {
-      const queryClient = createQueryClient();
-      
 
       renderWithQueryClient(
         <MemoryRouter>

@@ -48,9 +48,9 @@ describe('Nuevo Producto', () => {
   it('creates a new Producto', async () => {
 
     renderWithQueryClient(
-      <MemoryRouter initialEntries={['/productos/nuevo']}>
+      <MemoryRouter initialEntries={['/productos/new']}>
         <Routes>
-          <Route path="/productos/nuevo" element={<ProductoNuevo />} />
+          <Route path="/productos/new" element={<ProductoNuevo />} />
           <Route path="/productos" element={<ProductosMock />} />
         </Routes>
       </MemoryRouter>
@@ -97,16 +97,16 @@ describe('Nuevo Producto', () => {
 
   it('does not create a product on initial render', async () => {
     renderWithQueryClient(
-      <MemoryRouter initialEntries={['/productos', '/productos/nuevo']} initialIndex={1}>
+      <MemoryRouter initialEntries={['/productos', '/productos/new']} initialIndex={1}>
         <Routes>
           <Route path="/productos" element={<ProductosMock />} />
-          <Route path="/productos/nuevo" element={<ProductoNuevo />} />
+          <Route path="/productos/new" element={<ProductoNuevo />} />
         </Routes>
         <LocationDisplay />
       </MemoryRouter>
     )
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos/nuevo')
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/new')
     expect(createProducto).not.toHaveBeenCalled()
   })
 
