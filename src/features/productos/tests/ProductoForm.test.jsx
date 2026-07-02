@@ -8,12 +8,15 @@ import ProductoForm from '@/features/productos/components/ProductoForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { setupServer } from 'msw/node'
-import { productoHandlers } from '@/features/productos/mocks/productoHandlers'
+import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
  
 export const server = setupServer(...productoHandlers)
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  resetProductoMocks();
+});
 afterAll(() => server.close());
 
 const createQueryClient = () =>
@@ -105,6 +108,33 @@ describe("ProductoForm", () => {
     expect(await screen.findByText('El tipo de producto es obligatorio')).toBeInTheDocument()
     expect(await screen.findByText('La unidad de medida es obligatoria')).toBeInTheDocument()
 
+    });
+
+    it("creates a product and calls onSuccess", async () => {
+      const queryClient = createQueryClient();
+      const onSuccess = vi.fn();
+
+      renderWithQueryClient(
+        <MemoryRouter>
+          <ProductoForm formAction="create" onSuccess={onSuccess} />
+        </MemoryRouter>,
+        queryClient,
+      );
+
+      await user.type(screen.getByLabelText(/nombre/i), "Glifosato");
+      await user.type(screen.getByLabelText(/tipo de producto/i), "Agroquímico");
+      await user.click(screen.getByRole("combobox"));
+      await user.click(screen.getByRole("option", { name: "Litros" }));
+      const submitButton = screen.getByRole("button", { name: /guardar/i });
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalledTimes(1);
+      });
+
+      await waitFor(() => {
+        expect(submitButton).not.toBeDisabled();
+      });
     });
   });
 });
