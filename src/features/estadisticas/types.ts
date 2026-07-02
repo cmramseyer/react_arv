@@ -23,3 +23,8 @@ export type Estadisticas = {
   hectareas_por_maquinista: EstadisticaHectareasPorMaquinista[]
   hectareas_por_cultivo: EstadisticaHectareasPorCultivo[]
 }
+
+export type LabelHectareasChart = {
+  label: string,
+  hectareas: number
+}
