@@ -65,6 +65,32 @@ describe("ProductoForm", () => {
       expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
     });
 
+    it("updates a product and navigates to products page", async () => {
+      const queryClient = createQueryClient();
+
+      renderWithQueryClient(
+        <MemoryRouter initialEntries={["/productos/1/edit"]}>
+          <Routes>
+            <Route path="/productos/1/edit" element={<ProductoForm formAction="edit" id="1" />} />
+            <Route path="/productos" element={<LocationDisplay />} />
+          </Routes>
+        </MemoryRouter>,
+        queryClient,
+      );
+
+      const nombreInput = await screen.findByDisplayValue("Roundup");
+      await waitFor(() => {
+        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
+      });
+      await user.clear(nombreInput);
+      await user.type(nombreInput, "Roundup actualizado");
+      await user.click(screen.getByRole("combobox"));
+      await user.click(screen.getByRole("option", { name: "Litros" }));
+      await user.click(screen.getByRole("button", { name: /actualizar/i }));
+
+      expect(await screen.findByTestId("location")).toHaveTextContent("/productos");
+    });
+
   });
 
   describe("Create mode", () => {
