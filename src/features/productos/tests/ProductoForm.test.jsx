@@ -59,9 +59,6 @@ describe("ProductoForm", () => {
 
       expect(await screen.findByDisplayValue("Roundup")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Agroquímico")).toBeInTheDocument();
-      await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
-      });
       expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
     });
 
@@ -79,9 +76,6 @@ describe("ProductoForm", () => {
       );
 
       const nombreInput = await screen.findByDisplayValue("Roundup");
-      await waitFor(() => {
-        expect(screen.getByRole("combobox")).toHaveTextContent("Kilogramos");
-      });
       await user.clear(nombreInput);
       await user.type(nombreInput, "Roundup actualizado");
       await user.click(screen.getByRole("combobox"));

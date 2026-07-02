@@ -3,7 +3,7 @@ import { render, screen, within, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 
-import { AdjuntosList } from '@/components/AdjuntosList'
+import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -81,7 +81,7 @@ describe('Adjuntos list', () => {
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
-    const closeButton = within(dialog).getByRole("button", { name: /cerrar/i });
+    const closeButton = within(dialog).getByRole("button", { name: /close/i });
     await user.click(closeButton);
 
     await waitFor(() => {
@@ -114,7 +114,7 @@ describe('Adjuntos list', () => {
   })
 
   // add request spy or request recorder
-  it.skip('open delete modal, click Si', async () => {
+  it('open delete modal, click Si', async () => {
 
     renderWithQueryClient(
       <MemoryRouter>

@@ -3,12 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
-vi.mock('../services/lotesService', () => ({
+vi.mock('@/features/lotes/api/lotesService', () => ({
   getLote: vi.fn(),
 }))
 
-import { getLote } from '../services/lotesService'
-import LoteShow from './LoteShow'
+import { getLote } from '@/features/lotes/api/lotesService'
+import LoteShow from '@/features/lotes/pages/LoteShow'
 
 const loteFixture = {
   id: 1,

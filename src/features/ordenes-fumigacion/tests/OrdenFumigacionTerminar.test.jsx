@@ -1,92 +1,136 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
 
-vi.mock('../services/ordenesFumigacionService', () => ({
-  getOrdenFumigacion: vi.fn(),
-  terminarOrdenFumigacion: vi.fn(),
-}))
+import { ordenFumigacionHandlers, resetOrdenFumigacionMocks } from '@/features/ordenes-fumigacion/mocks/ordenFumigacionHandlers'
+import { maquinistaHandlers, resetMaquinistaMocks } from '@/features/maquinistas/mocks/maquinistaHandlers'
+import OrdenFumigacionTerminar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar'
 
-vi.mock('../services/estanciasService', () => ({
-  getEstancias: vi.fn(),
-}))
+const API_URL = `http://${import.meta.env.VITE_API_URL}`
 
-vi.mock('../services/lotesService', () => ({
-  getLotesPorEstancia: vi.fn(),
-}))
+const server = setupServer(...ordenFumigacionHandlers, ...maquinistaHandlers)
 
-vi.mock('../services/productosService', () => ({
-  getProductos: vi.fn(),
-}))
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+afterEach(() => {
+  server.resetHandlers()
+  resetOrdenFumigacionMocks()
+  resetMaquinistaMocks()
+})
+afterAll(() => server.close())
 
-vi.mock('../services/maquinistasService', () => ({
-  getMaquinistas: vi.fn(),
-}))
+const createQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+})
 
-import { getOrdenFumigacion, terminarOrdenFumigacion } from '../services/ordenesFumigacionService'
-import { getEstancias } from '../services/estanciasService'
-import { getLotesPorEstancia } from '../services/lotesService'
-import { getProductos } from '../services/productosService'
-import { getMaquinistas } from '../services/maquinistasService'
-import OrdenFumigacionTerminar from './OrdenFumigacionTerminar'
-
-const ordenFixture = {
-  id: 1,
-  estancia_id: 1,
-  lote_id: 2,
-  creator: 'Tester',
-  estado_orden: 'pendiente',
-  lotes: [],
-}
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+const renderWithQueryClient = (ui) => {
+  return render(
+    <QueryClientProvider client={createQueryClient()}>
+      {ui}
+    </QueryClientProvider>
+  )
 }
 
 describe('OrdenFumigacionTerminar', () => {
-  let user
+  it('finishes an order with work details and closes the dialog', async () => {
+    const user = userEvent.setup()
+    const setIsTerminarDialogOpen = vi.fn()
+    const onOpenChange = vi.fn()
+    const onSuccess = vi.fn()
+    let requestBody
+    let requestId
 
-  beforeEach(() => {
-    user = userEvent.setup()
-    vi.clearAllMocks()
-    getOrdenFumigacion.mockResolvedValueOnce(ordenFixture)
-    getEstancias.mockResolvedValueOnce([{ id: 1, nombre: 'Estancia Uno' }])
-    getLotesPorEstancia.mockResolvedValueOnce([{ id: 2, nombre: 'Lote Uno', hectareas: 5 }])
-    getProductos.mockResolvedValueOnce([])
-    getMaquinistas.mockResolvedValueOnce([])
+    server.use(
+      http.patch(`${API_URL}/ordenes_fumigacion/:id/terminar`, async ({ params, request }) => {
+        requestId = params.id
+        requestBody = await request.json()
+
+        return HttpResponse.json({ id: String(params.id), estado_orden: 'terminada' })
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <OrdenFumigacionTerminar
+          selectedOrdenId="1"
+          isTerminarDialogOpen
+          setIsTerminarDialogOpen={setIsTerminarDialogOpen}
+          onOpenChange={onOpenChange}
+          onSuccess={onSuccess}
+        />
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByText('Terminar Orden de Fumigación')).toBeInTheDocument()
+    expect(screen.getByText(/Estancia Uno/)).toBeInTheDocument()
+    expect(screen.getByText(/Lote Uno/)).toBeInTheDocument()
+    expect(screen.getByText(/10 ha/)).toBeInTheDocument()
+
+    await user.type(document.querySelector('input[name="datos_clima"]'), 'Soleado')
+    await user.type(document.querySelector('input[name="info_trabajo"]'), 'Aplicacion finalizada')
+    fireEvent.change(document.querySelector('input[name="fecha_trabajo"]'), {
+      target: { value: '2025-01-15' },
+    })
+
+    await user.click(screen.getByRole('combobox'))
+    await user.click(await screen.findByRole('option', { name: 'Carlos' }))
+
+    await user.click(screen.getByRole('button', { name: /confirmar terminar/i }))
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
+
+    expect(setIsTerminarDialogOpen).toHaveBeenCalledWith(false)
+    expect(requestId).toBe('1')
+    expect(requestBody).toEqual({
+      orden_fumigacion: {
+        datos_clima: 'Soleado',
+        info_trabajo: 'Aplicacion finalizada',
+        fecha_trabajo: '2025-01-15',
+        maquinista_id: '1',
+      },
+    })
   })
-
   it('returns to Ordenes without extra requests when clicking Volver', async () => {
-    render(
-      <MemoryRouter initialEntries={['/ordenes_fumigacion', '/ordenes_fumigacion/1/terminar']} initialIndex={1}>
-        <Routes>
-          <Route path="/ordenes_fumigacion" element={<div>Ordenes Page</div>} />
-          <Route path="/ordenes_fumigacion/:id/terminar" element={<OrdenFumigacionTerminar />} />
-        </Routes>
-        <LocationDisplay />
+    const user = userEvent.setup()
+    const setIsTerminarDialogOpen = vi.fn()
+    const onOpenChange = vi.fn()
+    const onSuccess = vi.fn()
+    let terminarRequests = 0
+
+    server.use(
+      http.patch(`${API_URL}/ordenes_fumigacion/:id/terminar`, () => {
+        terminarRequests += 1
+        return HttpResponse.json({ ok: true })
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <OrdenFumigacionTerminar
+          selectedOrdenId="1"
+          isTerminarDialogOpen
+          setIsTerminarDialogOpen={setIsTerminarDialogOpen}
+          onOpenChange={onOpenChange}
+          onSuccess={onSuccess}
+        />
       </MemoryRouter>
     )
 
     await screen.findByText('Terminar Orden de Fumigación')
 
-    const getOrdenCalls = getOrdenFumigacion.mock.calls.length
-    const getEstanciasCalls = getEstancias.mock.calls.length
-    const getLotesCalls = getLotesPorEstancia.mock.calls.length
-    const getProductosCalls = getProductos.mock.calls.length
-    const getMaquinistasCalls = getMaquinistas.mock.calls.length
-
     await user.click(screen.getByRole('button', { name: /volver/i }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/ordenes_fumigacion')
-    expect(terminarOrdenFumigacion).not.toHaveBeenCalled()
-    await waitFor(() => {
-      expect(getOrdenFumigacion).toHaveBeenCalledTimes(getOrdenCalls)
-      expect(getEstancias).toHaveBeenCalledTimes(getEstanciasCalls)
-      expect(getLotesPorEstancia).toHaveBeenCalledTimes(getLotesCalls)
-      expect(getProductos).toHaveBeenCalledTimes(getProductosCalls)
-      expect(getMaquinistas).toHaveBeenCalledTimes(getMaquinistasCalls)
-    })
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+    expect(setIsTerminarDialogOpen).not.toHaveBeenCalled()
+    expect(onSuccess).not.toHaveBeenCalled()
+    expect(terminarRequests).toBe(0)
   })
 })

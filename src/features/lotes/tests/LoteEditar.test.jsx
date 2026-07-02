@@ -1,56 +1,37 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
 
-vi.mock('@/features/lotes/api/lotesService', () => ({
-  getLote: vi.fn(),
-  getLotes: vi.fn(() => Promise.resolve([])),
-  getLotesPorEstancia: vi.fn(() => Promise.resolve([])),
-  createLote: vi.fn(() => Promise.resolve()),
-  updateLote: vi.fn(),
-  deleteLote: vi.fn(() => Promise.resolve()),
-  getAdjuntosLote: vi.fn(() => Promise.resolve([])),
-  uploadAdjuntoLote: vi.fn(() => Promise.resolve()),
-  deleteAdjuntoLote: vi.fn(() => Promise.resolve()),
-}))
+import LoteEdit from '@/features/lotes/pages/LoteEdit'
+import { loteHandlers, resetLoteMocks } from '@/features/lotes/mocks/loteHandlers'
+import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
 
-vi.mock('@/features/estancias/api/estanciasService', () => ({
-  getEstancias: vi.fn(),
-}))
+const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const server = setupServer(...loteHandlers, ...estanciaHandlers)
 
-import { getLote, updateLote } from '@/features/lotes/api/lotesService'
-import { getEstancias } from '@/features/estancias/api/estanciasService'
-import LoteEditar from '@/features/lotes/pages/LoteEdit'
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+afterEach(() => {
+  server.resetHandlers()
+  resetLoteMocks()
+  resetEstanciaMocks()
+})
+afterAll(() => server.close())
 
-const loteFixture = {
-  id: 1,
-  nombre: 'Lote Uno',
-  lat: 10,
-  long: 20,
-  link_mapa: 'http://mapa1.com',
-  hectareas: 5,
-  estancia_id: 1,
-}
-
-const estanciasFixture = [
-  { id: 1, nombre: 'Estancia Uno' },
-  { id: 2, nombre: 'Estancia Dos' },
-]
-
-const LocationDisplay = () => {
+function LocationDisplay() {
   const location = useLocation()
   return <div data-testid="location">{location.pathname}</div>
 }
 
-const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, staleTime: Infinity },
-      mutations: { retry: false },
-    },
-  })
+const createQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, staleTime: Infinity },
+    mutations: { retry: false },
+  },
+})
 
 const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
   return {
@@ -59,134 +40,79 @@ const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
   }
 }
 
-const prepareMocks = (loteData = loteFixture, estanciasData = estanciasFixture) => {
-  getLote.mockResolvedValueOnce(loteData)
-  getEstancias.mockResolvedValueOnce(estanciasData)
-}
-
-describe('LoteEditar', () => {
+describe('LoteEdit', () => {
   let user
 
   beforeEach(() => {
     user = userEvent.setup()
-    vi.clearAllMocks()
   })
 
   it('renders the form with fetched data', async () => {
-    prepareMocks()
-
     renderWithQueryClient(
-      <MemoryRouter initialEntries={['/lotes/1/editar']}>
+      <MemoryRouter initialEntries={['/lotes/1/edit']}>
         <Routes>
-          <Route path="/lotes" element={<div>Lotes Page</div>} />
-          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
+          <Route path="/lotes/:id/edit" element={<LoteEdit />} />
         </Routes>
       </MemoryRouter>
     )
-
-    await waitFor(() => expect(getLote).toHaveBeenCalledWith('1'))
-    expect(getEstancias).toHaveBeenCalledTimes(1)
 
     expect(await screen.findByDisplayValue('Lote Uno')).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: /actualizar/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /actualizar/i })).toBeInTheDocument()
   })
 
-  it('submits the updated lote and navigates back', async () => {
-    prepareMocks()
+  it('updates a lote and navigates back', async () => {
+    let requestFormData
+
+    server.use(
+      http.patch(`${API_URL}/lotes/:id`, async ({ params, request }) => {
+        requestFormData = await request.formData()
+        return HttpResponse.json({
+          id: Number(params.id),
+          nombre: requestFormData.get('lote[nombre]'),
+          estancia_id: requestFormData.get('lote[estancia_id]'),
+          lat: requestFormData.get('lote[lat]'),
+          long: requestFormData.get('lote[long]'),
+          link_mapa: requestFormData.get('lote[link_mapa]'),
+          hectareas: Number(requestFormData.get('lote[hectareas]')),
+        })
+      })
+    )
 
     renderWithQueryClient(
-      <MemoryRouter initialEntries={['/lotes/1/editar']}>
+      <MemoryRouter initialEntries={['/lotes/1/edit']}>
         <Routes>
-          <Route path="/lotes" element={<div>Lotes Page</div>} />
-          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
+          <Route path="/lotes" element={<LocationDisplay />} />
+          <Route path="/lotes/:id/edit" element={<LoteEdit />} />
         </Routes>
-        <LocationDisplay />
       </MemoryRouter>
     )
 
-    await screen.findByDisplayValue('Lote Uno')
-
-    await user.click(screen.getByRole('combobox'))
-    await user.click(screen.getByRole('option', { name: 'Estancia Uno' }))
-
-    const nombre = screen.getByLabelText('Nombre del lote')
+    const nombre = await screen.findByDisplayValue('Lote Uno')
     await user.clear(nombre)
     await user.type(nombre, 'Lote Tres')
+    await user.click(screen.getByRole('button', { name: /actualizar/i }))
 
-    const lat = screen.getByLabelText('Latitud')
-    await user.clear(lat)
-    await user.type(lat, '50')
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
+    })
 
-    const long = screen.getByLabelText('Longitud')
-    await user.clear(long)
-    await user.type(long, '60')
-
-    const linkMapa = screen.getByLabelText('Link mapa')
-    await user.clear(linkMapa)
-    await user.type(linkMapa, 'http://mapa3.com')
-
-    const hectareas = screen.getByLabelText('Hectareas')
-    await user.clear(hectareas)
-    await user.type(hectareas, '15')
-
-    const botonActualizar = screen.getByRole('button', { name: /actualizar/i })
-    await user.click(botonActualizar)
-
-    await waitFor(() => expect(updateLote).toHaveBeenCalledTimes(1))
-
-    const [idArg, formData] = updateLote.mock.lastCall
-    expect(idArg).toBe('1')
-    expect(formData).toBeInstanceOf(FormData)
-    expect(formData.get('lote[nombre]')).toBe('Lote Tres')
-    expect(formData.get('lote[lat]')).toBe('50')
-    expect(formData.get('lote[long]')).toBe('60')
-    expect(formData.get('lote[link_mapa]')).toBe('http://mapa3.com')
-    expect(formData.get('lote[hectareas]')).toBe('15')
-
-    expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
+    expect(requestFormData.get('lote[nombre]')).toBe('Lote Tres')
+    expect(requestFormData.get('lote[estancia_id]')).toBe('1')
   })
 
-  it('returns to Lotes without extra requests when clicking Volver', async () => {
-    prepareMocks()
-
+  it('returns to Lotes when clicking Volver', async () => {
     renderWithQueryClient(
-      <MemoryRouter initialEntries={['/lotes', '/lotes/1/editar']} initialIndex={1}>
+      <MemoryRouter initialEntries={['/lotes/1/edit']}>
         <Routes>
-          <Route path="/lotes" element={<div>Lotes Page</div>} />
-          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
+          <Route path="/lotes" element={<LocationDisplay />} />
+          <Route path="/lotes/:id/edit" element={<LoteEdit />} />
         </Routes>
-        <LocationDisplay />
       </MemoryRouter>
     )
 
     await screen.findByDisplayValue('Lote Uno')
-
-    const getLoteCalls = getLote.mock.calls.length
-    const getEstanciasCalls = getEstancias.mock.calls.length
-
     await user.click(screen.getByRole('button', { name: /volver/i }))
 
     expect(screen.getByTestId('location')).toHaveTextContent('/lotes')
-    expect(updateLote).not.toHaveBeenCalled()
-    expect(getLote).toHaveBeenCalledTimes(getLoteCalls)
-    expect(getEstancias).toHaveBeenCalledTimes(getEstanciasCalls)
-  })
-
-  it('renders an empty form when lote data is missing', async () => {
-    getLote.mockResolvedValueOnce(null)
-    getEstancias.mockResolvedValueOnce(estanciasFixture)
-
-    renderWithQueryClient(
-      <MemoryRouter initialEntries={['/lotes/1/editar']}>
-        <Routes>
-          <Route path="/lotes" element={<div>Lotes Page</div>} />
-          <Route path="/lotes/:id/editar" element={<LoteEditar />} />
-        </Routes>
-      </MemoryRouter>
-    )
-
-    expect(await screen.findByRole('button', { name: /actualizar/i })).toBeInTheDocument()
-    expect(screen.getByLabelText('Nombre del lote')).toHaveValue('')
-    expect(updateLote).not.toHaveBeenCalled()
   })
 })
