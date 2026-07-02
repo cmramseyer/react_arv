@@ -7,12 +7,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ProductoList from '../components/ProductoList'
 
 import { setupServer } from 'msw/node'
-import { productoHandlers } from '@/features/productos/mocks/productoHandlers'
+import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
  
 export const server = setupServer(...productoHandlers)
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  resetProductoMocks();
+});
 afterAll(() => server.close());
 
 const renderWithQueryClient = (ui) => {
@@ -37,7 +40,7 @@ describe('ProductoList', () => {
     user = userEvent.setup()
   })
 
-  it('renders page and display products', async () => {
+  it('renders products in the table', async () => {
 
     renderWithQueryClient(
       <MemoryRouter>
