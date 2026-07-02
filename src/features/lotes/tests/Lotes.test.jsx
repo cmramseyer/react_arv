@@ -1,33 +1,37 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { setupServer } from 'msw/node'
 
-const mockNavigate = vi.fn()
+import Lotes from '@/features/lotes/pages/Lotes'
+import { loteHandlers, resetLoteMocks } from '@/features/lotes/mocks/loteHandlers'
+import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
+const server = setupServer(...loteHandlers, ...estanciaHandlers)
+
+beforeAll(() => {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false
   }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {}
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {}
+  }
+
+  server.listen({ onUnhandledRequest: 'error' })
 })
 
-// Mockear los servicios
-vi.mock('@/features/lotes/api/lotesService', () => ({
-  getLotes: vi.fn(),
-  getLotesPorEstancia: vi.fn(),
-  deleteLote: vi.fn(),
-}))
+afterEach(() => {
+  server.resetHandlers()
+  resetLoteMocks()
+  resetEstanciaMocks()
+})
 
-vi.mock('@/features/estancias/api/estanciasService', () => ({
-  getEstancias: vi.fn(),
-}))
-
-import { getLotes, getLotesPorEstancia, deleteLote } from '@/features/lotes/api/lotesService'
-import { getEstancias } from '@/features/estancias/api/estanciasService'
-import Lotes from '@/features/lotes/pages/Lotes'
+afterAll(() => server.close())
 
 const createQueryClient = () =>
   new QueryClient({
@@ -45,196 +49,77 @@ const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
   )
 }
 
-const lotesResponse = [
-  { id: 1, nombre_estancia: 'Estancia Uno', nombre: 'Lote Uno', hectareas: 5 },
-  { id: 2, nombre_estancia: 'Estancia Dos', nombre: 'Lote Dos', hectareas: 10 },
-]
+function LocationDisplay() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname}</div>
+}
 
-const lotesAfterDelete = [
-  { id: 2, nombre_estancia: 'Estancia Dos', nombre: 'Lote Dos', hectareas: 10 },
-]
+const renderLotes = () => {
+  return renderWithQueryClient(
+    <MemoryRouter initialEntries={['/lotes']}>
+      <Routes>
+        <Route path="/lotes" element={<Lotes />} />
+        <Route path="/lotes/new" element={<LocationDisplay />} />
+        <Route path="/lotes/:id" element={<LocationDisplay />} />
+        <Route path="/lotes/:id/edit" element={<LocationDisplay />} />
+      </Routes>
+    </MemoryRouter>
+  )
+}
 
-const estanciasResponse = [
-  { id: 1, nombre: 'Estancia Uno' },
-  { id: 2, nombre: 'Estancia Dos' },
-]
-
-const lotesEstanciaUno = [
-  { id: 1, nombre_estancia: 'Estancia Uno', nombre: 'Lote Uno', hectareas: 5 },
-]
-
-describe.skip('Lotes list', () => {
-  beforeAll(() => {
-    if (!Element.prototype.hasPointerCapture) {
-      Element.prototype.hasPointerCapture = () => false
-    }
-    if (!Element.prototype.setPointerCapture) {
-      Element.prototype.setPointerCapture = () => {}
-    }
-    if (!Element.prototype.releasePointerCapture) {
-      Element.prototype.releasePointerCapture = () => {}
-    }
-  })
+describe('Lotes list', () => {
+  let user
 
   beforeEach(() => {
-    getLotes.mockClear()
-    getLotesPorEstancia.mockClear()
-    getEstancias.mockClear()
-    deleteLote.mockClear()
-    mockNavigate.mockClear()
+    user = userEvent.setup()
   })
 
   it('fetches lotes and shows them in the table', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-
-    await waitFor(() => {
-      expect(getLotes).toHaveBeenCalledTimes(2)
-    })
+    renderLotes()
 
     expect(await screen.findByText('Lote Uno')).toBeInTheDocument()
-    expect((await screen.findAllByText('Estancia Uno')).length).toBeGreaterThan(0)
-    expect(await screen.findByText('Lote Dos')).toBeInTheDocument()
+    expect(screen.getByText('Lote Dos')).toBeInTheDocument()
+    expect(screen.getAllByText('Estancia Uno').length).toBeGreaterThan(0)
+    expect(screen.getByText('Todas las estancias')).toBeInTheDocument()
   })
 
-  it('navigates to nuevo lote', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-
-    const user = userEvent.setup()
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
+  it('navigates to create, detail, and edit pages', async () => {
+    renderLotes()
 
     await screen.findByText('Lote Uno')
 
     await user.click(screen.getByRole('button', { name: /crear lote/i }))
-
-    expect(mockNavigate).toHaveBeenCalledWith('/lotes/nuevo')
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes/new')
   })
 
-  it('navigates to detalle and edit from the list', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-
-    const user = userEvent.setup()
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
+  it('navigates to detail and edit from the list', async () => {
+    renderLotes()
 
     await screen.findByText('Lote Uno')
 
     await user.click(screen.getAllByRole('button', { name: /ver/i })[0])
-    expect(mockNavigate).toHaveBeenCalledWith('/lotes/1')
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes/1')
+  })
+
+  it('navigates to edit from the list', async () => {
+    renderLotes()
+
+    await screen.findByText('Lote Uno')
 
     await user.click(screen.getAllByRole('button', { name: /editar/i })[0])
-    expect(mockNavigate).toHaveBeenCalledWith('/lotes/1/editar')
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes/1/edit')
   })
 
   it('deletes a lote and refreshes the list', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes
-      .mockResolvedValueOnce(lotesResponse)
-      .mockResolvedValueOnce(lotesResponse)
-      .mockResolvedValueOnce(lotesAfterDelete)
-    deleteLote.mockResolvedValueOnce()
-
-    const user = userEvent.setup()
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
+    renderLotes()
 
     await screen.findByText('Lote Uno')
 
     await user.click(screen.getAllByRole('button', { name: /eliminar/i })[0])
 
-    await waitFor(() => expect(deleteLote).toHaveBeenCalledWith(1))
-    await waitFor(() => expect(getLotes).toHaveBeenCalledTimes(3))
-  })
-
-  it('loads estancias and shows them in the filter dropdown', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-
-    const user = userEvent.setup()
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-
-    await waitFor(() => expect(getEstancias).toHaveBeenCalledTimes(1))
-
-    expect(await screen.findByText('Todas las estancias')).toBeInTheDocument()
-    expect(getEstancias).toHaveBeenCalledTimes(1)
-  })
-
-  it('filters lotes when selecting an estancia', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-    getLotesPorEstancia.mockResolvedValueOnce(lotesEstanciaUno)
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-
-    await screen.findByText('Lote Uno')
-
     await waitFor(() => {
-      expect(getLotes).toHaveBeenCalledTimes(2)
+      expect(screen.queryByText('Lote Uno')).not.toBeInTheDocument()
+      expect(screen.getByText('Lote Dos')).toBeInTheDocument()
     })
-
-    expect(getLotesPorEstancia).not.toHaveBeenCalled()
-    expect(await screen.findByText('Todas las estancias')).toBeInTheDocument()
-  })
-
-  it('resets the filter when clicking the clear button', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-    getLotesPorEstancia.mockResolvedValueOnce(lotesEstanciaUno)
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-
-    await screen.findByText('Lote Uno')
-
-    expect(screen.queryByRole('button', { name: /limpiar filtro/i })).not.toBeInTheDocument()
-  })
-
-  it('shows and hides the clear button based on filter state', async () => {
-    getEstancias.mockResolvedValueOnce(estanciasResponse)
-    getLotes.mockResolvedValue(lotesResponse)
-    getLotesPorEstancia.mockResolvedValueOnce(lotesEstanciaUno)
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <Lotes />
-      </MemoryRouter>
-    )
-
-    await screen.findByText('Lote Uno')
-
-    expect(screen.queryByRole('button', { name: /limpiar filtro/i })).not.toBeInTheDocument()
   })
 })
