@@ -1,51 +1,239 @@
 import { http, HttpResponse } from 'msw'
+import type {
+  OrdenFumigacion,
+  OrdenFumigacionListItem,
+  OrdenFumigacionPayload,
+} from '@/features/ordenes-fumigacion/types'
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}`
 
-export const ordenFumigacionHandlers = [
-  http.get(`${API_URL}/ordenes_fumigacion`, () => {
-    return HttpResponse.json([
+type OrdenFumigacionRequestBody = {
+  orden_fumigacion?: Partial<OrdenFumigacionPayload['orden_fumigacion']>
+}
+
+const initialOrdenes: OrdenFumigacion[] = [
+  {
+    id: '1',
+    estancia_id: '1',
+    nombre_estancia: 'Estancia Uno',
+    nombre_lote: 'Lote Uno',
+    estado_orden: 'activa',
+    hectareas: 10,
+    created_at_locale: '01/01/2025',
+    creator: 'Tester',
+    sensible: false,
+    comentarios: '',
+    cultivo: { id: '2', nombre: 'Trigo' },
+    lotes: [
       {
-        id: '1',
-        nombre_estancia: 'Estancia Uno',
-        nombre_lote: 'Lote Uno',
-        estado_orden: 'pendiente',
+        id: '101',
+        lote_id: '1',
+        nombre: 'Lote Uno',
         hectareas: 10,
-        created_at_locale: '01/01/2025',
-        creator: 'Tester',
+        dosis: [
+          {
+            id: '1001',
+            producto_id: '1',
+            producto: 'Roundup',
+            cantidad: 2,
+            unidad_medida: 'kg',
+          },
+        ],
       },
+    ],
+    facturas: [],
+    maquinista: { id: '1', nombre: 'Pedro' },
+    fecha_trabajo: '2025-01-01',
+    fecha_trabajo_ddmmyyyy: '01/01/2025',
+    datos_clima: '',
+    info_trabajo: '',
+    orden_url: null,
+    orden_pdf_fecha_creacion: null,
+    adjuntos: [],
+  },
+  {
+    id: '2',
+    estancia_id: '2',
+    nombre_estancia: 'Estancia Dos',
+    nombre_lote: 'Lote Dos',
+    estado_orden: 'terminada',
+    hectareas: 25,
+    created_at_locale: '02/01/2025',
+    creator: 'Tester',
+    sensible: false,
+    comentarios: 'Orden terminada',
+    cultivo: { id: '1', nombre: 'Soja' },
+    lotes: [
       {
-        id: '2',
-        nombre_estancia: 'Estancia Dos',
-        nombre_lote: 'Lote Dos',
-        estado_orden: 'terminada',
+        id: '102',
+        lote_id: '2',
+        nombre: 'Lote Dos',
         hectareas: 25,
-        created_at_locale: '02/01/2025',
-        creator: 'Tester',
+        hectareas_reales: 24,
+        dosis: [
+          {
+            id: '1002',
+            producto_id: '2',
+            producto: '2-4D',
+            cantidad: 1.5,
+            unidad_medida: 'litros',
+          },
+        ],
       },
-    ])
-  }),
-  http.get(`${API_URL}/ordenes_fumigacion/:id`, async ({ params }) => {
-    return HttpResponse.json({
-      id: String(params.id),
-      nombre_estancia: 'Estancia Uno',
-      nombre_lote: 'Lote Uno',
-      estado_orden: 'pendiente',
-      hectareas: 10,
-      created_at_locale: '01/01/2025',
-      creator: 'Tester',
-      sensible: false,
-      comentarios: '',
-      cultivo: { id: '1', nombre: 'Trigo' },
-      lotes: [],
-      facturas: [],
-      maquinista: { id: '1', nombre: 'Pedro' },
-      fecha_trabajo: '2025-01-01',
-      fecha_trabajo_ddmmyyyy: '01/01/2025',
-      datos_clima: '',
-      info_trabajo: '',
-      orden_url: null,
-      orden_pdf_fecha_creacion: null,
+    ],
+    facturas: [
+      {
+        nro_factura: 'FAC-2026-001',
+        fecha_factura: '2026-01-10',
+      },
+    ],
+    maquinista: { id: '2', nombre: 'Juan' },
+    fecha_trabajo: '2025-01-02',
+    fecha_trabajo_ddmmyyyy: '02/01/2025',
+    datos_clima: '',
+    info_trabajo: 'Trabajo terminado',
+    orden_url: 'http://localhost:3000/ordenes/2.pdf',
+    orden_pdf_fecha_creacion: '2025-01-03',
+    adjuntos: [],
+  },
+]
+
+let ordenes = structuredClone(initialOrdenes)
+
+export const resetOrdenFumigacionMocks = () => {
+  ordenes = structuredClone(initialOrdenes)
+}
+
+const findOrden = (id: unknown) => ordenes.find((orden) => orden.id === String(id))
+
+const nextOrdenId = () => String(Math.max(0, ...ordenes.map((orden) => Number(orden.id))) + 1)
+
+const listOrden = (orden: OrdenFumigacion): OrdenFumigacionListItem => ({
+  id: orden.id,
+  estancia_id: orden.estancia_id,
+  nombre_estancia: orden.nombre_estancia,
+  nombre_lote: orden.nombre_lote,
+  estado_orden: orden.estado_orden,
+  hectareas: orden.hectareas,
+  hectareas_reales: orden.hectareas_reales,
+  created_at_locale: orden.created_at_locale,
+  creator: orden.creator,
+  cultivo: orden.cultivo,
+  lotes: orden.lotes,
+  facturas: orden.facturas,
+  maquinista: orden.maquinista,
+  fecha_trabajo_ddmmyyyy: orden.fecha_trabajo_ddmmyyyy,
+})
+
+const normalizePayloadToOrden = (
+  payload: OrdenFumigacionRequestBody['orden_fumigacion'] = {},
+  existingOrden?: OrdenFumigacion,
+): OrdenFumigacion => {
+  const id = existingOrden?.id ?? nextOrdenId()
+  const estanciaId = String(payload.estancia_id ?? existingOrden?.estancia_id ?? '1')
+  const cultivoId = payload.cultivo_id ? String(payload.cultivo_id) : existingOrden?.cultivo?.id
+  const payloadLotes = Array.isArray(payload.lotes) ? payload.lotes : existingOrden?.lotes ?? []
+
+  return {
+    id,
+    estancia_id: estanciaId,
+    nombre_estancia: existingOrden?.nombre_estancia ?? `Estancia ${estanciaId}`,
+    nombre_lote: existingOrden?.nombre_lote ?? 'Lote Uno',
+    estado_orden: existingOrden?.estado_orden ?? 'activa',
+    hectareas: existingOrden?.hectareas ?? 10,
+    created_at_locale: existingOrden?.created_at_locale ?? '01/01/2025',
+    creator: existingOrden?.creator ?? 'Tester',
+    sensible: payload.sensible ?? existingOrden?.sensible ?? false,
+    comentarios: payload.comentarios ?? existingOrden?.comentarios ?? '',
+    cultivo: cultivoId ? { id: cultivoId, nombre: cultivoId === '1' ? 'Soja' : 'Trigo' } : existingOrden?.cultivo,
+    lotes: payloadLotes.map((lote, index) => ({
+      id: String(lote.id ?? existingOrden?.lotes[index]?.id ?? `${id}${index + 1}`),
+      lote_id: String(lote.lote_id),
+      nombre: existingOrden?.lotes[index]?.nombre ?? `Lote ${lote.lote_id}`,
+      hectareas: existingOrden?.lotes[index]?.hectareas ?? 10,
+      hectareas_reales: lote.hectareas_reales ?? existingOrden?.lotes[index]?.hectareas_reales,
+      dosis: (lote.dosis ?? existingOrden?.lotes[index]?.dosis ?? []).map((dosis, dosisIndex) => ({
+        id: String(dosis.id ?? existingOrden?.lotes[index]?.dosis[dosisIndex]?.id ?? `${id}${index + 1}${dosisIndex + 1}`),
+        producto_id: String(dosis.producto_id),
+        producto: existingOrden?.lotes[index]?.dosis[dosisIndex]?.producto ?? `Producto ${dosis.producto_id}`,
+        cantidad: Number(dosis.cantidad),
+        unidad_medida: existingOrden?.lotes[index]?.dosis[dosisIndex]?.unidad_medida,
+      })),
+    })),
+    facturas: existingOrden?.facturas ?? [],
+    maquinista: existingOrden?.maquinista,
+    fecha_trabajo: existingOrden?.fecha_trabajo,
+    fecha_trabajo_ddmmyyyy: existingOrden?.fecha_trabajo_ddmmyyyy,
+    datos_clima: existingOrden?.datos_clima ?? '',
+    info_trabajo: existingOrden?.info_trabajo ?? '',
+    orden_url: existingOrden?.orden_url ?? null,
+    orden_pdf_fecha_creacion: existingOrden?.orden_pdf_fecha_creacion ?? null,
+    adjuntos: existingOrden?.adjuntos ?? [],
+  }
+}
+
+export const ordenFumigacionHandlers = [
+  http.get(`${API_URL}/ordenes_fumigacion`, ({ request }) => {
+    const url = new URL(request.url)
+    const estado = url.searchParams.get('estado')
+    const estanciaId = url.searchParams.get('estancia_id')
+    const cultivoId = url.searchParams.get('cultivo_id')
+
+    const filteredOrdenes = ordenes.filter((orden) => {
+      if (estado && orden.estado_orden !== estado) return false
+      if (estanciaId && orden.estancia_id !== estanciaId) return false
+      if (cultivoId && orden.cultivo?.id !== cultivoId) return false
+      return true
     })
+
+    return HttpResponse.json(filteredOrdenes.map(listOrden))
+  }),
+
+  http.get(`${API_URL}/ordenes_fumigacion/:id`, ({ params }) => {
+    const orden = findOrden(params.id)
+
+    if (!orden) {
+      return HttpResponse.json({ error: 'Orden de fumigación no encontrada' }, { status: 404 })
+    }
+
+    return HttpResponse.json(orden)
+  }),
+
+  http.post(`${API_URL}/ordenes_fumigacion`, async ({ request }) => {
+    const body = await request.json() as OrdenFumigacionRequestBody
+    const orden = normalizePayloadToOrden(body.orden_fumigacion)
+
+    ordenes = [...ordenes, orden]
+
+    return HttpResponse.json(orden, { status: 201 })
+  }),
+
+  http.patch(`${API_URL}/ordenes_fumigacion/:id`, async ({ params, request }) => {
+    const orden = findOrden(params.id)
+
+    if (!orden) {
+      return HttpResponse.json({ error: 'Orden de fumigación no encontrada' }, { status: 404 })
+    }
+
+    const body = await request.json() as OrdenFumigacionRequestBody
+    const updatedOrden = normalizePayloadToOrden(body.orden_fumigacion, orden)
+
+    ordenes = ordenes.map((currentOrden) => (
+      currentOrden.id === String(params.id) ? updatedOrden : currentOrden
+    ))
+
+    return HttpResponse.json(updatedOrden)
+  }),
+
+  http.delete(`${API_URL}/ordenes_fumigacion/:id`, ({ params }) => {
+    const orden = findOrden(params.id)
+
+    if (!orden) {
+      return HttpResponse.json({ error: 'Orden de fumigación no encontrada' }, { status: 404 })
+    }
+
+    ordenes = ordenes.filter((currentOrden) => currentOrden.id !== String(params.id))
+
+    return new HttpResponse(null, { status: 204 })
   }),
 ]
