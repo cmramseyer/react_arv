@@ -114,7 +114,7 @@ describe('Adjuntos list', () => {
   })
 
   // add request spy or request recorder
-  it.skip('open delete modal, click Si', async () => {
+  it('open delete modal, click Si', async () => {
 
     renderWithQueryClient(
       <MemoryRouter>
