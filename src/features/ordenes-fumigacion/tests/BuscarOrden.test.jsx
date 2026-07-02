@@ -41,7 +41,7 @@ describe('BuscarOrden', () => {
     getOrdenesFumigacion.mockReset()
   })
 
-  it.skip('envia todos los filtros seleccionados', async () => {
+  it('envia todos los filtros seleccionados', async () => {
     const user = userEvent.setup()
 
     getEstancias.mockResolvedValueOnce([{ id: 1, nombre: 'Estancia Uno' }])
