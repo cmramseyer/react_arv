@@ -33,6 +33,11 @@ const renderWithQueryClient = (ui) => {
   )
 }
 
+function LocationDisplay() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname}</div>
+}
+
 let user
 
 describe('ProductoList', () => {
@@ -56,7 +61,24 @@ describe('ProductoList', () => {
     expect(screen.getByRole('columnheader', { name: 'Tipo' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Unidad' })).toBeInTheDocument()
   })
-  it.skip('deletes product', async () => {
+
+  it('navigates to edit page when clicking edit', async () => {
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/productos']}>
+        <ProductoList />
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    const roundupCell = await screen.findByText('Roundup')
+    const row = roundupCell.closest('tr')
+
+    await user.click(within(row).getByRole('button', { name: /editar/i }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/productos/1/edit')
+  })
+
+  it('deletes product from the table', async () => {
 
     renderWithQueryClient(
       <MemoryRouter>
@@ -64,17 +86,17 @@ describe('ProductoList', () => {
       </MemoryRouter>
     )
 
-    await screen.findByText('Roundup')
-    await screen.findByText('2-4D')
-    await screen.findByText('litros')
-    await screen.findByText('kg')
+    const roundupCell = await screen.findByText('Roundup')
+    expect(screen.getByText('2-4D')).toBeInTheDocument()
 
-    const roundupCell = await screen.findByText("Roundup")
-    const row = roundupCell.closest("tr")
-    await user.click(within(row).getByRole("button", { name: /eliminar/i }))
+    const row = roundupCell.closest('tr')
+    await user.click(within(row).getByRole('button', { name: /eliminar/i }))
 
-    expect(screen.getByRole('columnheader', { name: 'Tipo' })).toBeInTheDocument()
-    expect(screen.getByRole('columnheader', { name: 'Unidad' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Roundup')).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText('2-4D')).toBeInTheDocument()
   })
 
 })
