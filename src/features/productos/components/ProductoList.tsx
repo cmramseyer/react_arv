@@ -30,7 +30,7 @@ export default function ProductoList() {
 
   }
 
-  if (isLoading) { return <div>Cargando...</div> }
+  if (isLoading || !data) { return <div>Cargando...</div> }
   if (isError) { return <div>Error: {error.message}</div> }
 
   return (
