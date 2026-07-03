@@ -28,7 +28,7 @@ type OrdenFumigacionEditFormProps = {
 
 type OrdenFumigacionCreateFormProps = {
   formAction: 'create',
-  ordenId: never
+  ordenId?: never
 }
 
 type OrdenFumigacionFormProps = OrdenFumigacionCreateFormProps | OrdenFumigacionEditFormProps
