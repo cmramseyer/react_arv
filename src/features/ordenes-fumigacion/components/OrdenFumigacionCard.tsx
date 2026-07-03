@@ -243,7 +243,9 @@ export default function OrdenFumigacionCard({ orden, onVerOrden, onTerminar }: O
       </CardContent>
 
       <CardFooter className="flex justify-end">
-        <Button onClick={() => onTerminar(orden.id)}>Terminar orden</Button>
+        {onTerminar && !isTerminada ? (
+          <Button onClick={() => onTerminar(orden.id)}>Terminar orden</Button>
+        ) : null}
         <Button onClick={() => onVerOrden(orden.id)}>Ver orden</Button>
       </CardFooter>
     </Card>
