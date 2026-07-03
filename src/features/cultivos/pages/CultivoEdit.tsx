@@ -4,6 +4,8 @@ import CultivoForm from '@/features/cultivos/components/CultivoForm'
 
 export default function CultivoEdit() {
   const { id } = useParams()
+
+  if(!id) { return <div>Error</div> }
   
   return (
     <div>
