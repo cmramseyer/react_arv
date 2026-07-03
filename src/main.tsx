@@ -1,4 +1,4 @@
-import { React } from 'react'
+import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import App from './App'
@@ -34,7 +34,11 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 
 const queryClient = new QueryClient()
 
-createRoot(document.getElementById('root')).render(
+const root = document.getElementById('root')
+
+if (!root) { throw new Error("No root found") }
+
+createRoot(root).render(
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrowserRouter>
