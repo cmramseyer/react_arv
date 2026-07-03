@@ -12,12 +12,11 @@ import {
 } from '@/components/ui/select'
 
 import { useMaquinistasQuery } from "@/features/maquinistas/hooks/useMaquinistaQuery";
-import type { EntityId } from '@/utils/types'
+import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 
 type OrdenFumigacionEditFormProps = {
-  control: Control
+  control: Control<OrdenFumigacionFormValues>
   estadoOrden: string,
-  ordenId: EntityId
 }
 
 export default function OrdenFumigacionEditForm({control, estadoOrden}: OrdenFumigacionEditFormProps) {
@@ -108,7 +107,7 @@ export default function OrdenFumigacionEditForm({control, estadoOrden}: OrdenFum
               ) : (
                 <Input
                   value={
-                    maquinistas.find((m) => m.id == field.value)?.nombre ||
+                    maquinistas.find((m) => String(m.id) === String(field.value))?.nombre ||
                     "No asignado"
                   }
                   disabled

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
+import type { Control, Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -36,7 +37,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
   const isEdit = formAction === 'edit'
 
   const form = useForm<OrdenFumigacionFormValues>({
-    resolver: zodResolver(ordenFumigacionSchema),
+    resolver: zodResolver(ordenFumigacionSchema) as Resolver<OrdenFumigacionFormValues>,
     defaultValues: {
       estancia_id: '',
       cultivo_id: '',
@@ -210,7 +211,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
                       label="Lote"
                       options={lotes}
                       getOptionLabel={(lote) => {
-                        const nombre = lote.nombre_lote || lote.nombre || 'Sin nombre'
+                        const nombre = lote.nombre || 'Sin nombre'
                         return `${nombre} - ${formatHectareas(lote.hectareas)}`
                       }}
                     />
@@ -240,7 +241,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
             />
 
             <DosisFields
-              control={control}
+              control={control as unknown as Control}
               productos={productos}
               name={`lotes.${index}.dosis`}
               showNuevoProductoButton
