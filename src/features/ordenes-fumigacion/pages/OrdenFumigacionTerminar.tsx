@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import type { EntityId } from '@/utils/types'
 
 type OrdenFumigacionTerminarProps = {
-  selectedOrdenId: EntityId,
+  selectedOrdenId: EntityId | null,
   isTerminarDialogOpen: boolean,
   setIsTerminarDialogOpen: (flag: boolean) => void,
   onOpenChange?: (flag: boolean) => void,
@@ -29,7 +29,6 @@ export default function OrdenFumigacionTerminar({
   selectedOrdenId,
   isTerminarDialogOpen,
   setIsTerminarDialogOpen,
-  onOpenChange,
   onSuccess,
 }: OrdenFumigacionTerminarProps) {
   const { register, handleSubmit, reset, control } = useForm({
@@ -64,6 +63,7 @@ export default function OrdenFumigacionTerminar({
   }, [ordenFumigacionQuery.data, reset]);
 
   const handleTerminar = async (data) => {
+    if(!selectedOrdenId) return
     const payload = {
       orden_fumigacion: {
         datos_clima: data.datos_clima || "",
