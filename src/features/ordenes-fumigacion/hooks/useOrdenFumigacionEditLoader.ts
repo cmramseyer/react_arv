@@ -12,6 +12,7 @@ import { Estancia } from '@/features/estancias/types'
 import { Producto } from '@/features/productos/types'
 import { Cultivo } from '@/features/cultivos/types'
 import { Lote } from '@/features/lotes/types'
+import { MaybeEntityId } from '@/utils/types'
 
 type EditLoaderResponse = {
   isReady: boolean,
@@ -34,7 +35,7 @@ type EditLoaderResponse = {
   }
 }
 
-export function useOrdenFumigacionEditLoader(ordenId: OrdenFumigacionId): EditLoaderResponse {
+export function useOrdenFumigacionEditLoader(ordenId: MaybeEntityId): EditLoaderResponse {
   const ordenFumigacionQuery = useOrdenFumigacionQuery(ordenId, Boolean(ordenId))
   const estanciasQuery = useEstanciasQuery()
   const productosQuery = useProductosQuery()
@@ -52,7 +53,7 @@ export function useOrdenFumigacionEditLoader(ordenId: OrdenFumigacionId): EditLo
   )
 
   const initialValues = useMemo(() => {
-    if (!isReady) return null
+    if (!isReady || !ordenFumigacionQuery.data) return null
     return ordenToForm(ordenFumigacionQuery.data)
   }, [isReady, ordenFumigacionQuery.data])
 

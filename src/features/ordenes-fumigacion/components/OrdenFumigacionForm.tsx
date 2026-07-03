@@ -19,9 +19,21 @@ import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoa
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
 import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
+import type { EntityId } from '@/utils/types'
 
+type OrdenFumigacionEditFormProps = {
+  formAction: 'edit',
+  ordenId: EntityId
+}
 
-export default function OrdenFumigacionForm({ formAction, ordenId }) {
+type OrdenFumigacionCreateFormProps = {
+  formAction: 'create',
+  ordenId: never
+}
+
+type OrdenFumigacionFormProps = OrdenFumigacionCreateFormProps | OrdenFumigacionEditFormProps
+
+export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumigacionFormProps) {
   const isEdit = formAction === 'edit'
 
   const form = useForm<OrdenFumigacionFormValues>({
@@ -73,6 +85,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     if (!isEdit) return;
     if (!isReady) return;
     if (initializedRef.current) return;
+    if (!initialValues) return;
     form.reset(initialValues);
     initializedRef.current = true;
   }, [isEdit, isReady, initialValues, form]);
@@ -274,8 +287,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
       <ProductoNuevoDialog
         isNuevoProductoOpen={isNuevoProductoOpen}
-        onClose={() => setIsNuevoProductoOpen(false)}
-        onCreate={handleCreateProducto}
         onProductoOpen={handleProductoOpen}
       />
     </Form>
