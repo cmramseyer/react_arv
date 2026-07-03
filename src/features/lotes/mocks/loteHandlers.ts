@@ -49,7 +49,7 @@ const findLoteById = (id: unknown) => lotes.find((lote) => String(lote.id) === S
 
 const nextLoteId = () => Math.max(0, ...lotes.map((lote) => Number(lote.id))) + 1
 
-const estanciaName = (estanciaId: FormDataEntryValue | null) => {
+const estanciaName = (estanciaId: number | string | FormDataEntryValue | null) => {
   if (String(estanciaId) === '2') return 'Estancia Dos'
   return 'Estancia Uno'
 }
