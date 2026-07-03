@@ -20,14 +20,14 @@ export const mapOrdenFumigacionFormValuesToPayload = (
               .map((dosis) => ({
                 id: dosis.orden_lote_dosis_id || null,
                 producto_id: dosis.producto_id,
-                cantidad: dosis.cantidad,
+                cantidad: Number(dosis.cantidad),
               })),
           }
 
           if (lote.hectareas_reales !== null && lote.hectareas_reales !== undefined) {
             return {
               ...loteData,
-              hectareas_reales: lote.hectareas_reales,
+              hectareas_reales: Number(lote.hectareas_reales),
             }
           }
 
