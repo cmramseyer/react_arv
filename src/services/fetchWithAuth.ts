@@ -1,9 +1,9 @@
 import { logoutAndRedirect } from './authHelpers'
-import { refreshToken } from './refreshService'
+import { refreshToken, type TokenResponse } from './refreshService'
 
 type FetchWithAuthOptions = RequestInit & { retryOnUnauthorized?: boolean }
 
-let refreshPromise = null
+let refreshPromise: Promise<TokenResponse> | null = null
 
 const getRefreshedToken = async () => {
   if (!refreshPromise) {

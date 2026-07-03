@@ -1,6 +1,6 @@
 const API_URL = `http://${import.meta.env.VITE_API_URL}`
 
-type TokenResponse = string | undefined
+export type TokenResponse = string | undefined
 
 export const refreshToken = async (): Promise<TokenResponse> => {
   const response = await fetch(`${API_URL}/refresh`, {
