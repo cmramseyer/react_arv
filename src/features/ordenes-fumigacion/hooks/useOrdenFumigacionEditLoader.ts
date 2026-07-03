@@ -6,7 +6,6 @@ import { useCultivosQuery } from '@/features/cultivos/hooks/useCultivoQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { ordenToForm } from '../mappers/ordenToForm'
 
-import { OrdenFumigacionId } from '@/features/ordenes-fumigacion/types'
 import { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import { Estancia } from '@/features/estancias/types'
 import { Producto } from '@/features/productos/types'
