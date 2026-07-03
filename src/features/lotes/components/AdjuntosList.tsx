@@ -1,4 +1,4 @@
-import React, {useReducer} from 'react'
+import React, {useReducer, useRef} from 'react'
 import { Button } from '@/components/ui/button'
 import { useAdjuntoLoteQuery, useAdjuntoLoteMutation } from '@/features/lotes/hooks/useAdjuntoLoteQuery'
 
@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-
 
 const adjuntosDialogReducer = (state, action) => {
   switch (action.type) {
@@ -30,11 +29,7 @@ const adjuntosDialogReducer = (state, action) => {
   }
 }
 
-
-
-
 export function AdjuntosList({loteId}) {
-
 
   const adjuntosLoteQuery = useAdjuntoLoteQuery(loteId)
 
@@ -78,6 +73,8 @@ export function AdjuntosList({loteId}) {
       adjuntosDialogDispatch({ type: 'SET_ADJUNTO_TO_DELETE', payload: null })
     }
   }
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const handleUploadAdjuntoLote = async () => {
     if (!selectedFile) return
@@ -89,7 +86,9 @@ export function AdjuntosList({loteId}) {
       // lotesDispatch({ type: 'SET_LOTE', payload: updatedLote })
       adjuntosDialogDispatch({ type: 'SET_SELECTED_FILE', payload: null })
       // Reset input
-      document.getElementById('file-input').value = ''
+      if(fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     } catch (error) {
       alert('Error al subir adjunto')
       console.error(error)
@@ -126,15 +125,16 @@ export function AdjuntosList({loteId}) {
         ))}
       </ul>
       <input
+        ref={fileInputRef}
         type="file"
         id="file-input"
         style={{ display: 'none' }}
-        onChange={(e) => adjuntosDialogDispatch({ type: 'SET_SELECTED_FILE', payload: e.target.files[0] })}
+        onChange={(e) => adjuntosDialogDispatch({ type: 'SET_SELECTED_FILE', payload: e.target.files?.[0] ?? null })}
       />
       <Button
         type="button"
         variant="outline"
-        onClick={selectedFile ? handleUploadAdjuntoLote : () => document.getElementById('file-input').click()}
+        onClick={selectedFile ? handleUploadAdjuntoLote : () => fileInputRef.current?.click()}
         disabled={uploading}
       >
         {uploading ? 'Subiendo...' : selectedFile ? 'Subir plano' : 'Agregar plano'}
