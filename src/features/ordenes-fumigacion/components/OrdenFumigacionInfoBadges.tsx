@@ -1,10 +1,10 @@
 import React from "react";
 import IconLabelBadge from "@/components/IconLabelBadge";
 import { formatDate, joinWith } from "@/utils/formatHectareas";
-import type { OrdenFumigacionListItem } from "../types";
+import type { OrdenFumigacion } from "../types";
 
 type OrdenFumigacionInfoBadgesProps = {
-  orden: OrdenFumigacionListItem
+  orden: OrdenFumigacion
 }
 
 export default function OrdenFumigacionInfoBadges({ orden }: OrdenFumigacionInfoBadgesProps) {
@@ -30,7 +30,7 @@ export default function OrdenFumigacionInfoBadges({ orden }: OrdenFumigacionInfo
         </div>
       ) : null}
 
-      {orden && orden.facturas.length > 0 ? (
+      {orden && orden.facturas && orden.facturas.length > 0 ? (
         <div className="space-y-1 text-sm text-muted-foreground">
           <div className="text-sm font-medium text-foreground">Facturacion</div>
           <ul className="space-y-2">

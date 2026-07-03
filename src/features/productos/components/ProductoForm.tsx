@@ -75,6 +75,7 @@ export default function ProductoForm({ formAction, id, onSuccess }: ProductoForm
   }
 
   const handleUpdate = async (payload: ProductoFormValues) => {
+    if(!id) return
     try {
       await updateMutation.mutateAsync({id, payload})
       navigate('/productos')

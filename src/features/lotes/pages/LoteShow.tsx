@@ -10,15 +10,17 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { formatHectareas } from '@/utils/formatHectareas'
+import type { AdjuntoLote, Lote } from '@/features/lotes/types'
 
 export default function LoteShow() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [lote, setLote] = useState(null)
+  const [lote, setLote] = useState<Lote>()
   const [modalOpen, setModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState(null)
+  const [selectedImage, setSelectedImage] = useState<AdjuntoLote>()
 
   useEffect(() => {
+    if(!id) return
     getLote(id).then(setLote)
   }, [id])
 
@@ -30,7 +32,7 @@ export default function LoteShow() {
       <p>Lat: {lote.lat}</p>
       <p>Long: {lote.long}</p>
       <p>Hectáreas: {formatHectareas(lote.hectareas)}</p>
-      <p>Link mapa: <a href={lote.link_mapa} className="text-blue-500 underline">{lote.link_mapa}</a></p>
+      <p>Link mapa: <a href={lote.link_mapa ?? ''} className="text-blue-500 underline">{lote.link_mapa}</a></p>
       <h3 className="mt-4 font-semibold">Adjuntos:</h3>
       <ul className="list-disc pl-6">
         {lote.adjuntos?.map((adj, idx) => (

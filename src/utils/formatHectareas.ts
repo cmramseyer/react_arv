@@ -5,17 +5,13 @@ type ParsedImporte = number | null
 type ParsedHectareas = number | null
 
 type SelectedLotes = { 
-  id: string | number,
-  lote_id: string | number,
-  hectareas: number | string,
-  hectareas_reales: number | string
+  lote_id?: string | number,
+  hectareas_reales?: number | string | null
 }
 
 type LotesDisponibles = {
   id: string | number,
-  lote_id: string | number,
-  hectareas: number | string,
-  hectareas_reales: number | string
+  hectareas?: number | string | null
 }
 
 type JoinString = string | null | undefined

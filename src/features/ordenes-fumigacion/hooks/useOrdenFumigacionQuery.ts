@@ -5,7 +5,6 @@ import {
   getAdjuntosOrden,
   imprimirOrdenFumigacion,
   getOrdenesPendientesFacturacion,
-  facturarOrdenes,
   createOrdenFumigacion,
   updateOrdenFumigacion,
   deleteOrdenFumigacion,
@@ -13,30 +12,28 @@ import {
 
 import type {
   OrdenFumigacion,
-  OrdenFumigacionId,
   OrdenFumigacionFilters,
   OrdenFumigacionAdjunto,
   OrdenFumigacionPayload,
   OrdenFumigacionTerminarPayload,
-  OrdenFumigacionListItem
 } from '@/features/ordenes-fumigacion/types'
-import type { MaybeEntityId } from '@/utils/types'
+import type { EntityId, MaybeEntityId } from '@/utils/types'
 import { hasId } from '@/utils/types'
 
 type UpdateOrdenFumigacionMutationVariables = {
-  id: OrdenFumigacionId,
+  id: EntityId,
   payload: OrdenFumigacionPayload
 }
 
 type TerminarOrdenFumigacionMutationVariables = {
-  id: OrdenFumigacionId,
+  id: EntityId,
   payload: OrdenFumigacionTerminarPayload
 }
 
 export const ordenesFumigacionQueryKey = (filters?: OrdenFumigacionFilters) => ['ordenesFumigacion', filters] as const
-export const ordenFumigacionQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacion', ordenId] as const
-export const ordenFumigacionAdjuntosQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacionAdjuntos', ordenId] as const
-export const ordenFumigacionImprimirQueryKey = (ordenId: OrdenFumigacionId) => ['ordenFumigacionImprimir', ordenId] as const
+export const ordenFumigacionQueryKey = (ordenId: EntityId) => ['ordenFumigacion', ordenId] as const
+export const ordenFumigacionAdjuntosQueryKey = (ordenId: EntityId) => ['ordenFumigacionAdjuntos', ordenId] as const
+export const ordenFumigacionImprimirQueryKey = (ordenId: EntityId) => ['ordenFumigacionImprimir', ordenId] as const
 export const ordenesPendientesFacturacionQueryKey = () => ['ordenesPendientesFacturacion'] as const
 
 // GET /ordenes_fumigacion

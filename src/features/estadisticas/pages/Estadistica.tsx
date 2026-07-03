@@ -3,6 +3,7 @@ import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns'
 import { useEstadisticasQuery } from '../hooks/useEstadisticasQuery'
 import EstadisticaFilter from '@/features/estadisticas/components/EstadisticaFilter'
 import EstadisticaCard from '@/features/estadisticas/components/EstadisticaCard'
+import type { DateRange } from 'react-day-picker'
 
 // TODO: one query per chart
 
@@ -32,7 +33,7 @@ const formatDisplayDate = (date) => format(date, 'dd/MM/yyyy')
 
 
 export default function Estadistica() {
-  const [range, setRange] = useState()
+  const [range, setRange] = useState<DateRange>()
 
   const estadisticasQuery = useEstadisticasQuery(
     {
@@ -90,7 +91,7 @@ export default function Estadistica() {
     })
   }
 
-  
+  const loading = estadisticasQuery.isLoading
 
   return (
     <div className="p-4 space-y-4">
@@ -123,6 +124,7 @@ export default function Estadistica() {
       {estadisticasQuery.data && hasCharts && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <EstadisticaCard
+            loading={loading}
             title="Hectáreas por propietario"
             data={propietarioData}
             dataKey="hectareas"
@@ -130,6 +132,7 @@ export default function Estadistica() {
           />
 
           <EstadisticaCard
+            loading={loading}
             title="Hectáreas por maquinista"
             data={maquinistaData}
             dataKey="hectareas"
@@ -137,6 +140,7 @@ export default function Estadistica() {
           />
 
           <EstadisticaCard
+            loading={loading}
             title="Hectáreas por cultivo"
             data={cultivoData}
             dataKey="hectareas"

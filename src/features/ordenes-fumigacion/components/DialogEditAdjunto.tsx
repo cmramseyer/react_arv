@@ -38,6 +38,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import type { ReactCropperElement } from 'react-cropper'
 
 const DEFAULT_MARKER_COLOR = '#ffeb3b'
 const DEFAULT_INK_COLOR = '#111111'
@@ -150,6 +151,19 @@ const buildFontSize = (value) => ({
   step: DEFAULT_TEXT_FONT_STEP,
 })
 
+type overridesProps = {
+  color?: string | undefined,
+  opacity?: number | undefined,
+  fontFamily?: string | undefined,
+  fontSize?: number | undefined,
+  width?: number | undefined
+}
+
+type Point = {
+  x: number
+  y: number
+}
+
 export default function DialogEditAdjunto({ ordenId, adjunto, onClose, onSaved, onSavingChange }) {
   const isOpen = Boolean(adjunto)
   const [markerColor, setMarkerColor] = useState(DEFAULT_MARKER_COLOR)
@@ -192,21 +206,21 @@ export default function DialogEditAdjunto({ ordenId, adjunto, onClose, onSaved, 
   const [editingImageDataUrl, setEditingImageDataUrl] = useState('')
   const [isSavingAdjunto, setIsSavingAdjunto] = useState(false)
   const markerZoomLevelRef = useRef(1)
-  const [markerAreaContainer, setMarkerAreaContainer] = useState(null)
-  const markerAreaRef = useRef(null)
-  const markerTargetImageRef = useRef(null)
-  const markerObjectUrlRef = useRef(null)
-  const markerTextInputRef = useRef(null)
+  const [markerAreaContainer, setMarkerAreaContainer] = useState<HTMLDivElement | null>(null)
+  const markerAreaRef = useRef<MarkerArea | null>(null)
+  const markerTargetImageRef = useRef<HTMLImageElement | null>(null)
+  const markerObjectUrlRef = useRef<string | null>(null)
+  const markerTextInputRef = useRef<HTMLInputElement | null>(null)
   const activeMarkerToolRef = useRef('select')
   const highlighterPresetRef = useRef(highlighterPreset)
   const freehandPresetRef = useRef(freehandPreset)
   const textPresetRef = useRef(textPreset)
   const pinchPointersRef = useRef(new Map())
-  const pinchStartDistanceRef = useRef(null)
-  const pinchCenterRef = useRef(null)
-  const singlePanPointerIdRef = useRef(null)
-  const singlePanLastPointRef = useRef(null)
-  const cropperRef = useRef(null)
+  const pinchStartDistanceRef = useRef<number | null>(null)
+  const pinchCenterRef = useRef<Point | null>(null)
+  const singlePanPointerIdRef = useRef<number | null>(null)
+  const singlePanLastPointRef = useRef<Point | null>(null)
+  const cropperRef = useRef<ReactCropperElement | null>(null)
 
   const setMarkerTool = useCallback((nextTool) => {
     activeMarkerToolRef.current = nextTool
@@ -410,7 +424,7 @@ export default function DialogEditAdjunto({ ordenId, adjunto, onClose, onSaved, 
     }
   }
 
-  const applyTextStyleToEditor = (markerEditor, overrides = {}) => {
+  const applyTextStyleToEditor = (markerEditor, overrides: overridesProps = {}) => {
     if (!isTextMarkerEditor(markerEditor)) return
     if (overrides.color !== undefined) {
       markerEditor.marker.color = overrides.color
@@ -429,7 +443,7 @@ export default function DialogEditAdjunto({ ordenId, adjunto, onClose, onSaved, 
     markerEditor.marker.opacity = DEFAULT_TEXT_OPACITY
   }
 
-  const applyMarkerSettings = (markerEditor, overrides = {}) => {
+  const applyMarkerSettings = (markerEditor, overrides: overridesProps = {}) => {
     if (!markerEditor) return
     const nextColor = overrides.color ?? markerColor
     const nextWidth = overrides.width ?? markerWidth

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
+import type { Control, Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -13,19 +14,30 @@ import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDi
 import OrdenFumigacionEditForm from '@/features/ordenes-fumigacion/components/OrdenFumigacionEditForm'
 
 import { useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery'
-import { useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
 import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
+import type { EntityId } from '@/utils/types'
 
+type OrdenFumigacionEditFormProps = {
+  formAction: 'edit',
+  ordenId: EntityId
+}
 
-export default function OrdenFumigacionForm({ formAction, ordenId }) {
+type OrdenFumigacionCreateFormProps = {
+  formAction: 'create',
+  ordenId?: never
+}
+
+type OrdenFumigacionFormProps = OrdenFumigacionCreateFormProps | OrdenFumigacionEditFormProps
+
+export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumigacionFormProps) {
   const isEdit = formAction === 'edit'
 
   const form = useForm<OrdenFumigacionFormValues>({
-    resolver: zodResolver(ordenFumigacionSchema),
+    resolver: zodResolver(ordenFumigacionSchema) as Resolver<OrdenFumigacionFormValues>,
     defaultValues: {
       estancia_id: '',
       cultivo_id: '',
@@ -59,7 +71,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
   )
   const lotes = isEdit ? editLotes : createLotesQuery.data || []
 
-  const { createMutation: createProductoMutation } = useProductosMutation()
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
@@ -73,6 +84,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
     if (!isEdit) return;
     if (!isReady) return;
     if (initializedRef.current) return;
+    if (!initialValues) return;
     form.reset(initialValues);
     initializedRef.current = true;
   }, [isEdit, isReady, initialValues, form]);
@@ -95,16 +107,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
       navigate('/ordenes_fumigacion')
      } catch(error) {
       console.log("error catch")
-      console.log(error)
-    }
-  }
-
-  const handleCreateProducto = async (data) => {
-    try {
-      await createProductoMutation.mutateAsync(data)
-      setIsNuevoProductoOpen(false)
-    } catch(error) {
-      console.log('error catch create producto')
       console.log(error)
     }
   }
@@ -209,7 +211,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
                       label="Lote"
                       options={lotes}
                       getOptionLabel={(lote) => {
-                        const nombre = lote.nombre_lote || lote.nombre || 'Sin nombre'
+                        const nombre = lote.nombre || 'Sin nombre'
                         return `${nombre} - ${formatHectareas(lote.hectareas)}`
                       }}
                     />
@@ -239,7 +241,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
             />
 
             <DosisFields
-              control={control}
+              control={control as unknown as Control}
               productos={productos}
               name={`lotes.${index}.dosis`}
               showNuevoProductoButton
@@ -274,8 +276,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }) {
 
       <ProductoNuevoDialog
         isNuevoProductoOpen={isNuevoProductoOpen}
-        onClose={() => setIsNuevoProductoOpen(false)}
-        onCreate={handleCreateProducto}
         onProductoOpen={handleProductoOpen}
       />
     </Form>

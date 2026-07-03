@@ -4,12 +4,13 @@ import { useOrdenesFumigacionQuery } from "../hooks/useOrdenFumigacionQuery";
 import { Button } from "@/components/ui/button";
 import OrdenFumigacionCard from "@/features/ordenes-fumigacion/components/OrdenFumigacionCard";
 import OrdenFumigacionTerminar from "./OrdenFumigacionTerminar";
+import type { EntityId } from '@/utils/types'
 
 export default function OrdenesFumigacion() {
   const navigate = useNavigate();
   const [estadoOrdenSeleccionada, setEstadoOrdenSeleccionada] =
     useState("activa");
-  const [selectedOrdenId, setSelectedOrdenId] = useState(null);
+  const [selectedOrdenId, setSelectedOrdenId] = useState<EntityId | null>(null);
   const [isTerminarDialogOpen, setIsTerminarDialogOpen] = useState(false);
 
   const ordenesFumigacionQuery = useOrdenesFumigacionQuery({

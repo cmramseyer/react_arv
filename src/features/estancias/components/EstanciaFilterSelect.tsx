@@ -22,7 +22,7 @@ export default function EstanciaFilterSelect({ estancias, selectedEstanciaId, on
 
   return (
     <>
-      <Select value={selectedEstanciaId || 'all'} onValueChange={onSelect}>
+      <Select value={selectedEstanciaId ? String(selectedEstanciaId) : 'all'} onValueChange={onSelect}>
         <SelectTrigger className="w-[220px]">
           <SelectValue placeholder="Todas las estancias" />
         </SelectTrigger>

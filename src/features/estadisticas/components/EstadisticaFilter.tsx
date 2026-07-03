@@ -11,8 +11,8 @@ type EstadisticasFilterProps = {
   handleMesActual: () => void,
   handleMesAnterior: () => void,
   handleRangoHistorico: () => void,
-  range: DateRange,
-  setRange: () => void,
+  range: DateRange | undefined,
+  setRange?: (range: DateRange) => void,
   rangeLabel: string
 }
 

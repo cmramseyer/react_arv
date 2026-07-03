@@ -52,6 +52,7 @@ export default function CultivoForm({ formAction, id }: CultivoFormProps) {
   }
 
   const handleUpdate = async (data: CultivoFormValues) => {
+    if(!id) return
     try {
       await updateMutation.mutateAsync({id, payload: data})
       navigate('/cultivos')

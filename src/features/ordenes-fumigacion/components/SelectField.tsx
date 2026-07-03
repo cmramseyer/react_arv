@@ -11,28 +11,33 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { Estancia } from '@/features/estancias/types'
-import { Lote } from '@/features/lotes/types'
-
 type SelectFieldProps<
     TFieldValues extends FieldValues, 
-    TName extends Path<TFieldValues>
+    TName extends Path<TFieldValues>,
+    TOption extends SelectFieldOptionType
   > = {
   field: ControllerRenderProps<TFieldValues, TName >,
   label: string,
-  options: SelectFieldOptionType[],
+  options: TOption[],
   className?: string,
-  getOptionLabel: (entity: SelectFieldOptionType) => string
+  getOptionLabel?: (entity: TOption) => string
 }
 
-type SelectFieldOptionType = Estancia | Lote
+type SelectFieldOptionType = {
+  id: number | string
+  nombre?: string
+}
 
-export default function SelectField({ field, label, options, className = '', getOptionLabel }: SelectFieldProps) {
+export default function SelectField<
+  TFieldValues extends FieldValues,
+  TName extends Path<TFieldValues>,
+  TOption extends SelectFieldOptionType
+>({ field, label, options, className = '', getOptionLabel }: SelectFieldProps<TFieldValues, TName, TOption>) {
 
   console.log("selectfield", { field, label, options })
 
   // Generic function to get the name of the options
-  const getLabel = getOptionLabel || ((option: SelectFieldOptionType) => option.nombre)
+  const getLabel = getOptionLabel || ((option: TOption) => option.nombre ?? String(option.id))
 
   return (
     <Select value={field.value ?? ''} onValueChange={field.onChange}>
