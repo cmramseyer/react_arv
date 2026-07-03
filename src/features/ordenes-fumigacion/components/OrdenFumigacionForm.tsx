@@ -13,7 +13,6 @@ import ProductoNuevoDialog from '@/features/productos/components/ProductoNuevoDi
 import OrdenFumigacionEditForm from '@/features/ordenes-fumigacion/components/OrdenFumigacionEditForm'
 
 import { useOrdenFumigacionMutation } from '@/features/ordenes-fumigacion/hooks/useOrdenFumigacionQuery'
-import { useProductosMutation } from '@/features/productos/hooks/useProductoQuery'
 import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
@@ -71,7 +70,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
   )
   const lotes = isEdit ? editLotes : createLotesQuery.data || []
 
-  const { createMutation: createProductoMutation } = useProductosMutation()
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
@@ -108,16 +106,6 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
       navigate('/ordenes_fumigacion')
      } catch(error) {
       console.log("error catch")
-      console.log(error)
-    }
-  }
-
-  const handleCreateProducto = async (data) => {
-    try {
-      await createProductoMutation.mutateAsync(data)
-      setIsNuevoProductoOpen(false)
-    } catch(error) {
-      console.log('error catch create producto')
       console.log(error)
     }
   }
