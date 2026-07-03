@@ -1,13 +1,12 @@
 import type { FacturacionResponse } from '@/features/facturacion/types'
-
-export type OrdenFumigacionId = number | string
+import type { EntityId } from '@/utils/types'
 
 export type OrdenFumigacionFilters = string | null | undefined | Record<string, string | number | boolean | null | undefined>
 
 export type OrdenFumigacionAdjunto = {
-  id?: OrdenFumigacionId
-  attachment_id?: OrdenFumigacionId
-  adjunto_id?: OrdenFumigacionId
+  id?: EntityId
+  attachment_id?: EntityId
+  adjunto_id?: EntityId
   uuid?: string
   filename?: string
   name?: string
@@ -19,16 +18,16 @@ export type OrdenFumigacionAdjunto = {
 }
 
 export type OrdenFumigacionDosis = {
-  id?: OrdenFumigacionId
-  producto_id?: OrdenFumigacionId
+  id?: EntityId
+  producto_id?: EntityId
   producto?: string
   cantidad?: number | string | null
   unidad_medida?: string | null
 }
 
 export type OrdenFumigacionLote = {
-  id?: OrdenFumigacionId
-  lote_id?: OrdenFumigacionId
+  id?: EntityId
+  lote_id?: EntityId
   nombre?: string
   nombre_lote?: string
   hectareas?: number | string | null
@@ -44,7 +43,8 @@ export type OrdenFumigacionFactura = {
 }
 
 export type OrdenFumigacionListItem = {
-  id: OrdenFumigacionId
+  id: EntityId
+  estancia_id: EntityId,
   nombre_estancia?: string | null
   nombre_lote?: string | null
   estado_orden?: string | null
@@ -53,15 +53,15 @@ export type OrdenFumigacionListItem = {
   temp_lotes?: string | null
   created_at_locale?: string | null
   creator?: string | null
-  cultivo?: { id: OrdenFumigacionId; nombre: string } | null
+  cultivo?: { id: EntityId; nombre: string } | null
   lotes?: OrdenFumigacionLote[]
   facturas?: OrdenFumigacionFactura[]
-  maquinista?: { id: OrdenFumigacionId; nombre: string } | null
+  maquinista?: { id: EntityId; nombre: string } | null
   fecha_trabajo_ddmmyyyy?: string | null
 }
 
 export type OrdenFumigacion = OrdenFumigacionListItem & {
-  estancia_id?: OrdenFumigacionId
+  estancia_id?: EntityId
   sensible?: boolean
   comentarios?: string | null
   fecha_trabajo?: string | null
@@ -73,13 +73,13 @@ export type OrdenFumigacion = OrdenFumigacionListItem & {
 }
 
 export type OrdenFumigacionPayloadDosis = {
-  id: OrdenFumigacionId | null
+  id: EntityId | null
   producto_id: string
   cantidad: number
 }
 
 export type OrdenFumigacionPayloadLote = {
-  id: OrdenFumigacionId | null
+  id: EntityId | null
   lote_id: string
   dosis: OrdenFumigacionPayloadDosis[]
   hectareas_reales?: number
@@ -87,7 +87,7 @@ export type OrdenFumigacionPayloadLote = {
 
 export type OrdenFumigacionPayload = {
   orden_fumigacion: {
-    id?: OrdenFumigacionId
+    id?: EntityId
     estancia_id: string
     cultivo_id?: string
     sensible: boolean
@@ -113,7 +113,7 @@ export type ImprimirOrdenFumigacionResponse = {
 
 export type FacturarOrdenesPayload = {
   ordenes_fumigacion: Array<{
-    id: OrdenFumigacionId
+    id: EntityId
     importe: number
     nro_orden_cliente?: string
   }>
