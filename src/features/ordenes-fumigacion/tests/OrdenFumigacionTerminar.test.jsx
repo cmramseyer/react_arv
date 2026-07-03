@@ -128,8 +128,7 @@ describe('OrdenFumigacionTerminar', () => {
 
     await user.click(screen.getByRole('button', { name: /volver/i }))
 
-    expect(onOpenChange).toHaveBeenCalledWith(false)
-    expect(setIsTerminarDialogOpen).not.toHaveBeenCalled()
+    expect(setIsTerminarDialogOpen).toHaveBeenCalledWith(false)
     expect(onSuccess).not.toHaveBeenCalled()
     expect(terminarRequests).toBe(0)
   })
