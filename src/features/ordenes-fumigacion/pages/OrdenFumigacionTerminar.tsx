@@ -85,7 +85,7 @@ export default function OrdenFumigacionTerminar({
   return (
     <Dialog
       open={isTerminarDialogOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={(open) => setIsTerminarDialogOpen(open)}
     >
       <DialogContent>
         <DialogHeader>
@@ -165,7 +165,7 @@ export default function OrdenFumigacionTerminar({
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => setIsTerminarDialogOpen(false)}
                 >
                   Volver
                 </Button>
