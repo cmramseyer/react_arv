@@ -10,10 +10,11 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { OrdenFumigacionAdjunto, OrdenFumigacionId } from '@/features/ordenes-fumigacion/types'
+import type { OrdenFumigacionAdjunto } from '@/features/ordenes-fumigacion/types'
+import type { EntityId } from '@/utils/types'
 
 type PrintableAdjunto = OrdenFumigacionAdjunto & {
-  id: OrdenFumigacionId
+  id: EntityId
   filename: string
   url: string
 }
@@ -25,13 +26,13 @@ type OrdenFumigacionAdjuntoParaImprimirProps = {
   hasAdjuntos: boolean
   adjuntos: PrintableAdjunto[]
   selectedAdjuntos: Set<string>
-  onToggleAdjunto: (adjuntoId: OrdenFumigacionId) => void
+  onToggleAdjunto: (adjuntoId: EntityId) => void
   isImageAdjunto: (adjunto: PrintableAdjunto) => boolean
   onEditarAdjunto: (adjunto: PrintableAdjunto) => void
   isSavingAdjunto: boolean
   adjuntoEditando: PrintableAdjunto | null
   adjuntoEnEdicion: string | null
-  normalizeAdjuntoId: (adjuntoId: OrdenFumigacionId) => string
+  normalizeAdjuntoId: (adjuntoId: EntityId) => string
   onImprimir: () => void | Promise<void>
   labelImprimirSeleccion: string
 }
