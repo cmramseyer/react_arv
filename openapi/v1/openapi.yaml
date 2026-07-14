@@ -1,0 +1,1981 @@
+---
+openapi: 3.0.3
+info:
+  title: ARV API
+  version: v1
+servers:
+- url: http://localhost:3000
+  description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
+    ErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - email
+      - username
+      - created_at
+      - updated_at
+    LoginRequest:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              format: password
+          required:
+          - email
+          - password
+      required:
+      - user
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          "$ref": "#/components/schemas/User"
+        token:
+          type: string
+      required:
+      - message
+      - user
+      - token
+    RefreshResponse:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    Estancia:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          nullable: true
+        contacto:
+          type: string
+          nullable: true
+        telefono:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - nombre
+      - contacto
+      - telefono
+      - email
+      - created_at
+      - updated_at
+    EstanciaRequest:
+      type: object
+      properties:
+        estancia:
+          type: object
+          properties:
+            nombre:
+              type: string
+            contacto:
+              type: string
+              nullable: true
+            telefono:
+              type: string
+              nullable: true
+            email:
+              type: string
+              nullable: true
+          required:
+          - nombre
+      required:
+      - estancia
+    Cultivo:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          nullable: true
+      required:
+      - id
+      - nombre
+    CultivoRequest:
+      type: object
+      properties:
+        cultivo:
+          type: object
+          properties:
+            nombre:
+              type: string
+          required:
+          - nombre
+      required:
+      - cultivo
+    Maquinista:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          nullable: true
+      required:
+      - id
+      - nombre
+    MaquinistaRequest:
+      type: object
+      properties:
+        maquinista:
+          type: object
+          properties:
+            nombre:
+              type: string
+          required:
+          - nombre
+      required:
+      - maquinista
+    Producto:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          nullable: true
+        tipo_producto:
+          type: string
+          nullable: true
+        unidad_medida:
+          type: string
+          enum:
+          - kg
+          - gramos
+          - litros
+          - ml
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - nombre
+      - tipo_producto
+      - unidad_medida
+      - created_at
+      - updated_at
+    ProductoRequest:
+      type: object
+      properties:
+        producto:
+          type: object
+          properties:
+            nombre:
+              type: string
+            tipo_producto:
+              type: string
+            unidad_medida:
+              type: string
+              enum:
+              - kg
+              - gramos
+              - litros
+              - ml
+          required:
+          - nombre
+          - tipo_producto
+          - unidad_medida
+      required:
+      - producto
+    Adjunto:
+      type: object
+      properties:
+        id:
+          type: integer
+        filename:
+          type: string
+        url:
+          type: string
+      required:
+      - id
+      - filename
+      - url
+    LoteAdjunto:
+      allOf:
+      - "$ref": "#/components/schemas/Adjunto"
+      - type: object
+        properties:
+          content_type:
+            type: string
+        required:
+        - content_type
+    Lote:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          nullable: true
+        estancia_id:
+          type: integer
+        nombre_estancia:
+          type: string
+          nullable: true
+        lat:
+          type: string
+          nullable: true
+        long:
+          type: string
+          nullable: true
+        link_mapa:
+          type: string
+          nullable: true
+        hectareas:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - nombre
+      - estancia_id
+      - nombre_estancia
+      - lat
+      - long
+      - link_mapa
+      - hectareas
+      - created_at
+      - updated_at
+    LoteFull:
+      allOf:
+      - "$ref": "#/components/schemas/Lote"
+      - type: object
+        properties:
+          adjuntos:
+            type: array
+            items:
+              "$ref": "#/components/schemas/LoteAdjunto"
+        required:
+        - adjuntos
+    LoteRequest:
+      type: object
+      properties:
+        lote:
+          type: object
+          properties:
+            nombre:
+              type: string
+            estancia_id:
+              type: integer
+            lat:
+              type: string
+              nullable: true
+            long:
+              type: string
+              nullable: true
+            link_mapa:
+              type: string
+              nullable: true
+            hectareas:
+              type: string
+              nullable: true
+            adjuntos:
+              type: array
+              items:
+                type: string
+                format: binary
+          required:
+          - nombre
+          - estancia_id
+      required:
+      - lote
+    Dosis:
+      type: object
+      properties:
+        id:
+          type: integer
+        producto_id:
+          type: integer
+        cantidad:
+          type: integer
+          nullable: true
+        lote_orden_fumigacion_id:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - producto_id
+      - cantidad
+      - lote_orden_fumigacion_id
+      - created_at
+      - updated_at
+    DosisRequest:
+      type: object
+      properties:
+        dosis:
+          type: object
+          properties:
+            producto_id:
+              type: integer
+            lote_orden_fumigacion_id:
+              type: integer
+            cantidad:
+              type: integer
+          required:
+          - producto_id
+          - lote_orden_fumigacion_id
+          - cantidad
+      required:
+      - dosis
+    OrdenDosis:
+      type: object
+      properties:
+        id:
+          type: integer
+        producto_id:
+          type: integer
+        producto:
+          type: string
+        cantidad:
+          type: integer
+          nullable: true
+        unidad_medida:
+          type: string
+          enum:
+          - kg
+          - gramos
+          - litros
+          - ml
+      required:
+      - id
+      - producto_id
+      - producto
+      - cantidad
+      - unidad_medida
+    OrdenLote:
+      type: object
+      properties:
+        id:
+          type: integer
+        lote_id:
+          type: integer
+        nombre:
+          type: string
+        hectareas:
+          type: string
+          nullable: true
+        estancia_id:
+          type: integer
+        nombre_estancia:
+          type: string
+        dosis:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrdenDosis"
+      required:
+      - id
+      - lote_id
+      - nombre
+      - hectareas
+      - estancia_id
+      - nombre_estancia
+      - dosis
+    OrdenFactura:
+      type: object
+      properties:
+        nro_factura:
+          type: string
+          nullable: true
+        nro_orden_cliente:
+          type: string
+          nullable: true
+        fecha_factura:
+          type: string
+          format: date
+          nullable: true
+        fecha_pago:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - nro_factura
+      - nro_orden_cliente
+      - fecha_factura
+      - fecha_pago
+    OrdenFumigacion:
+      type: object
+      properties:
+        id:
+          type: integer
+        estancia_id:
+          type: integer
+          nullable: true
+        nombre_estancia:
+          type: string
+        lotes_ids:
+          type: array
+          items:
+            type: integer
+        nombre_lote:
+          type: string
+        hectareas:
+          type: string
+          nullable: true
+        estado_orden:
+          type: string
+          enum:
+          - activa
+          - terminada
+        lotes:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrdenLote"
+        info_trabajo:
+          type: string
+          nullable: true
+        fecha_trabajo:
+          type: string
+          format: date
+          nullable: true
+        fecha_trabajo_ddmmyyyy:
+          type: string
+          nullable: true
+        datos_clima:
+          type: string
+          nullable: true
+        sensible:
+          type: boolean
+        comentarios:
+          type: string
+          nullable: true
+        maquinista:
+          allOf:
+          - "$ref": "#/components/schemas/Maquinista"
+          nullable: true
+        creator:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        created_at_locale:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        updated_at_locale:
+          type: string
+          nullable: true
+        orden_url:
+          type: string
+          nullable: true
+        orden_pdf_fecha_creacion:
+          type: string
+          format: date-time
+          nullable: true
+        orden_pdf_fecha_creacion_locale:
+          type: string
+          nullable: true
+        cultivo:
+          allOf:
+          - "$ref": "#/components/schemas/Cultivo"
+          nullable: true
+        facturas:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrdenFactura"
+        adjuntos:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Adjunto"
+      required:
+      - id
+      - estancia_id
+      - nombre_estancia
+      - lotes_ids
+      - nombre_lote
+      - hectareas
+      - estado_orden
+      - lotes
+      - info_trabajo
+      - fecha_trabajo
+      - fecha_trabajo_ddmmyyyy
+      - datos_clima
+      - sensible
+      - comentarios
+      - maquinista
+      - creator
+      - created_at
+      - created_at_locale
+      - updated_at
+      - updated_at_locale
+      - orden_url
+      - orden_pdf_fecha_creacion
+      - orden_pdf_fecha_creacion_locale
+      - cultivo
+      - facturas
+      - adjuntos
+    OrdenFumigacionRequest:
+      type: object
+      properties:
+        orden_fumigacion:
+          type: object
+          properties:
+            datos_clima:
+              type: string
+              nullable: true
+            info_trabajo:
+              type: string
+              nullable: true
+            sensible:
+              type: boolean
+              nullable: true
+            comentarios:
+              type: string
+              nullable: true
+            estado_orden:
+              type: string
+              enum:
+              - activa
+              - terminada
+              nullable: true
+            fecha_trabajo:
+              type: string
+              format: date
+              nullable: true
+            maquinista_id:
+              type: integer
+              nullable: true
+            cultivo_id:
+              type: integer
+              nullable: true
+            adjuntos:
+              type: array
+              items:
+                type: string
+                format: binary
+            lotes:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    nullable: true
+                  lote_id:
+                    type: integer
+                    nullable: true
+                  hectareas_reales:
+                    type: string
+                    nullable: true
+                  _destroy:
+                    type: boolean
+                    nullable: true
+                  dosis:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          nullable: true
+                        producto_id:
+                          type: integer
+                        cantidad:
+                          type: integer
+                        _destroy:
+                          type: boolean
+                          nullable: true
+                      required:
+                      - producto_id
+                      - cantidad
+      required:
+      - orden_fumigacion
+    TerminarOrdenFumigacionRequest:
+      type: object
+      properties:
+        orden_fumigacion:
+          type: object
+          properties:
+            datos_clima:
+              type: string
+              nullable: true
+            info_trabajo:
+              type: string
+              nullable: true
+            fecha_trabajo:
+              type: string
+              format: date
+              nullable: true
+            maquinista_id:
+              type: integer
+              nullable: true
+      required:
+      - orden_fumigacion
+    OrdenPdfResponse:
+      type: object
+      properties:
+        orden_url:
+          type: string
+        orden_pdf_fecha_creacion:
+          type: string
+          format: date-time
+        orden_pdf_fecha_creacion_locale:
+          type: string
+        message:
+          type: string
+      required:
+      - orden_url
+      - orden_pdf_fecha_creacion
+      - orden_pdf_fecha_creacion_locale
+      - message
+    PendienteFacturaLote:
+      type: object
+      properties:
+        lote_id:
+          type: integer
+        hectareas:
+          type: string
+          nullable: true
+        fecha_trabajo:
+          type: string
+          format: date
+          nullable: true
+        fecha_trabajo_ddmmyyyy:
+          type: string
+          nullable: true
+        maquinista:
+          type: string
+          nullable: true
+        orden_id:
+          type: integer
+      required:
+      - lote_id
+      - hectareas
+      - fecha_trabajo
+      - fecha_trabajo_ddmmyyyy
+      - maquinista
+      - orden_id
+    PendienteFacturaEstancia:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PendienteFacturaLote"
+      required:
+      - id
+      - nombre
+      - data
+    Factura:
+      type: object
+      properties:
+        id:
+          type: integer
+        fecha_factura:
+          type: string
+          format: date
+          nullable: true
+        fecha_pago:
+          type: string
+          format: date
+          nullable: true
+        nro_factura:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - fecha_factura
+      - fecha_pago
+      - nro_factura
+      - created_at
+      - updated_at
+    FacturaRequest:
+      type: object
+      properties:
+        nro_factura:
+          type: string
+          nullable: true
+        ordenes_fumigacion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              importe:
+                type: string
+                nullable: true
+              nro_orden_cliente:
+                type: string
+                nullable: true
+            required:
+            - id
+      required:
+      - ordenes_fumigacion
+    FacturaUpdateRequest:
+      type: object
+      properties:
+        fecha_pago:
+          type: string
+          format: date
+      required:
+      - fecha_pago
+    FacturaPagoOrden:
+      type: object
+      properties:
+        id:
+          type: integer
+        importe:
+          type: string
+        nro_orden_cliente:
+          type: string
+          nullable: true
+        nombre_estancia:
+          type: string
+        lotes:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre:
+                type: string
+              hectareas:
+                type: string
+                nullable: true
+            required:
+            - nombre
+            - hectareas
+      required:
+      - id
+      - importe
+      - nro_orden_cliente
+      - nombre_estancia
+      - lotes
+    FacturaPago:
+      type: object
+      properties:
+        id:
+          type: integer
+        fecha_factura:
+          type: string
+          format: date
+        fecha_factura_ddmmyyyy:
+          type: string
+        nro_factura:
+          type: string
+          nullable: true
+        ordenes_fumigacion:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FacturaPagoOrden"
+      required:
+      - id
+      - fecha_factura
+      - fecha_factura_ddmmyyyy
+      - nro_factura
+      - ordenes_fumigacion
+    Estadistica:
+      type: object
+      properties:
+        hectareas_por_propietario:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre_estancia:
+                type: string
+              hectareas:
+                type: string
+            required:
+            - nombre_estancia
+            - hectareas
+        hectareas_por_maquinista:
+          type: array
+          items:
+            type: object
+            properties:
+              maquinista:
+                type: string
+              hectareas:
+                type: string
+            required:
+            - maquinista
+            - hectareas
+        hectareas_por_cultivo:
+          type: array
+          items:
+            type: object
+            properties:
+              cultivo:
+                type: string
+              hectareas:
+                type: string
+            required:
+            - cultivo
+            - hectareas
+      required:
+      - hectareas_por_propietario
+      - hectareas_por_maquinista
+      - hectareas_por_cultivo
+security:
+- bearerAuth: []
+paths:
+  "/adjuntos":
+    get:
+      summary: Lista adjuntos de una orden
+      tags:
+      - Adjuntos
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: orden_fumigacion_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: adjuntos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Adjunto"
+        '422':
+          description: orden_fumigacion_id requerido
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorMessage"
+  "/lotes/{lote_id}/adjuntos":
+    parameters:
+    - name: lote_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    post:
+      summary: Crea un adjunto para un lote
+      tags:
+      - Adjuntos
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: adjunto creado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Adjunto"
+        '404':
+          description: lote no encontrado
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: string
+              format: binary
+        required: true
+  "/lotes/{lote_id}/adjuntos/{id}":
+    parameters:
+    - name: lote_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    delete:
+      summary: Elimina un adjunto de un lote
+      tags:
+      - Adjuntos
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: adjunto eliminado
+        '404':
+          description: adjunto no encontrado
+  "/login":
+    post:
+      summary: Inicia sesion
+      tags:
+      - Auth
+      security: []
+      parameters: []
+      responses:
+        '200':
+          description: sesion iniciada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LoginResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+  "/logout":
+    delete:
+      summary: Cierra sesion
+      tags:
+      - Auth
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: sesion cerrada
+  "/refresh":
+    post:
+      summary: Renueva el access token
+      tags:
+      - Auth
+      security: []
+      parameters:
+      - name: Cookie
+        in: header
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: token renovado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RefreshResponse"
+        '401':
+          description: refresh token invalido
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorMessage"
+  "/cultivos":
+    get:
+      summary: Lista cultivos
+      tags:
+      - Cultivos
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: cultivos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Cultivo"
+    post:
+      summary: Crea un cultivo
+      tags:
+      - Cultivos
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: cultivo creado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cultivo"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CultivoRequest"
+  "/cultivos/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra un cultivo
+      tags:
+      - Cultivos
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: cultivo encontrado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cultivo"
+    patch:
+      summary: Actualiza un cultivo
+      tags:
+      - Cultivos
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: cultivo actualizado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Cultivo"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CultivoRequest"
+    delete:
+      summary: Elimina un cultivo
+      tags:
+      - Cultivos
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: cultivo eliminado
+  "/dosis":
+    get:
+      summary: Lista dosis
+      tags:
+      - Dosis
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: dosis encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Dosis"
+    post:
+      summary: Crea una dosis
+      tags:
+      - Dosis
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: dosis creada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Dosis"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DosisRequest"
+  "/dosis/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra una dosis
+      tags:
+      - Dosis
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: dosis encontrada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Dosis"
+    patch:
+      summary: Actualiza una dosis
+      tags:
+      - Dosis
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: dosis actualizada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Dosis"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DosisRequest"
+    delete:
+      summary: Elimina una dosis
+      tags:
+      - Dosis
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: dosis eliminada
+  "/estadisticas":
+    get:
+      summary: Obtiene estadisticas agregadas
+      tags:
+      - Estadisticas
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: fecha_desde
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: fecha_hasta
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: estadisticas encontradas
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Estadistica"
+        '422':
+          description: fechas invalidas
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorMessage"
+  "/estancias":
+    get:
+      summary: Lista estancias
+      tags:
+      - Estancias
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: estancias encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Estancia"
+    post:
+      summary: Crea una estancia
+      tags:
+      - Estancias
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: estancia creada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Estancia"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EstanciaRequest"
+  "/estancias/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra una estancia
+      tags:
+      - Estancias
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: estancia encontrada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Estancia"
+    patch:
+      summary: Actualiza una estancia
+      tags:
+      - Estancias
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: estancia actualizada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Estancia"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EstanciaRequest"
+    delete:
+      summary: Elimina una estancia
+      tags:
+      - Estancias
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: estancia eliminada
+  "/facturas_pago":
+    get:
+      summary: Lista facturas pendientes de pago
+      tags:
+      - Facturas Pago
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: facturas pendientes encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/FacturaPago"
+  "/facturas":
+    post:
+      summary: Crea una factura
+      tags:
+      - Facturas
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: factura creada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Factura"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/FacturaRequest"
+  "/facturas/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Actualiza fecha de pago de una factura
+      tags:
+      - Facturas
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '204':
+          description: factura actualizada
+        '422':
+          description: fecha_pago requerida
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/FacturaUpdateRequest"
+  "/lotes":
+    get:
+      summary: Lista lotes
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: estancia_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: lotes filtrados por estancia
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/LoteFull"
+    post:
+      summary: Crea un lote
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: lote creado con adjuntos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LoteFull"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoteRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/LoteRequest"
+  "/lotes/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra un lote
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: lote encontrado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LoteFull"
+    patch:
+      summary: Actualiza un lote
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: lote actualizado con adjuntos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LoteFull"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoteRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/LoteRequest"
+    delete:
+      summary: Elimina un lote
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: lote eliminado
+  "/lotes/{id}/adjuntos":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Lista adjuntos de un lote
+      tags:
+      - Lotes
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: adjuntos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/LoteAdjunto"
+  "/maquinistas":
+    get:
+      summary: Lista maquinistas
+      tags:
+      - Maquinistas
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: maquinistas encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Maquinista"
+    post:
+      summary: Crea un maquinista
+      tags:
+      - Maquinistas
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: maquinista creado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Maquinista"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MaquinistaRequest"
+  "/maquinistas/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra un maquinista
+      tags:
+      - Maquinistas
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: maquinista encontrado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Maquinista"
+    patch:
+      summary: Actualiza un maquinista
+      tags:
+      - Maquinistas
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: maquinista actualizado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Maquinista"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MaquinistaRequest"
+    delete:
+      summary: Elimina un maquinista
+      tags:
+      - Maquinistas
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: maquinista eliminado
+  "/ordenes_fumigacion":
+    get:
+      summary: Lista ordenes de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: estado
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - activa
+          - terminada
+      - name: cultivo_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: maquinista_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: fecha_desde
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: fecha_hasta
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: lote_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: estancia_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: nro_orden_cliente
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: nro_factura
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ordenes filtradas por cultivo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OrdenFumigacion"
+    post:
+      summary: Crea una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: orden creada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdenFumigacion"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrdenFumigacionRequest"
+  "/ordenes_fumigacion/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: orden encontrada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdenFumigacion"
+    patch:
+      summary: Actualiza una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: orden actualizada con adjuntos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdenFumigacion"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OrdenFumigacionRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/OrdenFumigacionRequest"
+    delete:
+      summary: Elimina una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: orden eliminada
+  "/ordenes_fumigacion/{id}/pdf":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Genera PDF de una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: attachment_ids
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: pdf generado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdenPdfResponse"
+  "/ordenes_fumigacion/pendiente_factura":
+    get:
+      summary: Lista ordenes pendientes de factura
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: fecha_desde
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: fecha_hasta
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: ordenes pendientes encontradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PendienteFacturaEstancia"
+        '422':
+          description: fecha incompleta
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorMessage"
+  "/ordenes_fumigacion/{id}/terminar":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    patch:
+      summary: Termina una orden de fumigacion
+      tags:
+      - Ordenes Fumigacion
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: orden terminada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrdenFumigacion"
+        '422':
+          description: orden ya terminada
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorMessage"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TerminarOrdenFumigacionRequest"
+  "/productos":
+    get:
+      summary: Lista productos
+      tags:
+      - Productos
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: productos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Producto"
+    post:
+      summary: Crea un producto
+      tags:
+      - Productos
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: producto creado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Producto"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ProductoRequest"
+  "/productos/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Muestra un producto
+      tags:
+      - Productos
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: producto encontrado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Producto"
+    patch:
+      summary: Actualiza un producto
+      tags:
+      - Productos
+      security:
+      - bearerAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: producto actualizado
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Producto"
+        '422':
+          description: parametros invalidos
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ProductoRequest"
+    delete:
+      summary: Elimina un producto
+      tags:
+      - Productos
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: producto eliminado
