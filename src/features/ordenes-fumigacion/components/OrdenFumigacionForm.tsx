@@ -43,13 +43,11 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
       cultivo_id: '',
       sensible: false,
       comentarios: '',
-      lotes: [
-        { lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] }
-      ]
+      lotes: []
     }
   })
 
-  const { handleSubmit, control, watch } = form
+  const { handleSubmit, control, watch, getValues, setValue } = form
   const { fields: loteFields, append: appendLote, remove: removeLote } = useFieldArray({
     control,
     name: 'lotes'
@@ -58,25 +56,26 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
   const {
     isReady,
     initialValues,
-    options: { estancias, productos, cultivos, lotes: editLotes },
+    options: { estancias, productos, cultivos },
     queries: { ordenFumigacionQuery },
   } = useOrdenFumigacionEditLoader(isEdit ? ordenId : null)
 
   const estadoOrden = ordenFumigacionQuery.data?.estado_orden
   const estanciaId = watch('estancia_id')
-  const selectedLotes = watch('lotes')
-  const createLotesQuery = useLotesByEstanciaQuery(
+  const selectedLotes = watch('lotes') || []
+  const lotesQuery = useLotesByEstanciaQuery(
     estanciaId,
-    !isEdit && Boolean(estanciaId),
+    Boolean(estanciaId),
   )
-  const lotes = isEdit ? editLotes : createLotesQuery.data || []
+  const lotes = lotesQuery.data || []
 
   const { updateMutation: updateOrdenFumigacionMutation, createMutation: createOrdenFumigacionMutation } = useOrdenFumigacionMutation()
 
   const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false)
   const navigate = useNavigate()
 
-  const totalHectareas = getTotalHectareas(selectedLotes, lotes)
+  const activeLoteFields = loteFields.filter((_, index) => !selectedLotes[index]?.eliminado)
+  const totalHectareas = getTotalHectareas(selectedLotes.filter((lote) => !lote.eliminado), lotes)
 
   const initializedRef = useRef(false);
 
@@ -88,6 +87,21 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
     form.reset(initialValues);
     initializedRef.current = true;
   }, [isEdit, isReady, initialValues, form]);
+
+  const previousEstanciaId = useRef<string | undefined>(undefined)
+
+  useEffect(() => {
+    if (previousEstanciaId.current && estanciaId && previousEstanciaId.current !== estanciaId) {
+      getValues('lotes').forEach((lote, index) => {
+        if (!lote.es_manual && !lote.eliminado) {
+          setValue(`lotes.${index}.lote_id`, '')
+          setValue(`lotes.${index}.hectareas_reales`, '')
+        }
+      })
+    }
+
+    previousEstanciaId.current = estanciaId
+  }, [estanciaId, getValues, setValue])
 
   const handleProductoOpen = (productoOpen) => {
     setIsNuevoProductoOpen(productoOpen)
@@ -105,10 +119,9 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
       }
       await createOrdenFumigacionMutation.mutateAsync(payload)
       navigate('/ordenes_fumigacion')
-     } catch(error) {
-      console.log("error catch")
-      console.log(error)
-    }
+     } catch {
+       return
+     }
   }
 
   return (
@@ -123,7 +136,7 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
                 <FormControl>
                   <SelectField field={field} label="Estancia" options={estancias || []} />
                 </FormControl>
-                <FormDescription>Estancia desc.</FormDescription>
+                <FormDescription>Seleccione una estancia antes de agregar lotes.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -183,50 +196,78 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
             )}
           />
 
-        {loteFields.map((field, index) => (
+        {loteFields.map((field, index) => {
+          const lote = selectedLotes[index]
+          if (lote?.eliminado) return null
+          const esManual = Boolean(lote?.es_manual)
+
+          return (
           <div key={field.id} className="space-y-4 rounded border p-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Lote {index + 1}</h3>
-              {loteFields.length > 1 && (
+              <h3 className="text-lg font-semibold">{esManual ? 'Lote manual' : 'Lote existente'} {activeLoteFields.findIndex((activeField) => activeField.id === field.id) + 1}</h3>
+              {activeLoteFields.length > 1 && (
                 <Button
                   type="button"
                   variant="destructive"
                   size="sm"
-                  onClick={() => removeLote(index)}
+                  onClick={() => {
+                    if (lote?.orden_lote_id) {
+                      setValue(`lotes.${index}.eliminado`, true)
+                      return
+                    }
+                    removeLote(index)
+                  }}
                 >
                   Quitar lote
                 </Button>
               )}
             </div>
 
-            <FormField
-              control={control}
-              name={`lotes.${index}.lote_id`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lote</FormLabel>
-                  <FormControl>
-                    <SelectField
-                      field={field}
-                      label="Lote"
-                      options={lotes}
-                      getOptionLabel={(lote) => {
-                        const nombre = lote.nombre || 'Sin nombre'
-                        return `${nombre} - ${formatHectareas(lote.hectareas)}`
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {esManual ? (
+              <FormField
+                control={control}
+                name={`lotes.${index}.nombre_manual`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre del lote manual</FormLabel>
+                    <FormControl>
+                      <Input {...field} value={field.value ?? ''} placeholder="Ej. Sector detrás del galpón" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <FormField
+                control={control}
+                name={`lotes.${index}.lote_id`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lote</FormLabel>
+                    <FormControl>
+                      <SelectField
+                        field={field}
+                        label="Lote"
+                        options={lotes}
+                        disabled={!estanciaId}
+                        getOptionLabel={(lote) => {
+                          const nombre = lote.nombre || 'Sin nombre'
+                          return `${nombre} - ${formatHectareas(lote.hectareas)}`
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={control}
               name={`lotes.${index}.hectareas_reales`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ajuste Ha</FormLabel>
+                    <FormLabel>{esManual ? 'Hectareas' : 'Ajuste Ha'}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -248,15 +289,27 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
               onNuevoProducto={() => setIsNuevoProductoOpen(true)}
             />
           </div>
-        ))}
+          )
+        })}
 
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => appendLote({ lote_id: '', hectareas_reales: '', dosis: [{ producto_id: '', cantidad: '' }] })}
-        >
-          Agregar otro lote
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!estanciaId}
+            onClick={() => appendLote({ lote_id: '', es_manual: false, hectareas_reales: '', dosis: [] })}
+          >
+            Agregar lote existente
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={!estanciaId}
+            onClick={() => appendLote({ lote_id: '', nombre_manual: '', es_manual: true, hectareas_reales: '', dosis: [] })}
+          >
+            Agregar lote manual
+          </Button>
+        </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit">{ isEdit ? "Actualizar" : "Crear" }</Button>

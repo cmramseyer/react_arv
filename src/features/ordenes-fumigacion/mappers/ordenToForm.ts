@@ -2,7 +2,6 @@ import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/sc
 import type { OrdenFumigacion } from '@/features/ordenes-fumigacion/types'
 
 export const ordenToForm = (data: OrdenFumigacion): OrdenFumigacionFormValues => {
-  console.log("ordenToForm", data.cultivo)
   const normalizeNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined || value === '') return undefined
     return Number(value)
@@ -23,7 +22,9 @@ export const ordenToForm = (data: OrdenFumigacion): OrdenFumigacionFormValues =>
       return {
         orden_lote_id: e.id,
         lote_id: e.lote_id ? String(e.lote_id) : '',
-        hectareas_reales: normalizeNumber(e.hectareas_reales),
+        nombre_manual: e.es_manual ? e.nombre ?? '' : '',
+        es_manual: e.es_manual ?? false,
+        hectareas_reales: normalizeNumber(e.hectareas_reales ?? e.hectareas),
         dosis: (e.dosis || []).map((d) => { 
           return {
             orden_lote_dosis_id: d.id,

@@ -118,6 +118,7 @@ const listOrden = (orden: OrdenFumigacion): OrdenFumigacionListItem => ({
   id: orden.id,
   estancia_id: orden.estancia_id,
   nombre_estancia: orden.nombre_estancia,
+  lotes_ids: orden.lotes_ids ?? orden.lotes?.flatMap((lote) => lote.lote_id ? [lote.lote_id] : []) ?? [],
   nombre_lote: orden.nombre_lote,
   estado_orden: orden.estado_orden,
   hectareas: orden.hectareas,
@@ -138,34 +139,66 @@ const normalizePayloadToOrden = (
   const id = existingOrden?.id ?? nextOrdenId()
   const estanciaId = String(payload.estancia_id ?? existingOrden?.estancia_id ?? '1')
   const cultivoId = payload.cultivo_id ? String(payload.cultivo_id) : existingOrden?.cultivo?.id
-  const payloadLotes = Array.isArray(payload.lotes) ? payload.lotes : existingOrden?.lotes ?? []
+  const payloadLotes = Array.isArray(payload.lotes) ? payload.lotes : []
+  const existingLotes = existingOrden?.lotes ?? []
+  const deletedLoteIds = new Set(
+    payloadLotes
+      .filter((lote) => '_destroy' in lote && lote._destroy)
+      .map((lote) => String(lote.id)),
+  )
+  const normalizedLotes = payloadLotes
+    .filter((lote) => !('_destroy' in lote && lote._destroy))
+    .map((lote, index) => {
+      const existingLote = lote.id
+        ? existingLotes.find((currentLote) => String(currentLote.id) === String(lote.id))
+        : undefined
+      const isManual = 'nombre_manual' in lote
+      const loteId = isManual || !('lote_id' in lote) ? null : String(lote.lote_id)
+      const hectareasReales = 'hectareas_reales' in lote
+        ? lote.hectareas_reales
+        : existingLote?.hectareas_reales
+      const hectareas = hectareasReales ?? existingLote?.hectareas ?? 10
+      const dosisPayload = 'dosis' in lote ? lote.dosis : existingLote?.dosis ?? []
+
+      return {
+        id: String(lote.id ?? existingLote?.id ?? `${id}-${index + 1}`),
+        lote_id: loteId,
+        es_manual: isManual,
+        nombre: isManual
+          ? lote.nombre_manual
+          : existingLote?.nombre ?? `Lote ${loteId}`,
+        hectareas,
+        hectareas_reales: hectareasReales,
+        estancia_id: estanciaId,
+        nombre_estancia: existingOrden?.nombre_estancia ?? `Estancia ${estanciaId}`,
+        dosis: dosisPayload.map((dosis, dosisIndex) => ({
+          id: String(dosis.id ?? existingLote?.dosis?.[dosisIndex]?.id ?? `${id}-${index + 1}-${dosisIndex + 1}`),
+          producto_id: String(dosis.producto_id),
+          producto: existingLote?.dosis?.[dosisIndex]?.producto ?? `Producto ${dosis.producto_id}`,
+          cantidad: Number(dosis.cantidad),
+          unidad_medida: existingLote?.dosis?.[dosisIndex]?.unidad_medida,
+        })),
+      }
+    })
+  const lotes = payloadLotes.length > 0
+    ? normalizedLotes
+    : existingLotes.filter((lote) => !deletedLoteIds.has(String(lote.id)))
+  const totalHectareas = lotes.reduce((total, lote) => total + Number(lote.hectareas_reales ?? lote.hectareas ?? 0), 0)
 
   return {
     id,
     estancia_id: estanciaId,
     nombre_estancia: existingOrden?.nombre_estancia ?? `Estancia ${estanciaId}`,
-    nombre_lote: existingOrden?.nombre_lote ?? 'Lote Uno',
+    lotes_ids: lotes.flatMap((lote) => lote.lote_id ? [lote.lote_id] : []),
+    nombre_lote: lotes.map((lote) => lote.nombre).join(', ') || existingOrden?.nombre_lote || 'Sin lotes',
     estado_orden: existingOrden?.estado_orden ?? 'activa',
-    hectareas: existingOrden?.hectareas ?? 10,
+    hectareas: totalHectareas || (existingOrden?.hectareas ?? 0),
     created_at_locale: existingOrden?.created_at_locale ?? '01/01/2025',
     creator: existingOrden?.creator ?? 'Tester',
     sensible: payload.sensible ?? existingOrden?.sensible ?? false,
     comentarios: payload.comentarios ?? existingOrden?.comentarios ?? '',
     cultivo: cultivoId ? { id: cultivoId, nombre: cultivoId === '1' ? 'Soja' : 'Trigo' } : existingOrden?.cultivo,
-    lotes: payloadLotes.map((lote, index) => ({
-      id: String(lote.id ?? existingOrden?.lotes?.[index]?.id ?? `${id}${index + 1}`),
-      lote_id: String(lote.lote_id),
-      nombre: existingOrden?.lotes?.[index]?.nombre ?? `Lote ${lote.lote_id}`,
-      hectareas: existingOrden?.lotes?.[index]?.hectareas ?? 10,
-      hectareas_reales: lote.hectareas_reales ?? existingOrden?.lotes?.[index]?.hectareas_reales,
-      dosis: (lote.dosis ?? existingOrden?.lotes?.[index]?.dosis ?? []).map((dosis, dosisIndex) => ({
-        id: String(dosis.id ?? existingOrden?.lotes?.[index]?.dosis?.[dosisIndex]?.id ?? `${id}${index + 1}${dosisIndex + 1}`),
-        producto_id: String(dosis.producto_id),
-        producto: existingOrden?.lotes?.[index]?.dosis?.[dosisIndex]?.producto ?? `Producto ${dosis.producto_id}`,
-        cantidad: Number(dosis.cantidad),
-        unidad_medida: existingOrden?.lotes?.[index]?.dosis?.[dosisIndex]?.unidad_medida,
-      })),
-    })),
+    lotes,
     facturas: existingOrden?.facturas ?? [],
     maquinista: existingOrden?.maquinista,
     fecha_trabajo: existingOrden?.fecha_trabajo,

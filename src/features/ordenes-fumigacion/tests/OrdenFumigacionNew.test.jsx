@@ -71,6 +71,13 @@ const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
 describe('OrdenesFumigacionNueva', () => {
   let user
 
+  const agregarLoteManual = async () => {
+    const selects = await screen.findAllByRole('combobox')
+    await user.click(selects[0])
+    await user.click(await screen.findByRole('option', { name: 'Estancia Uno' }))
+    await user.click(screen.getByRole('button', { name: 'Agregar lote manual' }))
+  }
+
   beforeEach(() => {
     user = userEvent.setup()
     vi.clearAllMocks()
@@ -114,6 +121,8 @@ describe('OrdenesFumigacionNueva', () => {
   })
 
   it('allows creating a product from modal and refreshes product options', async () => {
+    getEstancias.mockReset()
+    getEstancias.mockResolvedValue([{ id: 1, nombre: 'Estancia Uno' }])
     getProductos
       .mockResolvedValueOnce([
         { id: 1, nombre: '2,4D', unidad_medida: 'litros' },
@@ -133,6 +142,7 @@ describe('OrdenesFumigacionNueva', () => {
       expect(getProductos).toHaveBeenCalledTimes(1)
     })
 
+    await agregarLoteManual()
     await user.click(screen.getByRole('button', { name: /nuevo producto/i }))
 
     const dialog = await screen.findByRole('dialog')
@@ -163,11 +173,14 @@ describe('OrdenesFumigacionNueva', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
 
+    await user.click(screen.getByRole('button', { name: 'Agregar dosis' }))
     await user.click(screen.getByLabelText('Producto'))
     expect(await screen.findByRole('option', { name: 'Roundup' })).toBeInTheDocument()
   })
 
   it('filters product options by search text in product select', async () => {
+    getEstancias.mockReset()
+    getEstancias.mockResolvedValue([{ id: 1, nombre: 'Estancia Uno' }])
     getProductos.mockResolvedValueOnce([
       { id: 1, nombre: 'Producto Base', unidad_medida: 'litros' },
       { id: 2, nombre: 'Coadyuvante', unidad_medida: 'kg' },
@@ -184,6 +197,8 @@ describe('OrdenesFumigacionNueva', () => {
       expect(getProductos).toHaveBeenCalledTimes(1)
     })
 
+    await agregarLoteManual()
+    await user.click(screen.getByRole('button', { name: 'Agregar dosis' }))
     const productSearchInput = screen.getByLabelText('Producto')
     await user.click(productSearchInput)
     await user.type(productSearchInput, 'prod')

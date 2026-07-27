@@ -44,7 +44,19 @@ export default function DosisFields({
 
   return (
     <div className="space-y-3">
-      <div className="text-sm font-medium">Dosis</div>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="text-sm font-medium">Dosis</div>
+        {showNuevoProductoButton && typeof onNuevoProducto === 'function' ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onNuevoProducto}
+          >
+            Nuevo producto
+          </Button>
+        ) : null}
+      </div>
 
       {fields.map((dosisField, index) => {
         const selectedProductoId = dosisValues?.[index]?.producto_id
@@ -57,18 +69,6 @@ export default function DosisFields({
               name={`${name}.${index}.producto_id`}
               render={({ field }) => (
                 <FormItem className="min-w-[260px] flex-1">
-                  {showNuevoProductoButton && index === 0 && typeof onNuevoProducto === 'function' ? (
-                    <div className="flex">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={onNuevoProducto}
-                      >
-                        Nuevo producto
-                      </Button>
-                    </div>
-                  ) : null}
                   <FormLabel htmlFor={`${name}-${index}-producto`}>Producto</FormLabel>
                   <FormControl>
                     <Select
