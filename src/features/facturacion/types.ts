@@ -33,12 +33,6 @@ export type FacturaPago = {
   ordenes_fumigacion: FacturaPagoOrden[]
 }
 
-export type MarcarFacturaPagadaResponse = {
-  ok: boolean
-  id: number | string
-  fecha_pago?: string | null
-}
-
 export type FacturacionResponse = FacturaPago[] | FacturacionGrupoPendiente[] | {
   data?: FacturaPago[] | FacturacionGrupoPendiente[] | {
     data?: FacturaPago[] | FacturacionGrupoPendiente[]

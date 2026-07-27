@@ -134,15 +134,20 @@ export default function Facturacion() {
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
     if (isPagando) return false;
 
-    const response = await marcarFacturaPagadaMutation.mutateAsync(
-      mapPagoFacturaPayload({
-        facturaId,
-        fechaPago: fechaPagoSeleccionada,
-      }),
-    );
-    if (!response?.ok) return false;
+    try {
 
-    return true;
+      await marcarFacturaPagadaMutation.mutateAsync(
+        mapPagoFacturaPayload({
+          facturaId,
+          fechaPago: fechaPagoSeleccionada,
+        }),
+      );
+      return true
+
+    } catch(error) {
+      console.log(error)
+      return false
+    }
   };
 
   const handleAbrirDialogoPago = (facturaId) => {

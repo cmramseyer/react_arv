@@ -39,13 +39,16 @@ export const facturacionHandlers = [
       },
     ])
   }),
-  http.patch(`${API_URL}/facturas/:id`, async ({ params, request }) => {
-    const url = new URL(request.url)
+  http.patch(`${API_URL}/facturas/:id`, async ({ request }) => {
+    const { fecha_pago } = await request.json() as { fecha_pago?: string }
 
-    return HttpResponse.json({
-      ok: true,
-      id: String(params.id),
-      fecha_pago: url.searchParams.get('fecha_pago'),
-    })
+    if (!fecha_pago) {
+      return HttpResponse.json(
+        { fecha_pago: ['es requerida'] },
+        { status: 422 },
+      )
+    }
+
+    return new HttpResponse(null, { status: 204 })
   }),
 ]
