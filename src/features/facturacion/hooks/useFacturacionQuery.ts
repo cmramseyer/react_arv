@@ -64,7 +64,7 @@ export function useFacturacionMutation() {
   })
 
   const marcarFacturaPagadaMutation = useMutation<
-    MarcarFacturaPagadaResponse,
+    void,
     Error,
     MarcarFacturaPagadaMutationVariables
   >({

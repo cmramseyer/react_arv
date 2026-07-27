@@ -1,7 +1,7 @@
 import { fetchWithAuth } from '@/services/fetchWithAuth'
 import { handleResponse } from '@/lib/utils'
 
-import type { FacturaPago, MarcarFacturaPagadaResponse } from '@/features/facturacion/types'
+import type { FacturaPago } from '@/features/facturacion/types'
 
 const API_URL = `http://${import.meta.env.VITE_API_URL}/facturas_pago`
 const FACTURAS_URL = `http://${import.meta.env.VITE_API_URL}/facturas`
@@ -13,15 +13,14 @@ export const getFacturasPago = async (): Promise<FacturaPago[]> => {
 
 export const marcarFacturaPagada = async (
   id: number | string,
-  fechaPago?: string,
-): Promise<MarcarFacturaPagadaResponse> => {
+  fechaPago: string,
+): Promise<void> => {
   const url = new URL(`${FACTURAS_URL}/${id}`)
-
-  if (fechaPago) { url.searchParams.set('fecha_pago', fechaPago)}
 
   const res = await fetchWithAuth(url.toString(), {
     method: 'PATCH',
+    body: JSON.stringify({fecha_pago: fechaPago})
   })
 
-  return handleResponse<MarcarFacturaPagadaResponse>(res, 'Error updating factura')
+  return handleResponse<void>(res, 'Error updating factura')
 }
