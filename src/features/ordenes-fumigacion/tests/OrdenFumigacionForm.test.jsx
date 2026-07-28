@@ -55,7 +55,7 @@ function LocationDisplay() {
 }
 
 describe('OrdenFumigacionForm', () => {
-  it('creates a complete fumigation order and navigates back', async () => {
+  it('creates an order with a persisted lote and optional doses', async () => {
     const user = userEvent.setup()
     let requestBody
 
@@ -84,9 +84,11 @@ describe('OrdenFumigacionForm', () => {
     await user.click(selects[1])
     await user.click(await screen.findByRole('option', { name: 'Trigo' }))
 
-    await user.click(selects[2])
+    await user.click(screen.getByRole('button', { name: 'Agregar lote existente' }))
+    await user.click((await screen.findAllByRole('combobox'))[2])
     await user.click(await screen.findByRole('option', { name: 'Lote Uno - 10 ha' }))
 
+    await user.click(screen.getByRole('button', { name: 'Agregar dosis' }))
     await user.click(screen.getByLabelText('Producto'))
     await user.click(await screen.findByRole('option', { name: 'Roundup' }))
 
@@ -110,11 +112,9 @@ describe('OrdenFumigacionForm', () => {
         comentarios: 'Aplicacion completa',
         lotes: [
           {
-            id: null,
             lote_id: '1',
             dosis: [
               {
-                id: null,
                 producto_id: '1',
                 cantidad: 2.5,
               },
@@ -125,5 +125,49 @@ describe('OrdenFumigacionForm', () => {
         cultivo_id: '2',
       },
     })
+  })
+
+  it('creates manual lots without doses', async () => {
+    const user = userEvent.setup()
+    let requestBody
+
+    server.use(
+      http.post(`${API_URL}/ordenes_fumigacion`, async ({ request }) => {
+        requestBody = await request.json()
+        return HttpResponse.json({ id: '3', ...requestBody.orden_fumigacion }, { status: 201 })
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/new']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion" element={<LocationDisplay />} />
+          <Route path="/ordenes_fumigacion/new" element={<OrdenFumigacionForm formAction="create" />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const selects = await screen.findAllByRole('combobox')
+    await user.click(selects[0])
+    await user.click(await screen.findByRole('option', { name: 'Estancia Uno' }))
+    await user.click(screen.getByRole('button', { name: 'Agregar lote manual' }))
+
+    expect(screen.getByRole('button', { name: 'Nuevo producto' })).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Nombre del lote manual'), 'Sector detrás del galpón')
+    await user.type(screen.getByLabelText('Hectareas'), '7.25')
+    await user.click(screen.getByRole('button', { name: /crear/i }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent('/ordenes_fumigacion')
+    })
+
+    expect(requestBody.orden_fumigacion.lotes).toEqual([
+      {
+        nombre_manual: 'Sector detrás del galpón',
+        hectareas_reales: 7.25,
+        dosis: [],
+      },
+    ])
   })
 })

@@ -14,8 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import type { FacturacionGrupoPendiente } from "@/features/facturacion/types";
-import { formatHectareas } from "@/utils/formatHectareas";
+import type { FacturacionGrupoPendiente, FacturacionOrdenPendiente } from "@/features/facturacion/types";
+import { formatHectareas, parseHectareas } from "@/utils/formatHectareas";
 
 type OrdenId = number | string;
 
@@ -25,17 +25,17 @@ type FacturaPendienteProps = {
   cantidadSeleccionadas: number;
   nroFactura: string;
   isFacturando: boolean;
-  tieneImportesInvalidos: boolean;
+  tienePreciosInvalidos: boolean;
   ordenesSeleccionadas: Set<OrdenId>;
-  importesPorOrden: Record<OrdenId, string>;
+  preciosPorOrden: Record<OrdenId, string>;
   nroOrdenClientePorOrden: Record<OrdenId, string>;
   onCambiarModo: (checked: boolean) => void;
   onNroFacturaChange: (value: string) => void;
   onFacturar: () => void;
   onToggleOrden: (ordenId: OrdenId, nombreEstancia: string | undefined) => void;
-  onImporteChange: (ordenId: OrdenId, value: string) => void;
+  onPrecioChange: (ordenId: OrdenId, value: string) => void;
   onNroOrdenClienteChange: (ordenId: OrdenId, value: string) => void;
-  importeEsValido: (importe: string) => boolean;
+  precioEsValido: (precio: string) => boolean;
   dialogoEstanciaAbierto: boolean;
   onDialogoEstanciaOpenChange: (open: boolean) => void;
 };
@@ -46,17 +46,17 @@ export default function FacturaPendiente({
   cantidadSeleccionadas,
   nroFactura,
   isFacturando,
-  tieneImportesInvalidos,
+  tienePreciosInvalidos,
   ordenesSeleccionadas,
-  importesPorOrden,
+  preciosPorOrden,
   nroOrdenClientePorOrden,
   onCambiarModo,
   onNroFacturaChange,
   onFacturar,
   onToggleOrden,
-  onImporteChange,
+  onPrecioChange,
   onNroOrdenClienteChange,
-  importeEsValido,
+  precioEsValido,
   dialogoEstanciaAbierto,
   onDialogoEstanciaOpenChange,
 }: FacturaPendienteProps) {
@@ -111,7 +111,7 @@ export default function FacturaPendiente({
                 disabled={
                   cantidadSeleccionadas === 0 ||
                   isFacturando ||
-                  tieneImportesInvalidos
+                   tienePreciosInvalidos
                 }
               >
                 {isFacturando ? "Facturando..." : "Facturar"}
@@ -121,6 +121,22 @@ export default function FacturaPendiente({
 
           {ordenesPorEstancia.map((grupo, index) => {
             const datos = Array.isArray(grupo?.data) ? grupo.data : [];
+            const ordenes = datos.reduce<FacturacionOrdenPendiente[]>(
+              (acumuladas, orden) => {
+                const existente = acumuladas.find((item) => item.orden_id === orden.orden_id);
+                const hectareas = parseHectareas(orden.hectareas) ?? 0;
+
+                if (existente) {
+                  existente.hectareas = (parseHectareas(existente.hectareas) ?? 0) + hectareas;
+                  existente.lote_id = `${existente.lote_id}, ${orden.lote_id}`;
+                  return acumuladas;
+                }
+
+                acumuladas.push({ ...orden, hectareas });
+                return acumuladas;
+              },
+              [],
+            );
 
             return (
               <Card key={grupo.id ?? grupo.nombre ?? index} className="w-full">
@@ -130,7 +146,7 @@ export default function FacturaPendiente({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {datos.map((orden) => (
+                  {ordenes.map((orden) => (
                     <div
                       key={`${grupo.id ?? grupo.nombre ?? index}-${orden.orden_id ?? orden.lote_id}`}
                       className="flex flex-col gap-3 rounded-md border p-3 md:flex-row md:items-center md:justify-between"
@@ -154,27 +170,27 @@ export default function FacturaPendiente({
                             <div className="flex flex-wrap items-center gap-3">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">
-                                  Importe
+                                   Precio
                                 </span>
                                 <input
                                   type="text"
                                   inputMode="decimal"
                                   placeholder="0,00"
-                                  value={importesPorOrden[orden.orden_id] ?? ""}
+                                  value={preciosPorOrden[orden.orden_id] ?? ""}
                                   onChange={(event) =>
-                                    onImporteChange(
+                                    onPrecioChange(
                                       orden.orden_id,
                                       event.target.value,
                                     )
                                   }
                                   className={`h-9 w-28 rounded-md border px-2 text-sm ${
-                                    importeEsValido(
-                                      importesPorOrden[orden.orden_id] ?? "",
+                                     precioEsValido(
+                                       preciosPorOrden[orden.orden_id] ?? "",
                                     )
                                       ? "border-input"
                                       : "border-destructive"
                                   }`}
-                                  aria-label={`Importe de orden ${orden.orden_id}`}
+                                  aria-label={`Precio de orden ${orden.orden_id}`}
                                 />
                               </div>
                               <div className="flex items-center gap-2">

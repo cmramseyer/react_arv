@@ -6,6 +6,7 @@ type ParsedHectareas = number | null
 
 type SelectedLotes = { 
   lote_id?: string | number,
+  nombre_manual?: string,
   hectareas_reales?: number | string | null
 }
 
@@ -51,6 +52,9 @@ export const getTotalHectareas = (selectedLotes: SelectedLotes[] | null | undefi
   const lotesById = new Map(lotesDisponibles.map((lote) => [String(lote.id), lote]))
 
   return selectedLotes.reduce((acc, lote) => {
+    if (lote?.nombre_manual) {
+      return acc + (parseHectareasValue(lote.hectareas_reales) ?? 0)
+    }
     if (!lote?.lote_id) return acc
     const hectareasRealesValue = parseHectareasValue(lote.hectareas_reales)
     if (hectareasRealesValue !== null) {

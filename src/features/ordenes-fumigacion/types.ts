@@ -27,11 +27,14 @@ export type OrdenFumigacionDosis = {
 
 export type OrdenFumigacionLote = {
   id?: EntityId
-  lote_id?: EntityId
+  lote_id?: EntityId | null
+  es_manual?: boolean
   nombre?: string
   nombre_lote?: string
   hectareas?: number | string | null
   hectareas_reales?: number | string | null
+  estancia_id?: EntityId
+  nombre_estancia?: string
   dosis?: OrdenFumigacionDosis[]
 }
 
@@ -46,6 +49,7 @@ export type OrdenFumigacionListItem = {
   id: EntityId
   estancia_id: EntityId,
   nombre_estancia?: string | null
+  lotes_ids?: EntityId[]
   nombre_lote?: string | null
   estado_orden?: string | null
   hectareas?: number | string | null
@@ -73,17 +77,35 @@ export type OrdenFumigacion = OrdenFumigacionListItem & {
 }
 
 export type OrdenFumigacionPayloadDosis = {
-  id: EntityId | null
+  id?: EntityId
   producto_id: string
   cantidad: number
 }
 
-export type OrdenFumigacionPayloadLote = {
-  id: EntityId | null
-  lote_id: string
+type OrdenFumigacionPayloadLoteBase = {
+  id?: EntityId
   dosis: OrdenFumigacionPayloadDosis[]
+}
+
+type OrdenFumigacionPayloadLoteExistente = OrdenFumigacionPayloadLoteBase & {
+  lote_id: string
   hectareas_reales?: number
 }
+
+type OrdenFumigacionPayloadLoteManual = OrdenFumigacionPayloadLoteBase & {
+  nombre_manual: string
+  hectareas_reales: number
+}
+
+type OrdenFumigacionPayloadLoteEliminado = {
+  id: EntityId
+  _destroy: true
+}
+
+export type OrdenFumigacionPayloadLote =
+  | OrdenFumigacionPayloadLoteExistente
+  | OrdenFumigacionPayloadLoteManual
+  | OrdenFumigacionPayloadLoteEliminado
 
 export type OrdenFumigacionPayload = {
   orden_fumigacion: {

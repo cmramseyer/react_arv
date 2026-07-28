@@ -4,7 +4,8 @@ import type { FacturarOrdenesPayload } from "@/features/ordenes-fumigacion/types
 
 type FacturacionPayload = {
   ordenesSeleccionadas: Set<number | string>,
-  importesPorOrden: Record<number | string, string>,
+  preciosPorOrden: Record<number | string, string>,
+  hectareasPorOrden: Record<number | string, number>,
   nroOrdenClientePorOrden: Record<number | string, string>,
   nroFactura: string
 }
@@ -22,7 +23,8 @@ type MapFacturacionPayloadResponse = {
 
 export const mapFacturacionPayload = ({
   ordenesSeleccionadas,
-  importesPorOrden,
+  preciosPorOrden,
+  hectareasPorOrden,
   nroOrdenClientePorOrden,
   nroFactura,
 }: FacturacionPayload ): MapFacturacionPayloadResponse => {
@@ -32,8 +34,10 @@ export const mapFacturacionPayload = ({
     ordenesIds,
     payload: {
       ordenes_fumigacion: ordenesIds.map((ordenId) => {
-        const importeTexto = importesPorOrden[ordenId] ?? "0,00";
-        const importe = Number(importeTexto.replace(",", "."));
+        const precioTexto = preciosPorOrden[ordenId] ?? "0,00";
+        const precio = Number(precioTexto.replace(",", "."));
+        const hectareas = hectareasPorOrden[ordenId] ?? 0;
+        const importe = Number((hectareas * precio).toFixed(2));
         const nroOrdenCliente = (
           nroOrdenClientePorOrden[ordenId] ?? ""
         ).trim();

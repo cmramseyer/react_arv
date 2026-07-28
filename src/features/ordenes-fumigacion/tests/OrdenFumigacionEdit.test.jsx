@@ -7,6 +7,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 
 import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEdit'
+import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
 import { ordenFumigacionHandlers, resetOrdenFumigacionMocks } from '@/features/ordenes-fumigacion/mocks/ordenFumigacionHandlers'
 import { estanciaHandlers } from '@/features/estancias/mocks/estanciaHandlers'
 import { loteHandlers } from '@/features/lotes/mocks/loteHandlers'
@@ -52,7 +53,40 @@ const renderWithQueryClient = (ui) => {
 }
 
 describe('OrdenFumigacionEdit with MSW', () => {
-  it('updates only the order comments', async () => {
+  it('maps manual updates and persisted line deletions', () => {
+    const payload = mapOrdenFumigacionFormValuesToPayload({
+      estancia_id: '1',
+      sensible: false,
+      comentarios: '',
+      lotes: [
+        {
+          orden_lote_id: '201',
+          es_manual: true,
+          nombre_manual: 'Sector detrás del galpón',
+          hectareas_reales: '7.25',
+          dosis: [],
+        },
+        {
+          orden_lote_id: '101',
+          lote_id: '1',
+          eliminado: true,
+          dosis: [],
+        },
+      ],
+    })
+
+    expect(payload.orden_fumigacion.lotes).toEqual([
+      {
+        id: '201',
+        nombre_manual: 'Sector detrás del galpón',
+        hectareas_reales: 7.25,
+        dosis: [],
+      },
+      { id: '101', _destroy: true },
+    ])
+  })
+
+  it('updates an order with optional doses', async () => {
     const user = userEvent.setup()
     let requestBody
 
@@ -89,5 +123,12 @@ describe('OrdenFumigacionEdit with MSW', () => {
     expect(requestBody.orden_fumigacion.comentarios).toBe('Comentario actualizado')
     expect(requestBody.orden_fumigacion.estancia_id).toBe('1')
     expect(requestBody.orden_fumigacion.lotes).toHaveLength(1)
+    expect(requestBody.orden_fumigacion.lotes[0]).toMatchObject({
+      id: '101',
+      lote_id: '1',
+      dosis: [
+        { id: '1001', producto_id: '1', cantidad: 2 },
+      ],
+    })
   })
 })

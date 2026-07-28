@@ -13,7 +13,7 @@ vi.mock('../api/facturasService', () => ({
   marcarFacturaPagada: vi.fn(),
 }))
 
-import { getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
+import { facturarOrdenes, getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
 import { getFacturasPago, marcarFacturaPagada } from '../api/facturasService'
 import Facturacion from '../pages/Facturacion'
 
@@ -100,5 +100,47 @@ describe('Facturacion', () => {
       )
     ).toBeInTheDocument()
     expect(checkboxDos).not.toBeChecked()
+  })
+
+  it('calculates the amount from the total hectares and price for each order', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([
+      {
+        id: 1,
+        nombre: 'Estancia Alfa',
+        data: [
+          {
+            orden_id: 101,
+            lote_id: 'Lote A',
+            hectareas: 10,
+            nombre_estancia: 'Estancia Alfa',
+          },
+          {
+            orden_id: 101,
+            lote_id: 'Lote B',
+            hectareas: 2.5,
+            nombre_estancia: 'Estancia Alfa',
+          },
+        ],
+      },
+    ])
+    facturarOrdenes.mockResolvedValueOnce({ ok: true })
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    const checkbox = await screen.findByRole('checkbox', { name: /seleccionar orden 101/i })
+    await user.click(checkbox)
+    await user.type(screen.getByRole('textbox', { name: /precio de orden 101/i }), '12,50')
+    await user.click(screen.getByRole('button', { name: 'Facturar' }))
+
+    await waitFor(() => {
+      expect(facturarOrdenes).toHaveBeenCalledWith({
+        ordenes_fumigacion: [{ id: 101, importe: 156.25 }],
+        nro_factura: undefined,
+      })
+    })
   })
 })

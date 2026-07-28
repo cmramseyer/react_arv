@@ -13,10 +13,11 @@ import {
 import {
   formatImporte,
   importeEsValido,
+  parseHectareas,
   parseImporte,
 } from "@/utils/formatHectareas";
 
-type LalaOrdenImporte = {
+type LalaOrdenPrecio = {
   [ordenId: number | string]: string
 }
 
@@ -25,12 +26,12 @@ type LalaOrdenNroOrdenCliente = {
 }
 
 export default function Facturacion() {
-  const importesOrden: LalaOrdenImporte = {}
+  const preciosOrden: LalaOrdenPrecio = {}
   const ordenesNroOrdenCliente: LalaOrdenNroOrdenCliente = {}
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState(
     () => new Set<number | string>(),
   );
-  const [importesPorOrden, setImportesPorOrden] = useState(importesOrden);
+  const [preciosPorOrden, setPreciosPorOrden] = useState(preciosOrden);
   const [nroOrdenClientePorOrden, setNroOrdenClientePorOrden] = useState(ordenesNroOrdenCliente);
   const [nroFactura, setNroFactura] = useState("");
   const [modoPago, setModoPago] = useState(false);
@@ -53,23 +54,36 @@ export default function Facturacion() {
 
   const cantidadSeleccionadas = ordenesSeleccionadas.size;
 
+  const hectareasPorOrden = useMemo(() => {
+    return ordenesPendientes.reduce<Record<number | string, number>>(
+      (hectareas, grupo) => {
+        grupo.data.forEach((orden) => {
+          const superficie = parseHectareas(orden.hectareas) ?? 0;
+          hectareas[orden.orden_id] = (hectareas[orden.orden_id] ?? 0) + superficie;
+        });
+        return hectareas;
+      },
+      {},
+    );
+  }, [ordenesPendientes]);
+
   const isFacturando = facturarMutation.isPending;
   const isPagando = marcarFacturaPagadaMutation.isPending;
 
-  const tieneImportesInvalidos = useMemo(() => {
+  const tienePreciosInvalidos = useMemo(() => {
     return Array.from(ordenesSeleccionadas).some((ordenId) => {
-      const importe = importesPorOrden[ordenId] ?? "";
-      return !importeEsValido(importe);
+      const precio = preciosPorOrden[ordenId] ?? "";
+      return !importeEsValido(precio);
     });
-  }, [ordenesSeleccionadas, importesPorOrden]);
+  }, [ordenesSeleccionadas, preciosPorOrden]);
 
   const handleToggleOrden = (ordenId, nombreEstancia) => {
     setOrdenesSeleccionadas((prev) => {
       const next = new Set<number | string>(prev);
       if (next.has(ordenId)) {
         next.delete(ordenId);
-        setImportesPorOrden((prevImportes) => {
-          const { [ordenId]: _removed, ...rest } = prevImportes;
+        setPreciosPorOrden((prevPrecios) => {
+          const { [ordenId]: _removed, ...rest } = prevPrecios;
           return rest;
         });
         setNroOrdenClientePorOrden((prevOrdenes) => {
@@ -97,8 +111,8 @@ export default function Facturacion() {
     });
   };
 
-  const handleImporteChange = (ordenId, value) => {
-    setImportesPorOrden((prev) => ({
+  const handlePrecioChange = (ordenId, value) => {
+    setPreciosPorOrden((prev) => ({
       ...prev,
       [ordenId]: value,
     }));
@@ -114,7 +128,8 @@ export default function Facturacion() {
   const handleFacturar = async () => {
     const { ordenesIds, payload } = mapFacturacionPayload({
       ordenesSeleccionadas,
-      importesPorOrden,
+      preciosPorOrden,
+      hectareasPorOrden,
       nroOrdenClientePorOrden,
       nroFactura,
     });
@@ -125,7 +140,7 @@ export default function Facturacion() {
     if (!response?.ok) return;
 
     setOrdenesSeleccionadas(new Set());
-    setImportesPorOrden({});
+    setPreciosPorOrden({});
     setNroOrdenClientePorOrden({});
     setNroFactura("");
     setEstanciaSeleccionada(null);
@@ -202,17 +217,17 @@ export default function Facturacion() {
           cantidadSeleccionadas={cantidadSeleccionadas}
           nroFactura={nroFactura}
           isFacturando={isFacturando}
-          tieneImportesInvalidos={tieneImportesInvalidos}
+          tienePreciosInvalidos={tienePreciosInvalidos}
           ordenesSeleccionadas={ordenesSeleccionadas}
-          importesPorOrden={importesPorOrden}
+          preciosPorOrden={preciosPorOrden}
           nroOrdenClientePorOrden={nroOrdenClientePorOrden}
           onCambiarModo={setModoPago}
           onNroFacturaChange={setNroFactura}
           onFacturar={handleFacturar}
           onToggleOrden={handleToggleOrden}
-          onImporteChange={handleImporteChange}
+          onPrecioChange={handlePrecioChange}
           onNroOrdenClienteChange={handleNroOrdenClienteChange}
-          importeEsValido={importeEsValido}
+          precioEsValido={importeEsValido}
           dialogoEstanciaAbierto={dialogoEstanciaAbierto}
           onDialogoEstanciaOpenChange={setDialogoEstanciaAbierto}
         />

@@ -10,28 +10,43 @@ export const mapOrdenFumigacionFormValuesToPayload = (
       sensible: values.sensible ?? false,
       comentarios: values.comentarios ?? '',
       lotes: (values.lotes || [])
-        .filter((lote) => lote.lote_id)
         .map((lote) => {
-          const loteData = {
-            id: lote?.orden_lote_id || null,
-            lote_id: lote.lote_id,
-            dosis: (lote.dosis || [])
-              .filter((dosis) => dosis.producto_id && dosis.cantidad !== null)
-              .map((dosis) => ({
-                id: dosis.orden_lote_dosis_id || null,
-                producto_id: dosis.producto_id,
-                cantidad: Number(dosis.cantidad),
-              })),
+          if (lote.eliminado && lote.orden_lote_id) {
+            return { id: lote.orden_lote_id, _destroy: true as const }
           }
 
-          if (lote.hectareas_reales !== null && lote.hectareas_reales !== undefined) {
-            return {
-              ...loteData,
-              hectareas_reales: Number(lote.hectareas_reales),
+          const dosis = (lote.dosis || [])
+            .filter((dosis) => dosis.producto_id && dosis.cantidad !== null && dosis.cantidad !== undefined && dosis.cantidad !== '')
+            .map((dosis) => ({
+              ...(dosis.orden_lote_dosis_id ? { id: dosis.orden_lote_dosis_id } : {}),
+              producto_id: dosis.producto_id,
+              cantidad: Number(dosis.cantidad),
+            }))
+          const id = lote.orden_lote_id ? { id: lote.orden_lote_id } : {}
+
+          if (!lote.es_manual && lote.lote_id) {
+            const loteData = {
+              ...id,
+              lote_id: lote.lote_id,
+              dosis,
             }
+
+            if (lote.hectareas_reales !== null && lote.hectareas_reales !== undefined && lote.hectareas_reales !== '') {
+              return {
+                ...loteData,
+                hectareas_reales: Number(lote.hectareas_reales),
+              }
+            }
+
+            return loteData
           }
 
-          return loteData
+          return {
+            ...id,
+            nombre_manual: lote.nombre_manual ?? '',
+            hectareas_reales: Number(lote.hectareas_reales),
+            dosis,
+          }
         }),
     },
   }

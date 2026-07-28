@@ -420,6 +420,9 @@ components:
           type: integer
         lote_id:
           type: integer
+          nullable: true
+        es_manual:
+          type: boolean
         nombre:
           type: string
         hectareas:
@@ -436,6 +439,7 @@ components:
       required:
       - id
       - lote_id
+      - es_manual
       - nombre
       - hectareas
       - estancia_id
@@ -470,7 +474,6 @@ components:
           type: integer
         estancia_id:
           type: integer
-          nullable: true
         nombre_estancia:
           type: string
         lotes_ids:
@@ -611,6 +614,8 @@ components:
             cultivo_id:
               type: integer
               nullable: true
+            estancia_id:
+              type: integer
             adjuntos:
               type: array
               items:
@@ -620,6 +625,7 @@ components:
               type: array
               items:
                 type: object
+                description: Enviar lote_id para un lote existente o nombre_manual y hectareas_reales para un lote manual.
                 properties:
                   id:
                     type: integer
@@ -627,8 +633,11 @@ components:
                   lote_id:
                     type: integer
                     nullable: true
-                  hectareas_reales:
+                  nombre_manual:
                     type: string
+                    nullable: true
+                  hectareas_reales:
+                    type: number
                     nullable: true
                   _destroy:
                     type: boolean
@@ -648,11 +657,14 @@ components:
                         _destroy:
                           type: boolean
                           nullable: true
-                      required:
-                      - producto_id
-                      - cantidad
-      required:
-      - orden_fumigacion
+                       required:
+                       - producto_id
+                       - cantidad
+          required:
+          - estancia_id
+          - lotes
+       required:
+       - orden_fumigacion
     TerminarOrdenFumigacionRequest:
       type: object
       properties:
