@@ -22,6 +22,7 @@ import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumiga
 import BuscarOrden from '@/features/ordenes-fumigacion/pages/BuscarOrden'
 import Facturacion from '@/features/ordenes-fumigacion/pages/Facturacion'
 import Estadistica from '@/features/estadisticas/pages/Estadistica'
+import InformeOrdenes from '@/features/informe-ordenes/pages/InformeOrdenes'
 import Cultivos from '@/features/cultivos/pages/Cultivos'
 import CultivoNew from '@/features/cultivos/pages/CultivoNew'
 import CultivoEdit from '@/features/cultivos/pages/CultivoEdit'
@@ -64,6 +65,7 @@ createRoot(root).render(
               <Route path="/productos/new" element={<ProductoNew />} />
               <Route path="/productos/:id/edit" element={<ProductoEdit />} />
               <Route path="/estadisticas" element={<Estadistica />} />
+              <Route path="/informe_ordenes" element={<InformeOrdenes />} />
               <Route path="/ordenes_fumigacion" element={<OrdenesFumigacion />} />
               <Route path="/buscar_ordenes" element={<BuscarOrden />} />
               <Route path="/ordenes_fumigacion/new" element={<OrdenFumigacionNew />} />
