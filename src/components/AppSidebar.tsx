@@ -55,6 +55,10 @@ const data = {
           title: "Estadisticas",
           url: "/estadisticas",
         },
+        {
+          title: "Informe órdenes",
+          url: "/informe_ordenes",
+        },
       ],
     },
     {
