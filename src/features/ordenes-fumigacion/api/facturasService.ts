@@ -1,5 +1,6 @@
 import { fetchWithAuth } from '@/services/fetchWithAuth'
 import { handleResponse } from '@/lib/utils'
+import { getAuthJsonHeaders } from '@/services/authHelpers'
 
 import type { FacturaPago } from '@/features/facturacion/types'
 
@@ -19,6 +20,7 @@ export const marcarFacturaPagada = async (
 
   const res = await fetchWithAuth(url.toString(), {
     method: 'PATCH',
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({fecha_pago: fechaPago})
   })
 

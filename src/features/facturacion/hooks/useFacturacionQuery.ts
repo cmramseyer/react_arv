@@ -12,7 +12,6 @@ import type {
   FacturaPago,
   FacturacionGrupoPendiente,
   FacturacionResponse,
-  MarcarFacturaPagadaResponse,
 } from '@/features/facturacion/types'
 import type {
   FacturarOrdenesPayload,
