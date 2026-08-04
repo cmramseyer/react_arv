@@ -1,4 +1,6 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+import { apiBaseUrl } from './apiUrl'
+
+const API_URL = apiBaseUrl
 
 export type TokenResponse = string | undefined
 

@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import { apiBaseUrl } from '@/services/apiUrl'
 import type {
   FacturarOrdenesPayload,
   OrdenFumigacion,
@@ -7,7 +8,7 @@ import type {
   OrdenFumigacionTerminarPayload,
 } from '@/features/ordenes-fumigacion/types'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 type OrdenFumigacionRequestBody = {
   orden_fumigacion?: Partial<OrdenFumigacionPayload['orden_fumigacion']>

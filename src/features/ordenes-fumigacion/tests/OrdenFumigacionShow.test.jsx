@@ -73,9 +73,10 @@ vi.mock('react-cropper', () => ({
 vi.mock('cropperjs/dist/cropper.css', () => ({}))
 
 import OrdenFumigacionShow from '@/features/ordenes-fumigacion/pages/OrdenFumigacionShow'
+import { apiBaseUrl } from '@/services/apiUrl'
 
 const server = setupServer(...ordenFumigacionHandlers, ...maquinistaHandlers)
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {

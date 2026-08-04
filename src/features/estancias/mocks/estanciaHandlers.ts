@@ -1,8 +1,9 @@
 import { http, HttpResponse } from 'msw'
+import { apiBaseUrl } from '@/services/apiUrl'
 import type { Estancia } from '@/features/estancias/types'
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
   
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 type EstanciaRequestBody = {
   estancia: EstanciaFormValues

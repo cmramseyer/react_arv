@@ -8,6 +8,8 @@ import { http, HttpResponse } from 'msw'
 import ProductoList from '../components/ProductoList'
 
 import { setupServer } from 'msw/node'
+
+import { apiUrl } from '@/services/apiUrl'
 import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
  
 export const server = setupServer(...productoHandlers)
@@ -102,7 +104,7 @@ describe('ProductoList', () => {
 
   it('shows an error message when products request fails', async () => {
     server.use(
-      http.get(`http://${import.meta.env.VITE_API_URL}/productos`, () => {
+      http.get(apiUrl('productos'), () => {
         return HttpResponse.json({ error: 'Error interno' }, { status: 500 })
       })
     )

@@ -1,11 +1,12 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}/productos` 
-
 import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { apiUrl } from "@/services/apiUrl"
 import { handleResponse } from "@/lib/utils"
 import { getAuthJsonHeaders, getAuthOnlyHeaders } from "@/services/authHelpers"
 
 import type { Producto } from '../types'
 import type { ProductoFormValues } from '../schemas/productoSchema'
+
+const API_URL = apiUrl('productos')
 
 export const getProductos = async (): Promise<Producto[]> => {
   const res = await fetchWithAuth(API_URL, {
