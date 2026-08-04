@@ -31,7 +31,7 @@ if (typeof window.ResizeObserver === 'undefined') {
 }
 
 globalThis.mockImportMetaEnv = (overrides = {}) => {
-  const viteUrl = overrides.VITE_API_URL || import.meta.env?.VITE_API_URL || 'localhost:3000'
+  const viteUrl = overrides.VITE_API_URL || import.meta.env?.VITE_API_URL || 'http://localhost:3000'
   if (!import.meta.env) {
     Object.defineProperty(import.meta, 'env', {
       value: { VITE_API_URL: viteUrl },

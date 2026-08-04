@@ -1,10 +1,11 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}/lotes`
-
 import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { apiUrl } from "@/services/apiUrl"
 import { handleResponse } from '@/lib/utils'
 import { getAuthOnlyHeaders, getAuthJsonHeaders } from "@/services/authHelpers"
 
 import type { AdjuntoLote, Lote } from '../types'
+
+const API_URL = apiUrl('lotes')
 
 export const getLotes = async (): Promise<Lote[]> => {
   const res = await fetchWithAuth(API_URL, {
@@ -14,7 +15,7 @@ export const getLotes = async (): Promise<Lote[]> => {
 }
 
 export const getLotesPorEstancia = async (estancia_id: number | string): Promise<Lote[]> => {
-  const url = new URL(API_URL)
+  const url = new URL(API_URL, window.location.origin)
   url.searchParams.append('estancia_id', String(estancia_id))
 
   const res = await fetchWithAuth(url.toString(), {

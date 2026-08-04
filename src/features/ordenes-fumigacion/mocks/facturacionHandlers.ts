@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
+import { apiBaseUrl } from '@/services/apiUrl'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 export const facturacionHandlers = [
   http.get(`${API_URL}/facturas_pago`, () => {

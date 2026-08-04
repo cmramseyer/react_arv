@@ -1,10 +1,11 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}/estancias`
-
 import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { apiUrl } from "@/services/apiUrl"
 import { handleResponse } from "@/lib/utils"
 import { getAuthOnlyHeaders, getAuthJsonHeaders } from "@/services/authHelpers"
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
 import type { Estancia } from '@/features/estancias/types'
+
+const API_URL = apiUrl('estancias')
 
 export const getEstancias = async (): Promise<Estancia[]> => {
   const res = await fetchWithAuth(API_URL, {

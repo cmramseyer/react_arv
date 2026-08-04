@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 
+import { apiBaseUrl } from '@/services/apiUrl'
 import { ordenFumigacionHandlers, resetOrdenFumigacionMocks } from '@/features/ordenes-fumigacion/mocks/ordenFumigacionHandlers'
 import { maquinistaHandlers, resetMaquinistaMocks } from '@/features/maquinistas/mocks/maquinistaHandlers'
 import OrdenFumigacionTerminar from '@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 const server = setupServer(...ordenFumigacionHandlers, ...maquinistaHandlers)
 

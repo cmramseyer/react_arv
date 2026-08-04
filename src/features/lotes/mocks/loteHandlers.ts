@@ -1,7 +1,8 @@
 import { http, HttpResponse } from 'msw'
+import { apiBaseUrl } from '@/services/apiUrl'
 import type { Lote } from '@/features/lotes/types'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 const initialLotes: Lote[] = [
   {

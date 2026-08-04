@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
- 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+import { apiBaseUrl } from '@/services/apiUrl'
+
+const API_URL = apiBaseUrl
 
 type ProductoMock = {
   id: string

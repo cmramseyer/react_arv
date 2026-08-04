@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 
+import { apiBaseUrl } from '@/services/apiUrl'
 import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEdit'
 import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
 import { ordenFumigacionHandlers, resetOrdenFumigacionMocks } from '@/features/ordenes-fumigacion/mocks/ordenFumigacionHandlers'
@@ -14,7 +15,7 @@ import { loteHandlers } from '@/features/lotes/mocks/loteHandlers'
 import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
 import { cultivoHandlers } from '@/features/cultivos/mocks/cultivoHandlers'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 
 const server = setupServer(
   ...ordenFumigacionHandlers,

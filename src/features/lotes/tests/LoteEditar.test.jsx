@@ -6,11 +6,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 
+import { apiBaseUrl } from '@/services/apiUrl'
 import LoteEdit from '@/features/lotes/pages/LoteEdit'
 import { loteHandlers, resetLoteMocks } from '@/features/lotes/mocks/loteHandlers'
 import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
 
-const API_URL = `http://${import.meta.env.VITE_API_URL}`
+const API_URL = apiBaseUrl
 const server = setupServer(...loteHandlers, ...estanciaHandlers)
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))

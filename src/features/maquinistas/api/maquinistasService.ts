@@ -1,11 +1,12 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}/maquinistas`
-
 import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { apiUrl } from "@/services/apiUrl"
 import { handleResponse } from '@/lib/utils'
 import { getAuthJsonHeaders, getAuthOnlyHeaders } from "@/services/authHelpers"
 
 import type { Maquinista } from '../types'
 import type { MaquinistaFormValues } from '../schemas/maquinistaSchema'
+
+const API_URL = apiUrl('maquinistas')
 
 export const getMaquinistas = async (): Promise<Maquinista[]> => {
   const res = await fetchWithAuth(API_URL, {

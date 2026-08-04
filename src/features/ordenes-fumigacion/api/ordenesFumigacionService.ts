@@ -1,6 +1,5 @@
-const API_URL = `http://${import.meta.env.VITE_API_URL}/ordenes_fumigacion`
-
 import { fetchWithAuth } from "@/services/fetchWithAuth"
+import { apiUrl } from "@/services/apiUrl"
 import { handleResponse } from "@/lib/utils"
 import { getAuthJsonHeaders, getAuthOnlyHeaders } from "@/services/authHelpers"
 
@@ -17,8 +16,10 @@ import type {
   OrdenFumigacionTerminarPayload,
 } from '../types'
 
+const API_URL = apiUrl('ordenes_fumigacion')
+
 export const getOrdenesFumigacion = async (filters: OrdenFumigacionFilters = {}): Promise<OrdenFumigacionListItem[]> => {
-  const url = new URL(API_URL)
+  const url = new URL(API_URL, window.location.origin)
 
   if (typeof filters === 'string' || filters === null || filters === undefined) {
     if (filters) {
@@ -103,7 +104,7 @@ export const deleteOrdenFumigacion = async (id: number | string): Promise<null> 
 
 export const getAdjuntosOrden = async (ordenId: number | string): Promise<OrdenFumigacionAdjunto[]> => {
   const res = await fetchWithAuth(
-    `http://${import.meta.env.VITE_API_URL}/adjuntos?orden_fumigacion_id=${ordenId}`,
+    `${apiUrl('adjuntos')}?orden_fumigacion_id=${ordenId}`,
     {
       headers: getAuthJsonHeaders(),
     }
@@ -134,7 +135,7 @@ export const getOrdenesPendientesFacturacion = async (): Promise<OrdenesPendient
 }
 
 export const facturarOrdenes = async (payload: FacturarOrdenesPayload): Promise<FacturarOrdenesResponse> => {
-  const res = await fetchWithAuth(`http://${import.meta.env.VITE_API_URL}/facturas`, {
+  const res = await fetchWithAuth(apiUrl('facturas'), {
     method: 'POST',
     headers: {
       ...getAuthOnlyHeaders(),
