@@ -1,13 +1,13 @@
 import { logoutAndRedirect } from './authHelpers'
-import { refreshToken, type TokenResponse } from './refreshService'
+import { refreshSession } from './refreshService'
 
 type FetchWithAuthOptions = RequestInit & { retryOnUnauthorized?: boolean }
 
-let refreshPromise: Promise<TokenResponse> | null = null
+let refreshPromise: Promise<void> | null = null
 
-const getRefreshedToken = async () => {
+const refreshAuthentication = async () => {
   if (!refreshPromise) {
-    refreshPromise = refreshToken().finally(() => {
+    refreshPromise = refreshSession().finally(() => {
       refreshPromise = null
     })
   }
@@ -30,7 +30,7 @@ export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions =
   }
 
   try {
-    await getRefreshedToken()
+    await refreshAuthentication()
   } catch {
     logoutAndRedirect()
     return res
