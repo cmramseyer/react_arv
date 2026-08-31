@@ -36,7 +36,7 @@ export default function App() {
   }, [location.pathname])
 
   const authButton = isAuthenticated ? (
-    <button onClick={logout} className="text-sm text-red-500 hover:text-red-700 ml-4">
+        <button onClick={() => void logout()} className="text-sm text-red-500 hover:text-red-700 ml-4">
       Sign Out
     </button>
   ) : (
