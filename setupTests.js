@@ -1,6 +1,7 @@
 // Polyfill para TextEncoder en Vitest
 import { TextEncoder, TextDecoder } from 'util'
 import '@testing-library/jest-dom'
+import { setCsrfToken } from './src/services/csrfService'
 
 if (typeof global.TextEncoder === 'undefined') {
   global.TextEncoder = TextEncoder
@@ -44,3 +45,4 @@ globalThis.mockImportMetaEnv = (overrides = {}) => {
 }
 
 globalThis.mockImportMetaEnv()
+setCsrfToken('test-csrf-token')

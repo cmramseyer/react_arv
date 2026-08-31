@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { signIn } from '../services/loginService'
 import { clearCsrfToken, setCsrfToken } from '../services/csrfService'
 import { getSession, signOut } from '../services/sessionService'
@@ -15,6 +16,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = useQueryClient()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -53,8 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await signOut()
     } finally {
       clearCsrfToken()
+      queryClient.clear()
       setIsAuthenticated(false)
-      window.location.href = '/login'
     }
   }
 
