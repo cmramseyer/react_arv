@@ -8,11 +8,7 @@ export type LoginCredentials = {
   password: string
 }
 
-type LoginResponse = {
-  token: string
-}
-
-export const signIn = async (data: LoginCredentials): Promise<LoginResponse> => {
+export const signIn = async (data: LoginCredentials): Promise<void> => {
   const res = await fetch(`${API_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -20,5 +16,5 @@ export const signIn = async (data: LoginCredentials): Promise<LoginResponse> => 
     body: JSON.stringify({user: data})
   })
 
-  return handleResponse<LoginResponse>(res, 'Error signin in')
+  await handleResponse(res, 'Error signin in')
 }

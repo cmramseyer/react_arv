@@ -16,10 +16,8 @@ export const refreshToken = async (): Promise<TokenResponse> => {
 
   const data = await response.json()
   if (data?.token) {
-    localStorage.setItem('arv_token', data.token)
+    return data.token
   } else {
     throw new Error('Token no recibido')
   }
-
-  return data.token
 }

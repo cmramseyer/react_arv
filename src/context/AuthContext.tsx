@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import { signIn } from '../services/loginService'
 
 import type { LoginCredentials } from '../services/loginService'
@@ -14,19 +14,12 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  useEffect(() => {
-    const token = localStorage.getItem('arv_token')
-    setIsAuthenticated(!!token)
-  }, [])
-
   const login = async (data: LoginCredentials): Promise<void> => {
-    const response = await signIn(data)
-    localStorage.setItem('arv_token', response.token)
+    await signIn(data)
     setIsAuthenticated(true)
   }
 
   const logout = () => {
-    localStorage.removeItem('arv_token')
     setIsAuthenticated(false)
     window.location.href = '/login'
   }

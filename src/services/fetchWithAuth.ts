@@ -17,14 +17,10 @@ const getRefreshedToken = async () => {
 
 export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions = {}) => {
   const { retryOnUnauthorized = true, ...restOptions } = options
-  const token = localStorage.getItem('arv_token')
 
   const finalOptions = {
     ...restOptions,
-    headers: {
-      ...(restOptions.headers || {}),
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+    credentials: 'include' as const,
   }
 
   const res = await fetch(url, finalOptions)
@@ -35,18 +31,14 @@ export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions =
 
   try {
     await getRefreshedToken()
-  } catch (error) {
+  } catch {
     logoutAndRedirect()
     return res
   }
 
-  const refreshedToken = localStorage.getItem('arv_token')
   const retryOptions = {
     ...restOptions,
-    headers: {
-      ...(restOptions.headers || {}),
-      Authorization: refreshedToken ? `Bearer ${refreshedToken}` : '',
-    },
+    credentials: 'include' as const,
   }
 
   const retryResponse = await fetch(url, retryOptions)
