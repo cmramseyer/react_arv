@@ -1,13 +1,14 @@
 import { logoutAndRedirect } from './authHelpers'
-import { refreshToken, type TokenResponse } from './refreshService'
+import { getCsrfToken } from './csrfService'
+import { refreshSession } from './refreshService'
 
 type FetchWithAuthOptions = RequestInit & { retryOnUnauthorized?: boolean }
 
-let refreshPromise: Promise<TokenResponse> | null = null
+let refreshPromise: Promise<void> | null = null
 
-const getRefreshedToken = async () => {
+const refreshAuthentication = async () => {
   if (!refreshPromise) {
-    refreshPromise = refreshToken().finally(() => {
+    refreshPromise = refreshSession().finally(() => {
       refreshPromise = null
     })
   }
@@ -17,14 +18,22 @@ const getRefreshedToken = async () => {
 
 export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions = {}) => {
   const { retryOnUnauthorized = true, ...restOptions } = options
-  const token = localStorage.getItem('arv_token')
+  const method = (restOptions.method || 'GET').toUpperCase()
+  const headers = new Headers(restOptions.headers)
+
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCsrfToken()
+    if (!csrfToken) {
+      throw new Error('No hay token CSRF para esta operación')
+    }
+
+    headers.set('X-CSRF-Token', csrfToken)
+  }
 
   const finalOptions = {
     ...restOptions,
-    headers: {
-      ...(restOptions.headers || {}),
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+    credentials: 'include' as const,
+    headers,
   }
 
   const res = await fetch(url, finalOptions)
@@ -34,19 +43,16 @@ export const fetchWithAuth = async (url: string, options: FetchWithAuthOptions =
   }
 
   try {
-    await getRefreshedToken()
-  } catch (error) {
+    await refreshAuthentication()
+  } catch {
     logoutAndRedirect()
     return res
   }
 
-  const refreshedToken = localStorage.getItem('arv_token')
   const retryOptions = {
     ...restOptions,
-    headers: {
-      ...(restOptions.headers || {}),
-      Authorization: refreshedToken ? `Bearer ${refreshedToken}` : '',
-    },
+    credentials: 'include' as const,
+    headers,
   }
 
   const retryResponse = await fetch(url, retryOptions)

@@ -32,6 +32,7 @@ import MaquinistaEdit from '@/features/maquinistas/pages/MaquinistaEdit'
 import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { RequireAuth } from '@/components/RequireAuth'
 
 const queryClient = new QueryClient()
 
@@ -45,9 +46,10 @@ createRoot(root).render(
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<App />}>
+            <Route path="/login" element={<Login />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/" element={<App />}>
               <Route index element={<Home />} />
-              <Route path="/login" element={<Login />} />
               <Route path="/estancias" element={<Estancias />} />
               <Route path="/estancias/new" element={<EstanciaNew />} />
               <Route path="/estancias/:id/edit" element={<EstanciaEdit />} />
@@ -72,6 +74,7 @@ createRoot(root).render(
               <Route path="/ordenes_fumigacion/pendiente_factura" element={<Facturacion />} />
               <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
               <Route path="/ordenes_fumigacion/:id/edit" element={<OrdenFumigacionEdit />} />
+              </Route>
             </Route>
           </Routes>
         </AuthProvider>

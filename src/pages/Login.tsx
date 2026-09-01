@@ -14,7 +14,7 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      login(data)
+      await login(data)
       navigate('/')
     } catch (error) {
       alert(`Login incorrecto: ${error.message}`)
