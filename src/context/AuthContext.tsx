@@ -24,10 +24,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const loadSession = async () => {
       try {
         const session = await getSession()
-        if (session) {
-          setCsrfToken(session.csrf_token)
-          setIsAuthenticated(true)
-        }
+        setCsrfToken(session.csrf_token)
+        setIsAuthenticated(session.authenticated)
       } catch {
         clearCsrfToken()
         setIsAuthenticated(false)
@@ -40,13 +38,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const login = async (data: LoginCredentials): Promise<void> => {
+    const bootstrapSession = await getSession()
+    setCsrfToken(bootstrapSession.csrf_token)
+
     await signIn(data)
     const session = await getSession()
-    if (!session) {
+    setCsrfToken(session.csrf_token)
+    if (!session.authenticated) {
       throw new Error('No se pudo iniciar sesión')
     }
 
-    setCsrfToken(session.csrf_token)
     setIsAuthenticated(true)
   }
 

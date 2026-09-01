@@ -2,16 +2,14 @@ import { apiUrl } from './apiUrl'
 import { getCsrfToken } from './csrfService'
 import { fetchWithAuth } from './fetchWithAuth'
 
-type SessionResponse = {
+export type SessionResponse = {
+  authenticated: boolean
+  user: unknown | null
   csrf_token: string
 }
 
-export const getSession = async (): Promise<SessionResponse | null> => {
-  const response = await fetchWithAuth(apiUrl('session'))
-
-  if (response.status === 401) {
-    return null
-  }
+export const getSession = async (): Promise<SessionResponse> => {
+  const response = await fetchWithAuth(apiUrl('session'), { retryOnUnauthorized: false })
 
   if (!response.ok) {
     throw new Error('No se pudo verificar la sesión')
@@ -20,6 +18,10 @@ export const getSession = async (): Promise<SessionResponse | null> => {
   const session = await response.json() as SessionResponse
   if (!session.csrf_token) {
     throw new Error('La sesión no incluyó un token CSRF')
+  }
+
+  if (typeof session.authenticated !== 'boolean') {
+    throw new Error('La sesión no incluyó el estado de autenticación')
   }
 
   return session

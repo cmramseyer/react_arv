@@ -1,7 +1,6 @@
 import { handleResponse } from '../lib/utils'
-import { apiBaseUrl } from './apiUrl'
-
-const API_URL = apiBaseUrl
+import { apiUrl } from './apiUrl'
+import { fetchWithAuth } from './fetchWithAuth'
 
 export type LoginCredentials = {
   email: string,
@@ -9,11 +8,11 @@ export type LoginCredentials = {
 }
 
 export const signIn = async (data: LoginCredentials): Promise<void> => {
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await fetchWithAuth(apiUrl('login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({user: data})
+    body: JSON.stringify({user: data}),
+    retryOnUnauthorized: false,
   })
 
   await handleResponse(res, 'Error signin in')
