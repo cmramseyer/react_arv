@@ -13,19 +13,35 @@ describe('sessionService', () => {
     vi.unstubAllGlobals()
   })
 
-  it('returns the CSRF token from an authenticated session', async () => {
-    fetchWithAuth.mockResolvedValue(new Response(JSON.stringify({ csrf_token: 'csrf-token' }), { status: 200 }))
+  it('returns the authentication state and CSRF token without refreshing', async () => {
+    fetchWithAuth.mockResolvedValue(new Response(JSON.stringify({
+      authenticated: true,
+      user: { id: 1 },
+      csrf_token: 'csrf-token',
+    }), { status: 200 }))
     const { getSession } = await import('./sessionService')
 
-    await expect(getSession()).resolves.toEqual({ csrf_token: 'csrf-token' })
-    expect(fetchWithAuth).toHaveBeenCalledWith('http://localhost:3000/session')
+    await expect(getSession()).resolves.toEqual({
+      authenticated: true,
+      user: { id: 1 },
+      csrf_token: 'csrf-token',
+    })
+    expect(fetchWithAuth).toHaveBeenCalledWith('http://localhost:3000/session', { retryOnUnauthorized: false })
   })
 
-  it('returns null for an unauthenticated session', async () => {
-    fetchWithAuth.mockResolvedValue(new Response(null, { status: 401 }))
+  it('returns an anonymous session while retaining its CSRF token', async () => {
+    fetchWithAuth.mockResolvedValue(new Response(JSON.stringify({
+      authenticated: false,
+      user: null,
+      csrf_token: 'csrf-token',
+    }), { status: 200 }))
     const { getSession } = await import('./sessionService')
 
-    await expect(getSession()).resolves.toBeNull()
+    await expect(getSession()).resolves.toEqual({
+      authenticated: false,
+      user: null,
+      csrf_token: 'csrf-token',
+    })
   })
 
   it('sends the in-memory CSRF token when logging out', async () => {

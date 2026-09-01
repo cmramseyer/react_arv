@@ -56,7 +56,7 @@ describe('AuthProvider', () => {
   }
 
   it('bootstraps an authenticated session and stores its CSRF token in memory', async () => {
-    mocks.getSession.mockResolvedValue({ csrf_token: 'csrf-token' })
+    mocks.getSession.mockResolvedValue({ authenticated: true, user: { id: 1 }, csrf_token: 'csrf-token' })
 
     renderAuthProvider()
 
@@ -65,10 +65,11 @@ describe('AuthProvider', () => {
     expect(mocks.setCsrfToken).toHaveBeenCalledWith('csrf-token')
   })
 
-  it('loads a session after a successful login', async () => {
+  it('bootstraps CSRF before logging in and verifies the authenticated session afterwards', async () => {
     mocks.getSession
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ csrf_token: 'csrf-token' })
+      .mockResolvedValueOnce({ authenticated: false, user: null, csrf_token: 'initial-csrf-token' })
+      .mockResolvedValueOnce({ authenticated: false, user: null, csrf_token: 'login-csrf-token' })
+      .mockResolvedValueOnce({ authenticated: true, user: { id: 1 }, csrf_token: 'authenticated-csrf-token' })
     const user = userEvent.setup()
 
     renderAuthProvider()
@@ -78,11 +79,12 @@ describe('AuthProvider', () => {
 
     await waitFor(() => expect(screen.getByText('authenticated')).toBeInTheDocument())
     expect(mocks.signIn).toHaveBeenCalledWith({ email: 'user@example.com', password: 'secret' })
-    expect(mocks.setCsrfToken).toHaveBeenCalledWith('csrf-token')
+    expect(mocks.setCsrfToken).toHaveBeenNthCalledWith(2, 'login-csrf-token')
+    expect(mocks.setCsrfToken).toHaveBeenNthCalledWith(3, 'authenticated-csrf-token')
   })
 
   it('revokes the remote session and clears cached data on logout', async () => {
-    mocks.getSession.mockResolvedValue({ csrf_token: 'csrf-token' })
+    mocks.getSession.mockResolvedValue({ authenticated: true, user: { id: 1 }, csrf_token: 'csrf-token' })
     const queryClient = renderAuthProvider()
     const clear = vi.spyOn(queryClient, 'clear')
     const user = userEvent.setup()

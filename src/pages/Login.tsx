@@ -9,7 +9,7 @@ type LoginFormValues = LoginCredentials
 
 export default function Login() {
   const { register, handleSubmit } = useForm<LoginFormValues>()
-  const { login } = useAuth()
+  const { isLoading, login } = useAuth()
   const navigate = useNavigate()
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -27,7 +27,7 @@ export default function Login() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <input {...register('email')} type="email" placeholder="Email" className="block w-full border p-2" required />
         <input {...register('password')} type="password" placeholder="Password" className="block w-full border p-2" required />
-        <button type="submit" className="bg-blue-500 text-white w-full py-2 rounded">Login</button>
+        <button type="submit" disabled={isLoading} className="bg-blue-500 text-white w-full py-2 rounded">Login</button>
       </form>
     </div>
   )
