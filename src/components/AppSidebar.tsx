@@ -142,6 +142,9 @@ export function AppSidebar({...props}) {
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
                                 asChild
+
+                                data-active={isActive || undefined}
+
                                 isActive={isActive}
                                 className={isActive ? "font-bold" : ""}
                               >
@@ -166,7 +169,7 @@ export function AppSidebar({...props}) {
 
                     return (
                       <SidebarMenuItem key={subItem.title}>
-                        <SidebarMenuButton asChild isActive={isActive} className={isActive ? "font-bold" : ""}>
+                        <SidebarMenuButton asChild data-active={isActive || undefined} isActive={isActive} className={isActive ? "font-bold" : ""}>
                           <Link to={subItem.url}>{subItem.title}</Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
