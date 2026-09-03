@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import PagoPendienteSkeleton from "@/features/facturacion/components/PagoPendienteSkeleton";
 import { cn } from "@/lib/utils";
 import type { FacturaPago, FacturaPagoOrden } from "@/features/facturacion/types";
 import { formatHectareas } from "@/utils/formatHectareas";
@@ -91,10 +92,8 @@ export default function PagoPendiente({
         </label>
       </div>
 
-      {loading && (
-        <div className="text-sm text-muted-foreground">
-          Cargando facturas para pago...
-        </div>
+      {loading && ordenesPorEstancia.length === 0 && (
+        <PagoPendienteSkeleton />
       )}
 
       {!loading && ordenesPorEstancia.length === 0 && (
@@ -103,7 +102,7 @@ export default function PagoPendiente({
         </div>
       )}
 
-      {!loading && ordenesPorEstancia.length > 0 && (
+      {ordenesPorEstancia.length > 0 && (
         <>
           {ordenesPorEstancia.map((grupo, index) => {
             const datos = Array.isArray(grupo?.ordenes_fumigacion)
