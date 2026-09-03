@@ -1,12 +1,61 @@
-# React + Vite
+# ARV
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Demo
 
-Currently, two official plugins are available:
+[Open the live demo](https://arv.ramseyer.com.ar)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Email:** `demo@example.com`
+- **Password:** `arvdemo`
 
-## Expanding the ESLint configuration
+Web application for managing agricultural spraying operations.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The backend repository is available at [github.com/cmramseyer/arv](https://github.com/cmramseyer/arv).
+
+## Features
+
+- Manage farms, fields, crops, products, and operators.
+- Create, complete, search, and edit spraying work orders.
+- Track invoicing and payments.
+- Generate reports and view operational statistics.
+- Attach and annotate images and documents.
+
+## Getting Started
+
+Requirements: Node.js 22, npm, and the ARV API running locally.
+
+```bash
+npm ci
+cp .env.example .env.development
+npm run dev
+```
+
+The application runs at `http://localhost:5173` and expects the API at
+`http://localhost:3000` by default.
+
+## Configuration
+
+Set `VITE_API_URL` to the API base URL. When omitted, it defaults to `/api`.
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+Authentication uses secure cookies and CSRF protection provided by the API.
+
+## Commands
+
+```bash
+npm run dev           # Start the development server
+npm run build         # Create a production build
+npm run typecheck     # Check TypeScript types
+npm run lint          # Run ESLint
+npm test -- --run     # Run the test suite once
+npm run test:coverage # Run tests with coverage
+```
+
+## Stack
+
+React, TypeScript, Vite, Tailwind CSS, TanStack Query, React Router, Vitest,
+Testing Library, and MSW.
+
+The API contract is available at [`openapi/v1/openapi.yaml`](openapi/v1/openapi.yaml).
