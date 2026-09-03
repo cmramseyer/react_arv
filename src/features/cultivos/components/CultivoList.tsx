@@ -12,6 +12,7 @@ import {
 
 import { Button } from '@/components/ui/button'
 import type { EntityId } from '@/utils/types'
+import CultivoListSkeleton from '@/features/cultivos/components/CultivoListSkeleton'
 
 export default function CultivoList() {
   const navigate = useNavigate()
@@ -28,9 +29,22 @@ export default function CultivoList() {
     }
   }
 
-  if (cultivosQuery.isLoading) { return <div>Cargando...</div>}
+  if (cultivosQuery.isLoading) { return <CultivoListSkeleton /> }
+
+  if (cultivosQuery.isError) {
+    return (
+      <div className="space-y-2">
+        <div>Error: {cultivosQuery.error?.message}</div>
+        <Button onClick={() => cultivosQuery.refetch()} variant="default">
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
 
   const cultivos = cultivosQuery.data ?? []
+
+  if (cultivos.length === 0) { return <div>No hay cultivos</div> }
 
   return (
     <Table>

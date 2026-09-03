@@ -4,9 +4,11 @@ import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 
 import CultivoList from '@/features/cultivos/components/CultivoList'
 import { cultivoHandlers, resetCultivoMocks } from '@/features/cultivos/mocks/cultivoHandlers'
+import { apiUrl } from '@/services/apiUrl'
 
 export const server = setupServer(...cultivoHandlers)
 
@@ -42,6 +44,28 @@ describe('CultivoList', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
+  })
+
+  it('shows a skeleton while cultivos are loading', async () => {
+    server.use(
+      http.get(apiUrl('cultivos'), async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return HttpResponse.json([])
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <CultivoList />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('status', { name: /cargando cultivos/i })).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status', { name: /cargando cultivos/i })).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('No hay cultivos')).toBeInTheDocument()
   })
 
   it('renders cultivos in the table', async () => {

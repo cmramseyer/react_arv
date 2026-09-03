@@ -4,9 +4,11 @@ import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 
 import MaquinistaList from '@/features/maquinistas/components/MaquinistaList'
 import { maquinistaHandlers, resetMaquinistaMocks } from '@/features/maquinistas/mocks/maquinistaHandlers'
+import { apiUrl } from '@/services/apiUrl'
 
 export const server = setupServer(...maquinistaHandlers)
 
@@ -42,6 +44,28 @@ describe('MaquinistaList', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
+  })
+
+  it('shows a skeleton while maquinistas are loading', async () => {
+    server.use(
+      http.get(apiUrl('maquinistas'), async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return HttpResponse.json([])
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <MaquinistaList />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('status', { name: /cargando maquinistas/i })).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status', { name: /cargando maquinistas/i })).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('No hay maquinistas')).toBeInTheDocument()
   })
 
   it('renders maquinistas in the table', async () => {
