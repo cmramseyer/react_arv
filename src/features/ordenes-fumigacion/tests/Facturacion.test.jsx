@@ -16,6 +16,19 @@ vi.mock('../api/facturasService', () => ({
 import { facturarOrdenes, getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
 import { getFacturasPago } from '../api/facturasService'
 import Facturacion from '../pages/Facturacion'
+import { toast } from 'sonner'
+
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
 
 const facturasPagoFixture = [
   {
@@ -220,6 +233,144 @@ describe('Facturacion', () => {
         ordenes_fumigacion: [{ id: 101, importe: 156.25 }],
         nro_factura: undefined,
       })
+    })
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Guardando factura...',
+        success: 'Factura creada',
+        error: 'Hubo un error',
+      }),
+    )
+  })
+
+  it('keeps the selection when facturar rejects', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([
+      {
+        id: 1,
+        nombre: 'Estancia Alfa',
+        data: [
+          {
+            orden_id: 101,
+            lote_id: 'Lote A',
+            hectareas: 10,
+            nombre_estancia: 'Estancia Alfa',
+          },
+        ],
+      },
+    ])
+    facturarOrdenes.mockRejectedValueOnce(new Error('Error creating factura'))
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    const checkbox = await screen.findByRole('checkbox', { name: /seleccionar orden 101/i })
+    await user.click(checkbox)
+    await user.type(screen.getByRole('textbox', { name: /precio de orden 101/i }), '12,50')
+    await user.click(screen.getByRole('button', { name: 'Facturar' }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalledWith(
+        expect.any(Promise),
+        expect.objectContaining({
+          loading: 'Guardando factura...',
+          success: 'Factura creada',
+          error: 'Hubo un error',
+        }),
+      )
+    })
+    expect(checkbox).toBeChecked()
+    expect(screen.getByText('1 ordenes seleccionadas')).toBeInTheDocument()
+  })
+
+  it('shows an error toast and keeps the selection when the backend reports ok false', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([
+      {
+        id: 1,
+        nombre: 'Estancia Alfa',
+        data: [
+          {
+            orden_id: 101,
+            lote_id: 'Lote A',
+            hectareas: 10,
+            nombre_estancia: 'Estancia Alfa',
+          },
+        ],
+      },
+    ])
+    facturarOrdenes.mockResolvedValueOnce({ ok: false })
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    const checkbox = await screen.findByRole('checkbox', { name: /seleccionar orden 101/i })
+    await user.click(checkbox)
+    await user.type(screen.getByRole('textbox', { name: /precio de orden 101/i }), '12,50')
+    await user.click(screen.getByRole('button', { name: 'Facturar' }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalledWith(
+        expect.any(Promise),
+        expect.objectContaining({
+          loading: 'Guardando factura...',
+          success: 'Factura creada',
+          error: 'Hubo un error',
+        }),
+      )
+    })
+    expect(checkbox).toBeChecked()
+    expect(screen.getByText('1 ordenes seleccionadas')).toBeInTheDocument()
+  })
+
+  it('treats a 201 response without an ok field as success', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([
+      {
+        id: 1,
+        nombre: 'Estancia Alfa',
+        data: [
+          {
+            orden_id: 101,
+            lote_id: 'Lote A',
+            hectareas: 10,
+            nombre_estancia: 'Estancia Alfa',
+          },
+        ],
+      },
+    ])
+    facturarOrdenes.mockResolvedValueOnce({
+      id: '9',
+      nro_factura: 'FAC-2026-009',
+    })
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    const checkbox = await screen.findByRole('checkbox', { name: /seleccionar orden 101/i })
+    await user.click(checkbox)
+    await user.type(screen.getByRole('textbox', { name: /precio de orden 101/i }), '12,50')
+    await user.click(screen.getByRole('button', { name: 'Facturar' }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalledWith(
+        expect.any(Promise),
+        expect.objectContaining({
+          loading: 'Guardando factura...',
+          success: 'Factura creada',
+          error: 'Hubo un error',
+        }),
+      )
+    })
+    await waitFor(() => {
+      expect(screen.getByText('0 ordenes seleccionadas')).toBeInTheDocument()
     })
   })
 })
