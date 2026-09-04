@@ -1,106 +1,52 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { vi } from 'vitest'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import MaquinistaForm from '@/features/maquinistas/components/MaquinistaForm'
 
-import { setupServer } from 'msw/node'
-import { maquinistaHandlers, resetMaquinistaMocks } from '@/features/maquinistas/mocks/maquinistaHandlers'
- 
-export const server = setupServer(...maquinistaHandlers)
+const renderForm = (props = {}) => {
+  const onSubmit = vi.fn().mockResolvedValue(undefined)
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => {
-  server.resetHandlers();
-  resetMaquinistaMocks();
-});
-afterAll(() => server.close());
+  render(
+    <MaquinistaForm
+      isSubmitting={false}
+      onSubmit={onSubmit}
+      submitLabel="Grabar"
+      {...props}
+    />,
+  )
 
-const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, staleTime: Infinity },
-      mutations: { retry: false },
-    },
-  });
-
-const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
-  return {
-    queryClient,
-    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
-  };
-};
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+  return { onSubmit }
 }
 
 describe('MaquinistaForm', () => {
-  let user
-  beforeEach(() => {
-    user = userEvent.setup()
+  it('resets fields from the supplied default values', () => {
+    renderForm({
+      defaultValues: { nombre: 'Carlos' },
+      submitLabel: 'Actualizar',
+    })
+
+    expect(screen.getByDisplayValue('Carlos')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /actualizar/i })).toBeInTheDocument()
   })
-  describe('Edit mode', () => {
-    it("returns to Maquinistas without extra requests when clicking Volver", async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <MaquinistaForm formAction="edit" id="1" />
-        </MemoryRouter>,
-      );
 
-      await screen.findByDisplayValue("Carlos");
-      expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
-    });
+  it('validates form data before submitting', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
 
-    it('updates a maquinista and navigates to maquinistas page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/maquinistas/1/edit']}>
-          <Routes>
-            <Route path="/maquinistas/1/edit" element={<MaquinistaForm formAction="edit" id="1" />} />
-            <Route path="/maquinistas" element={<LocationDisplay />} />
-          </Routes>
-        </MemoryRouter>,
-      );
+    await user.click(screen.getByRole('button', { name: /grabar/i }))
 
-      const nombreInput = await screen.findByDisplayValue('Carlos');
-      await user.clear(nombreInput);
-      await user.type(nombreInput, 'Carlos actualizado');
-      await user.click(screen.getByRole('button', { name: /actualizar/i }));
-
-      expect(await screen.findByTestId('location')).toHaveTextContent('/maquinistas');
-    });
+    expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
-  describe('Create mode', () => {
-    it("validates form", async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <MaquinistaForm formAction="create" />
-        </MemoryRouter>,
-      );
 
-      expect(screen.getByRole("button", { name: /grabar/i })).toBeInTheDocument();
-      await user.click(screen.getByRole("button", { name: /grabar/i }));
+  it('shows its loading state inside the submit button', () => {
+    renderForm({ isSubmitting: true })
 
-      expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
-    });
-
-    it('creates a maquinista and navigates to maquinistas page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/maquinistas/new']}>
-          <Routes>
-            <Route path="/maquinistas/new" element={<MaquinistaForm formAction="create" />} />
-            <Route path="/maquinistas" element={<LocationDisplay />} />
-          </Routes>
-        </MemoryRouter>,
-      );
-
-      await user.type(screen.getByLabelText(/nombre/i), 'Pedro');
-      await user.click(screen.getByRole('button', { name: /grabar/i }));
-
-      expect(await screen.findByTestId('location')).toHaveTextContent('/maquinistas');
-    });
+    const submitButton = screen.getByRole('button', { name: /cargando/i })
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByText('Grabar')).not.toBeInTheDocument()
   })
 })
