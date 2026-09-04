@@ -34,7 +34,7 @@ describe('toastText', () => {
     })
   })
 
-  it('covers adjunto upload and remove copy', () => {
+    it('covers adjunto upload and remove copy', () => {
     expect(toastText('lote', 'upload')).toEqual({
       loading: 'Subiendo adjunto...',
       success: 'Adjunto subido',
@@ -43,6 +43,14 @@ describe('toastText', () => {
     expect(toastText('lote', 'remove')).toEqual({
       loading: 'Eliminando adjunto...',
       success: 'Adjunto eliminado',
+      error: 'Hubo un error',
+    })
+  })
+
+  it('covers orden finish copy', () => {
+    expect(toastText('orden_fumigacion', 'finish')).toEqual({
+      loading: 'Terminando orden de fumigación...',
+      success: 'Orden de fumigación terminada',
       error: 'Hubo un error',
     })
   })

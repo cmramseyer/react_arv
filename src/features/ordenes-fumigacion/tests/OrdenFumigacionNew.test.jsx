@@ -47,6 +47,19 @@ import { createProducto, getProductos } from '@/features/productos/api/productos
 import { getCultivos } from '@/features/cultivos/api/cultivosService'
 import { createOrdenFumigacion } from '@/features/ordenes-fumigacion/api/ordenesFumigacionService'
 import OrdenesFumigacionNueva from '@/features/ordenes-fumigacion/pages/OrdenFumigacionNew'
+import { toast } from 'sonner'
+
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
 
 function LocationDisplay() {
   const location = useLocation()
@@ -206,5 +219,66 @@ describe('OrdenesFumigacionNueva', () => {
     expect(await screen.findByRole('option', { name: 'Producto Base' })).toBeInTheDocument()
     expect(await screen.findByRole('option', { name: 'Super Prod Mix' })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: 'Coadyuvante' })).not.toBeInTheDocument()
+  })
+
+  it('creates an order with toast feedback and navigates', async () => {
+    getEstancias.mockReset()
+    getEstancias.mockResolvedValue([{ id: 1, nombre: 'Estancia Uno' }])
+    createOrdenFumigacion.mockResolvedValue({ id: '3' })
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/nueva']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion" element={<div>Ordenes Page</div>} />
+          <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    await agregarLoteManual()
+    await user.type(screen.getByPlaceholderText('Ej. Sector detrás del galpón'), 'Sector Norte')
+    await user.type(screen.getByLabelText('Hectareas'), '10')
+    await user.click(screen.getByRole('button', { name: /^crear$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent('/ordenes_fumigacion')
+    })
+    expect(createOrdenFumigacion).toHaveBeenCalledTimes(1)
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Guardando orden de fumigación...',
+        success: 'Orden de fumigación creada',
+        error: 'Hubo un error',
+      }),
+    )
+  })
+
+  it('stays on the new page and keeps form values when creation fails', async () => {
+    getEstancias.mockReset()
+    getEstancias.mockResolvedValue([{ id: 1, nombre: 'Estancia Uno' }])
+    createOrdenFumigacion.mockRejectedValueOnce(new Error('Error creating'))
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/nueva']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion" element={<div>Ordenes Page</div>} />
+          <Route path="/ordenes_fumigacion/nueva" element={<OrdenesFumigacionNueva />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    await agregarLoteManual()
+    await user.type(screen.getByPlaceholderText('Ej. Sector detrás del galpón'), 'Sector Norte')
+    await user.type(screen.getByLabelText('Hectareas'), '10')
+    await user.click(screen.getByRole('button', { name: /^crear$/i }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalled()
+    })
+    expect(screen.getByTestId('location')).toHaveTextContent('/ordenes_fumigacion/nueva')
+    expect(screen.getByDisplayValue('Sector Norte')).toBeInTheDocument()
   })
 })

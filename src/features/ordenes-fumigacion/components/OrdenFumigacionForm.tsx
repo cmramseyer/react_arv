@@ -127,7 +127,9 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
       return
     }
     try {
-      await createOrdenFumigacionMutation.mutateAsync(payload)
+      const promise = createOrdenFumigacionMutation.mutateAsync(payload)
+      toast.promise(promise, toastText('orden_fumigacion', 'create'))
+      await promise
       navigate('/ordenes_fumigacion')
      } catch {
        return
@@ -322,7 +324,10 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <AsyncButton type="submit" isLoading={isEdit ? updateOrdenFumigacionMutation.isPending : false}>
+          <AsyncButton
+            type="submit"
+            isLoading={isEdit ? updateOrdenFumigacionMutation.isPending : createOrdenFumigacionMutation.isPending}
+          >
             { isEdit ? "Actualizar" : "Crear" }
           </AsyncButton>
           <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>

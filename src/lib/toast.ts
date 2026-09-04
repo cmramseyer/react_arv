@@ -7,7 +7,7 @@ export type ToastEntity =
   | 'orden_fumigacion'
   | 'factura'
 
-export type ToastAction = 'create' | 'update' | 'delete' | 'upload' | 'remove'
+export type ToastAction = 'create' | 'update' | 'delete' | 'upload' | 'remove' | 'finish'
 
 export type ToastMessages = {
   loading: string
@@ -69,6 +69,12 @@ export function toastText(entity: ToastEntity, action: ToastAction): ToastMessag
       return {
         loading: 'Eliminando adjunto...',
         success: 'Adjunto eliminado',
+        error: GENERIC_ERROR,
+      }
+    case 'finish':
+      return {
+        loading: 'Terminando orden de fumigación...',
+        success: 'Orden de fumigación terminada',
         error: GENERIC_ERROR,
       }
   }
