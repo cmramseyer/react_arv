@@ -5,6 +5,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import { apiBaseUrl } from '@/services/apiUrl'
 import OrdenFumigacionEdit from '@/features/ordenes-fumigacion/pages/OrdenFumigacionEdit'
@@ -25,11 +27,24 @@ const server = setupServer(
   ...cultivoHandlers,
 )
 
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   resetOrdenFumigacionMocks()
   resetProductoMocks()
+  vi.clearAllMocks()
 })
 afterAll(() => server.close())
 
@@ -131,5 +146,43 @@ describe('OrdenFumigacionEdit with MSW', () => {
         { id: '1001', producto_id: '1', cantidad: 2 },
       ],
     })
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Actualizando orden de fumigación...',
+        success: 'Orden de fumigación actualizada',
+        error: 'Hubo un error',
+      }),
+    )
+  })
+
+  it('stays on the edit page and keeps form values when the update fails', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.patch(`${API_URL}/ordenes_fumigacion/:id`, () => {
+        return HttpResponse.json({ error: 'Error updating orden' }, { status: 500 })
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/1/edit']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion" element={<div>Ordenes Page</div>} />
+          <Route path="/ordenes_fumigacion/:id/edit" element={<OrdenFumigacionEdit />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    const comentarios = await screen.findByPlaceholderText('Agregar comentarios')
+    await user.clear(comentarios)
+    await user.type(comentarios, 'Cambio que falla')
+    await user.click(screen.getByRole('button', { name: /actualizar/i }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalled()
+    })
+    expect(screen.getByTestId('location')).toHaveTextContent('/ordenes_fumigacion/1/edit')
+    expect(screen.getByDisplayValue('Cambio que falla')).toBeInTheDocument()
   })
 })
