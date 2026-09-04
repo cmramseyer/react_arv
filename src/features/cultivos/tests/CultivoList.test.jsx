@@ -1,25 +1,19 @@
 import React from 'react'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { setupServer } from 'msw/node'
-import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
 
 import CultivoList from '@/features/cultivos/components/CultivoList'
-import { cultivoHandlers, resetCultivoMocks } from '@/features/cultivos/mocks/cultivoHandlers'
-import { apiUrl } from '@/services/apiUrl'
 
-export const server = setupServer(...cultivoHandlers)
+const cultivos = [
+  { id: 1, nombre: 'Soja' },
+  { id: 2, nombre: 'Trigo' },
+]
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-afterEach(() => {
-  server.resetHandlers()
-  resetCultivoMocks()
-})
-afterAll(() => server.close())
-
-const renderWithQueryClient = (ui) => {
+const renderList = (props = {}) => {
+  const onEdit = vi.fn()
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -27,93 +21,35 @@ const renderWithQueryClient = (ui) => {
     },
   })
 
-  return render(
+  render(
     <QueryClientProvider client={queryClient}>
-      {ui}
+      <MemoryRouter>
+        <CultivoList cultivos={cultivos} onEdit={onEdit} {...props} />
+      </MemoryRouter>
     </QueryClientProvider>
   )
-}
 
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+  return { onEdit }
 }
 
 describe('CultivoList', () => {
-  let user
+  it('renders cultivos in the table', () => {
+    renderList()
 
-  beforeEach(() => {
-    user = userEvent.setup()
-  })
-
-  it('shows a skeleton while cultivos are loading', async () => {
-    server.use(
-      http.get(apiUrl('cultivos'), async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50))
-        return HttpResponse.json([])
-      })
-    )
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <CultivoList />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByRole('status', { name: /cargando cultivos/i })).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(screen.queryByRole('status', { name: /cargando cultivos/i })).not.toBeInTheDocument()
-    })
-    expect(screen.getByText('No hay cultivos')).toBeInTheDocument()
-  })
-
-  it('renders cultivos in the table', async () => {
-    renderWithQueryClient(
-      <MemoryRouter>
-        <CultivoList />
-      </MemoryRouter>
-    )
-
-    expect(await screen.findByText('Soja')).toBeInTheDocument()
+    expect(screen.getByText('Soja')).toBeInTheDocument()
     expect(screen.getByText('Trigo')).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Acciones' })).toBeInTheDocument()
   })
 
-  it('navigates to edit page when clicking edit', async () => {
-    renderWithQueryClient(
-      <MemoryRouter initialEntries={['/cultivos']}>
-        <CultivoList />
-        <LocationDisplay />
-      </MemoryRouter>
-    )
+  it('notifies the parent when clicking edit', async () => {
+    const user = userEvent.setup()
+    const { onEdit } = renderList()
 
-    const sojaCell = await screen.findByText('Soja')
+    const sojaCell = screen.getByText('Soja')
     const row = sojaCell.closest('tr')
-
     await user.click(within(row).getByRole('button', { name: /editar/i }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/cultivos/1/edit')
-  })
-
-  it('deletes cultivo from the table', async () => {
-    renderWithQueryClient(
-      <MemoryRouter>
-        <CultivoList />
-      </MemoryRouter>
-    )
-
-    const sojaCell = await screen.findByText('Soja')
-    expect(screen.getByText('Trigo')).toBeInTheDocument()
-
-    const row = sojaCell.closest('tr')
-    await user.click(within(row).getByRole('button', { name: /eliminar/i }))
-
-    await waitFor(() => {
-      expect(screen.queryByText('Soja')).not.toBeInTheDocument()
-    })
-
-    expect(screen.getByText('Trigo')).toBeInTheDocument()
+    expect(onEdit).toHaveBeenCalledWith(1)
   })
 })

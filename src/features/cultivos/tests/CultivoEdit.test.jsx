@@ -1,14 +1,14 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 import { vi } from 'vitest'
 import { toast } from 'sonner'
 
-import CultivoNew from '@/features/cultivos/pages/CultivoNew'
-import { setupServer } from 'msw/node'
-import { http, HttpResponse } from 'msw'
+import CultivoEdit from '@/features/cultivos/pages/CultivoEdit'
 import { cultivoHandlers, resetCultivoMocks } from '@/features/cultivos/mocks/cultivoHandlers'
 import { apiBaseUrl } from '@/services/apiUrl'
 
@@ -43,39 +43,34 @@ const createQueryClient = () =>
     },
   })
 
-const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
-  return render(
-    <QueryClientProvider client={queryClient}>
-      {ui}
-    </QueryClientProvider>
-  )
-}
-
 function LocationDisplay() {
   const location = useLocation()
   return <div data-testid="location">{location.pathname}</div>
 }
 
-describe('CultivoNew', () => {
-  let user
-
-  beforeEach(() => {
-    user = userEvent.setup()
-  })
-
-  it('creates a cultivo and returns to Cultivos', async () => {
-    renderWithQueryClient(
-      <MemoryRouter initialEntries={['/cultivos/new']}>
+const renderCultivoEdit = () => {
+  return render(
+    <QueryClientProvider client={createQueryClient()}>
+      <MemoryRouter initialEntries={['/cultivos/1/edit']}>
         <Routes>
           <Route path="/cultivos" element={<div>Cultivos Page</div>} />
-          <Route path="/cultivos/new" element={<CultivoNew />} />
+          <Route path="/cultivos/:id/edit" element={<CultivoEdit />} />
         </Routes>
         <LocationDisplay />
-      </MemoryRouter>,
-    )
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
 
-    await user.type(screen.getByLabelText(/nombre/i), 'Maiz')
-    await user.click(screen.getByRole('button', { name: /grabar/i }))
+describe('CultivoEdit', () => {
+  it('updates a cultivo and returns to Cultivos', async () => {
+    const user = userEvent.setup()
+    renderCultivoEdit()
+
+    const nombreInput = await screen.findByDisplayValue('Soja')
+    await user.clear(nombreInput)
+    await user.type(nombreInput, 'Maiz')
+    await user.click(screen.getByRole('button', { name: /actualizar/i }))
 
     await waitFor(() => {
       expect(screen.getByTestId('location')).toHaveTextContent('/cultivos')
@@ -83,36 +78,31 @@ describe('CultivoNew', () => {
     expect(toast.promise).toHaveBeenCalledWith(
       expect.any(Promise),
       expect.objectContaining({
-        loading: 'Guardando cultivo...',
-        success: 'Cultivo creado',
+        loading: 'Actualizando cultivo...',
+        success: 'Cultivo actualizado',
         error: 'Hubo un error',
       }),
     )
   })
 
-  it('stays on the new page and keeps form values when creation fails', async () => {
+  it('stays on the edit page and keeps form values when the update fails', async () => {
+    const user = userEvent.setup()
     server.use(
-      http.post(`${API_URL}/cultivos`, () => {
-        return HttpResponse.json({ error: 'Error creating cultivo' }, { status: 500 })
+      http.patch(`${API_URL}/cultivos/:id`, () => {
+        return HttpResponse.json({ error: 'Error updating cultivo' }, { status: 500 })
       }),
     )
-    renderWithQueryClient(
-      <MemoryRouter initialEntries={['/cultivos/new']}>
-        <Routes>
-          <Route path="/cultivos" element={<div>Cultivos Page</div>} />
-          <Route path="/cultivos/new" element={<CultivoNew />} />
-        </Routes>
-        <LocationDisplay />
-      </MemoryRouter>,
-    )
+    renderCultivoEdit()
 
-    await user.type(screen.getByLabelText(/nombre/i), 'Cultivo Fallido')
-    await user.click(screen.getByRole('button', { name: /grabar/i }))
+    const nombreInput = await screen.findByDisplayValue('Soja')
+    await user.clear(nombreInput)
+    await user.type(nombreInput, 'Cambio que falla')
+    await user.click(screen.getByRole('button', { name: /actualizar/i }))
 
     await waitFor(() => {
       expect(toast.promise).toHaveBeenCalled()
     })
-    expect(screen.getByTestId('location')).toHaveTextContent('/cultivos/new')
-    expect(screen.getByDisplayValue('Cultivo Fallido')).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent('/cultivos/1/edit')
+    expect(screen.getByDisplayValue('Cambio que falla')).toBeInTheDocument()
   })
 })

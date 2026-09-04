@@ -37,30 +37,36 @@ export const useCultivoQuery = (id: MaybeEntityId, enabled = true) => {
   })
 }
 
-export const useCultivoMutation = () => {
+export const useCreateCultivoMutation = () => {
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation<Cultivo, Error, CultivoFormValues>({
+  return useMutation<Cultivo, Error, CultivoFormValues>({
     mutationFn: (payload) => createCultivo(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
   })
+}
 
-  const updateMutation = useMutation<Cultivo, Error, UpdateCultivoMutationVariables>({
+export const useUpdateCultivoMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<Cultivo, Error, UpdateCultivoMutationVariables>({
     mutationFn: ({id, payload}) => updateCultivo(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: cultivoQueryKey(variables.id)})
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
   })
+}
 
-  const deleteMutation = useMutation<null, Error, EntityId>({
+export const useDeleteCultivoMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteCultivo(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: cultivosQueryKey()})
     }
   })
-
-  return { createMutation, updateMutation, deleteMutation }
 }
