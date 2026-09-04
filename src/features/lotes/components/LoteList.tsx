@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Card,
@@ -16,6 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import LoteAdjuntosDialog from '@/features/lotes/components/LoteAdjuntosDialog'
 import { formatHectareas } from '@/utils/formatHectareas'
 import type { Lote } from '@/features/lotes/types'
 import type { EntityId } from '@/utils/types'
@@ -28,6 +29,7 @@ type LoteListProps = {
 
 export default function LoteList({ lotes, onShow, onDelete }: LoteListProps) {
   const navigate = useNavigate()
+  const [adjuntosLote, setAdjuntosLote] = useState<Lote | null>(null)
 
   return (
     <div className="space-y-4">
@@ -58,6 +60,9 @@ export default function LoteList({ lotes, onShow, onDelete }: LoteListProps) {
                       </Button>
                       <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/edit`)}>
                         Editar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setAdjuntosLote(lote)}>
+                        Adjuntos
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => onDelete(lote.id)}>
                         Eliminar
@@ -93,6 +98,9 @@ export default function LoteList({ lotes, onShow, onDelete }: LoteListProps) {
                 <Button size="sm" onClick={() => navigate(`/lotes/${lote.id}/editar`)}>
                   Editar
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => setAdjuntosLote(lote)}>
+                  Adjuntos
+                </Button>
                 <Button variant="destructive" size="sm" onClick={() => onDelete(lote.id)}>
                   Eliminar
                 </Button>
@@ -101,6 +109,14 @@ export default function LoteList({ lotes, onShow, onDelete }: LoteListProps) {
           )
         })}
       </div>
+
+      <LoteAdjuntosDialog
+        lote={adjuntosLote}
+        open={adjuntosLote !== null}
+        onOpenChange={(open) => {
+          if (!open) setAdjuntosLote(null)
+        }}
+      />
     </div>
   )
 }

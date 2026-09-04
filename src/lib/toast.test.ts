@@ -33,4 +33,17 @@ describe('toastText', () => {
       error: 'Hubo un error',
     })
   })
+
+  it('covers adjunto upload and remove copy', () => {
+    expect(toastText('lote', 'upload')).toEqual({
+      loading: 'Subiendo adjunto...',
+      success: 'Adjunto subido',
+      error: 'Hubo un error',
+    })
+    expect(toastText('lote', 'remove')).toEqual({
+      loading: 'Eliminando adjunto...',
+      success: 'Adjunto eliminado',
+      error: 'Hubo un error',
+    })
+  })
 })
