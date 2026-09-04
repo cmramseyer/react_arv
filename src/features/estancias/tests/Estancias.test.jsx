@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
@@ -65,5 +66,28 @@ describe('Estancias list', () => {
     expect(await screen.findByText('Estancia Uno')).toBeInTheDocument()
     expect(screen.getByText('Estancia Dos')).toBeInTheDocument()
     expect(screen.queryByRole('status', { name: /cargando estancias/i })).not.toBeInTheDocument()
+  })
+
+  it('disables only the delete button whose mutation is pending', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.delete(`${API_URL}/estancias/:id`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderEstancias()
+    await screen.findByText('Estancia Uno')
+
+    const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i })
+    await user.click(deleteButtons[0])
+
+    expect(screen.getByRole('button', { name: /cargando/i })).toBeDisabled()
+    expect(deleteButtons[1]).toBeEnabled()
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /eliminar/i })[0]).toBeEnabled()
+    })
   })
 })

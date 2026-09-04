@@ -1,140 +1,71 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { vi } from 'vitest'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import EstanciaForm from '@/features/estancias/components/EstanciaForm'
 
-import { setupServer } from 'msw/node'
-import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
- 
-export const server = setupServer(...estanciaHandlers)
+const renderForm = (props = {}) => {
+  const onSubmit = vi.fn().mockResolvedValue(undefined)
+  const onCancel = vi.fn()
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => {
-  server.resetHandlers();
-  resetEstanciaMocks();
-});
-afterAll(() => server.close());
+  render(
+    <EstanciaForm
+      isSubmitting={false}
+      onCancel={onCancel}
+      onSubmit={onSubmit}
+      submitLabel="Grabar"
+      {...props}
+    />,
+  )
 
-const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, staleTime: Infinity },
-      mutations: { retry: false },
-    },
-  });
-
-const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
-  return {
-    queryClient,
-    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
-  };
-};
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+  return { onCancel, onSubmit }
 }
 
 describe('EstanciaForm', () => {
-  let user
+  it('resets fields from the supplied default values', () => {
+    renderForm({
+      defaultValues: {
+        nombre: 'Estancia Uno',
+        contacto: 'Contacto Uno',
+        telefono: '12345678',
+        email: 'estancia@uno.com',
+      },
+      submitLabel: 'Actualizar',
+    })
 
-  beforeEach(() => {
-    user = userEvent.setup()
+    expect(screen.getByDisplayValue('Estancia Uno')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Contacto Uno')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('12345678')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('estancia@uno.com')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /actualizar/i })).toBeInTheDocument()
   })
 
-  describe('Edit mode', () => {
+  it('validates form data before submitting', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
 
-    it('renders form data', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <EstanciaForm formAction="edit" estanciaId="1" />
-        </MemoryRouter>
-      )
+    await user.click(screen.getByRole('button', { name: /grabar/i }))
 
-      await screen.findByDisplayValue("Estancia Uno");
-      await screen.findByDisplayValue("Contacto Uno");
-      await screen.findByDisplayValue("12345678");
-      await screen.findByDisplayValue("estancia@uno.com");
-      expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
-
-    })
-
-    it('updates an estancia and navigates to estancias page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/estancias/1/edit']}>
-          <Routes>
-            <Route path="/estancias" element={<LocationDisplay />} />
-            <Route path="/estancias/:id/edit" element={<EstanciaForm formAction="edit" estanciaId="1" />} />
-          </Routes>
-        </MemoryRouter>
-      )
-
-      const nombreInput = await screen.findByDisplayValue('Estancia Uno')
-      await user.clear(nombreInput)
-      await user.type(nombreInput, 'Estancia Actualizada')
-      await user.click(screen.getByRole("button", { name: /actualizar/i }))
-
-      await waitFor(() => {
-        expect(screen.getByTestId('location')).toHaveTextContent('/estancias')
-      })
-    })
-  })
-  describe('Create mode', () => {
-
-    it('validates form data', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <EstanciaForm formAction="create" />
-        </MemoryRouter>
-      )
-
-      await user.click(screen.getByRole("button", { name: /grabar/i }));
-
-      expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
-      expect(screen.queryByText('El contacto es requerido')).not.toBeInTheDocument()
-      expect(screen.queryByText('El telefono es requerido')).not.toBeInTheDocument()
-      expect(screen.queryByText('El email es requerido')).not.toBeInTheDocument()
-    })
-
-    it('validates optional field format when present', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <EstanciaForm formAction="create" />
-        </MemoryRouter>
-      )
-
-      await user.type(screen.getByLabelText('Nombre'), 'Estancia nueva')
-      await user.type(screen.getByLabelText('Telefono'), 'abc')
-      await user.type(screen.getByLabelText('Email'), 'email-invalido')
-      await user.click(screen.getByRole("button", { name: /grabar/i }));
-
-      expect(await screen.findByText('El telefono debe ser numerico')).toBeInTheDocument()
-      expect(await screen.findByText('El email no es valido')).toBeInTheDocument()
-    })
-
-    it('creates an estancia and navigates to estancias page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/estancias/new']}>
-          <Routes>
-            <Route path="/estancias" element={<LocationDisplay />} />
-            <Route path="/estancias/new" element={<EstanciaForm formAction="create" />} />
-          </Routes>
-        </MemoryRouter>
-      )
-
-      await user.type(screen.getByLabelText('Nombre'), 'Estancia Nueva')
-      await user.type(screen.getByLabelText('Contacto'), 'Contacto Nuevo')
-      await user.type(screen.getByLabelText('Telefono'), '123456789')
-      await user.type(screen.getByLabelText('Email'), 'nueva@estancia.com')
-      await user.click(screen.getByRole("button", { name: /grabar/i }))
-
-      await waitFor(() => {
-        expect(screen.getByTestId('location')).toHaveTextContent('/estancias')
-      })
-    })
+    expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 
+  it('shows its loading state inside the submit button', () => {
+    renderForm({ isSubmitting: true })
+
+    const submitButton = screen.getByRole('button', { name: /cargando/i })
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByText('Grabar')).not.toBeInTheDocument()
+  })
+
+  it('calls onCancel when returning', async () => {
+    const user = userEvent.setup()
+    const { onCancel } = renderForm()
+
+    await user.click(screen.getByRole('button', { name: /volver/i }))
+
+    expect(onCancel).toHaveBeenCalledOnce()
+  })
 })

@@ -2,26 +2,20 @@ import React from 'react'
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 import type { Estancia } from '@/features/estancias/types'
 import type { EntityId } from '@/utils/types'
-
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
+import EstanciaRow from '@/features/estancias/components/EstanciaRow'
 
 type EstanciaListProps = {
   estancias: Estancia[],
-  onDelete: (id: EntityId) => void,
   onEdit: (id: EntityId) => void,
-  isDeleting: boolean,
-  deletingId: EntityId | null;
 }
 
-export default function EstanciaList({ estancias, onDelete, onEdit, isDeleting, deletingId }: EstanciaListProps) {
+export default function EstanciaList({ estancias, onEdit }: EstanciaListProps) {
 
   return (
     <Table>
@@ -36,25 +30,10 @@ export default function EstanciaList({ estancias, onDelete, onEdit, isDeleting, 
       </TableHeader>
 
       <TableBody>
-        {estancias.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell>{e.nombre}</TableCell>
-            <TableCell>{e.contacto}</TableCell>
-            <TableCell>{e.telefono}</TableCell>
-            <TableCell>{e.email}</TableCell>
-            <TableCell>
-              <Button variant="default" onClick={() => onEdit(e.id)}>
-                Editar
-              </Button>
-              <Button variant="default" onClick={() => onDelete(e.id)}>
-                Eliminar
-              </Button>
-                { e.id == deletingId && isDeleting && <Spinner />}
-            </TableCell>
-          </TableRow>
+        {estancias.map((estancia) => (
+          <EstanciaRow key={estancia.id} estancia={estancia} onEdit={onEdit} />
         ))}
       </TableBody>
     </Table>
   )
 }
-
