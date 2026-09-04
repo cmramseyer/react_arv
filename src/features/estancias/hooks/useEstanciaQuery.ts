@@ -32,30 +32,36 @@ export function useEstanciaQueryById(estanciaId: MaybeEntityId, enabled = true) 
   })
 }
 
-export function useMutationsEstancia() {
+export function useCreateEstanciaMutation() {
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation<Estancia, Error, EstanciaFormValues>({
+  return useMutation<Estancia, Error, EstanciaFormValues>({
     mutationFn: createEstancia,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: estanciasQueryKey() })
     },
   })
+}
 
-  const updateMutation = useMutation<Estancia, Error, UpdateEstanciaMutationVariables>({
+export function useUpdateEstanciaMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation<Estancia, Error, UpdateEstanciaMutationVariables>({
     mutationFn: ({ id, payload }) => updateEstancia(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: estanciasQueryKey() })
       await queryClient.invalidateQueries({ queryKey: estanciaByIdQueryKey(variables.id) })
     },
   })
+}
 
-  const deleteMutation = useMutation<null, Error, EntityId>({
+export function useDeleteEstanciaMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation<null, Error, EntityId>({
     mutationFn: deleteEstancia,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: estanciasQueryKey() })
     },
   })
-
-  return { createMutation, updateMutation, deleteMutation }
 }

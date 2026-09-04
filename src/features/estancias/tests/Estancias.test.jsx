@@ -5,6 +5,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import Estancias from '@/features/estancias/pages/Estancias'
 import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
@@ -13,10 +15,15 @@ import { apiBaseUrl } from '@/services/apiUrl'
 const server = setupServer(...estanciaHandlers)
 const API_URL = apiBaseUrl
 
+vi.mock('sonner', () => ({
+  toast: { promise: vi.fn((promise) => promise) },
+}))
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   resetEstanciaMocks()
+  vi.clearAllMocks()
 })
 afterAll(() => server.close())
 
@@ -85,6 +92,14 @@ describe('Estancias list', () => {
 
     expect(screen.getByRole('button', { name: /cargando/i })).toBeDisabled()
     expect(deleteButtons[1]).toBeEnabled()
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Eliminando estancia...',
+        success: 'Estancia eliminada',
+        error: 'Hubo un error',
+      }),
+    )
 
     await waitFor(() => {
       expect(screen.getAllByRole('button', { name: /eliminar/i })[0]).toBeEnabled()

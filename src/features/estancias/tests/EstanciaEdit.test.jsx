@@ -4,16 +4,23 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import EstanciaEdit from '@/features/estancias/pages/EstanciaEdit'
 import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
 
 const server = setupServer(...estanciaHandlers)
 
+vi.mock('sonner', () => ({
+  toast: { promise: vi.fn((promise) => promise) },
+}))
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   resetEstanciaMocks()
+  vi.clearAllMocks()
 })
 afterAll(() => server.close())
 
@@ -54,5 +61,13 @@ describe('EstanciaEdit', () => {
     await waitFor(() => {
       expect(screen.getByTestId('location')).toHaveTextContent('/estancias')
     })
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Actualizando estancia...',
+        success: 'Estancia actualizada',
+        error: 'Hubo un error',
+      }),
+    )
   })
 })

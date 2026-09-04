@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import EstanciaForm from '@/features/estancias/components/EstanciaForm'
 import { useEstanciaQueryById, useUpdateEstanciaMutation } from '@/features/estancias/hooks/useEstanciaQuery'
 import { mapEstanciaForm } from '@/features/estancias/mappers/estanciaMappers'
@@ -25,10 +26,14 @@ function EstanciaEditForm({ estanciaId }: EstanciaEditFormProps) {
 
   const handleSubmit = async (values: EstanciaFormValues) => {
     try {
-      await updateMutation.mutateAsync({ id: estanciaId, payload: values })
+      await toast.promise(updateMutation.mutateAsync({ id: estanciaId, payload: values }), {
+        loading: 'Actualizando estancia...',
+        success: 'Estancia actualizada',
+        error: 'Hubo un error',
+      })
       navigate('/estancias')
     } catch {
-      // The mutation error is rendered by the form.
+      // Sonner reports the failure to the user.
     }
   }
 
@@ -41,7 +46,6 @@ function EstanciaEditForm({ estanciaId }: EstanciaEditFormProps) {
       isSubmitting={updateMutation.isPending}
       onCancel={() => navigate('/estancias')}
       onSubmit={handleSubmit}
-      submitError={updateMutation.error?.message}
       submitLabel="Actualizar"
     />
   )

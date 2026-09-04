@@ -13,7 +13,6 @@ type EstanciaFormProps = {
   isSubmitting: boolean
   onCancel: () => void
   onSubmit: (values: EstanciaFormValues) => Promise<void>
-  submitError?: string
   submitLabel: string
 }
 
@@ -22,7 +21,6 @@ export default function EstanciaForm({
   isSubmitting,
   onCancel,
   onSubmit,
-  submitError,
   submitLabel,
 }: EstanciaFormProps) {
   const form = useForm<EstanciaFormValues>({
@@ -108,7 +106,6 @@ export default function EstanciaForm({
             Volver
           </Button>
         </div>
-        {submitError && <p className="text-sm text-destructive">{submitError}</p>}
       </form>
     </Form>
   )
