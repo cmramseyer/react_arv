@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import ProductoForm from '@/features/productos/components/ProductoForm'
+import ProductoCreateForm from '@/features/productos/components/ProductoCreateForm'
 
 type ProductoNuevoDialogProps = {
   isNuevoProductoOpen: boolean,
@@ -19,8 +19,7 @@ export default function ProductoNuevoDialog({ isNuevoProductoOpen, onProductoOpe
           </DialogDescription>
         </DialogHeader>
 
-        <ProductoForm
-          formAction='create'
+        <ProductoCreateForm
           onSuccess={() => onProductoOpen(false)}
         />
       </DialogContent>

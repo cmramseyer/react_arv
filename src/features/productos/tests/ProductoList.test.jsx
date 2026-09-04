@@ -1,27 +1,19 @@
 import React from 'react'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
 
 import ProductoList from '../components/ProductoList'
 
-import { setupServer } from 'msw/node'
+const productos = [
+  { id: 1, nombre: 'Roundup', tipo_producto: 'Agroquímico', unidad_medida: 'kg' },
+  { id: 2, nombre: '2-4D', tipo_producto: 'Agroquímico', unidad_medida: 'litros' },
+]
 
-import { apiUrl } from '@/services/apiUrl'
-import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
- 
-export const server = setupServer(...productoHandlers)
-
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => {
-  server.resetHandlers();
-  resetProductoMocks();
-});
-afterAll(() => server.close());
-
-const renderWithQueryClient = (ui) => {
+const renderList = (props = {}) => {
+  const onEdit = vi.fn()
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -29,115 +21,37 @@ const renderWithQueryClient = (ui) => {
     },
   })
 
-  return render(
+  render(
     <QueryClientProvider client={queryClient}>
-      {ui}
+      <MemoryRouter>
+        <ProductoList productos={productos} onEdit={onEdit} {...props} />
+      </MemoryRouter>
     </QueryClientProvider>
   )
-}
 
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+  return { onEdit }
 }
-
-let user
 
 describe('ProductoList', () => {
-  beforeEach(() => {
-    user = userEvent.setup()
-  })
+  it('renders products in the table', () => {
+    renderList()
 
-  it('shows a skeleton while products are loading', async () => {
-    server.use(
-      http.get(apiUrl('productos'), async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50))
-        return HttpResponse.json([])
-      })
-    )
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <ProductoList />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByRole('status', { name: /cargando productos/i })).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(screen.queryByRole('status', { name: /cargando productos/i })).not.toBeInTheDocument()
-    })
-    expect(screen.getByText('No hay productos')).toBeInTheDocument()
-  })
-
-  it('renders products in the table', async () => {
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <ProductoList />
-      </MemoryRouter>
-    )
-
-    await screen.findByText('Roundup')
-    await screen.findByText('2-4D')
-    await screen.findByText('litros')
-    await screen.findByText('kg')
-
+    expect(screen.getByText('Roundup')).toBeInTheDocument()
+    expect(screen.getByText('2-4D')).toBeInTheDocument()
+    expect(screen.getByText('litros')).toBeInTheDocument()
+    expect(screen.getByText('kg')).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Tipo' })).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Unidad' })).toBeInTheDocument()
   })
 
-  it('navigates to edit page when clicking edit', async () => {
-    renderWithQueryClient(
-      <MemoryRouter initialEntries={['/productos']}>
-        <ProductoList />
-        <LocationDisplay />
-      </MemoryRouter>
-    )
+  it('notifies the parent when clicking edit', async () => {
+    const user = userEvent.setup()
+    const { onEdit } = renderList()
 
-    const roundupCell = await screen.findByText('Roundup')
+    const roundupCell = screen.getByText('Roundup')
     const row = roundupCell.closest('tr')
-
     await user.click(within(row).getByRole('button', { name: /editar/i }))
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos/1/edit')
+    expect(onEdit).toHaveBeenCalledWith(1)
   })
-
-  it('deletes product from the table', async () => {
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <ProductoList />
-      </MemoryRouter>
-    )
-
-    const roundupCell = await screen.findByText('Roundup')
-    expect(screen.getByText('2-4D')).toBeInTheDocument()
-
-    const row = roundupCell.closest('tr')
-    await user.click(within(row).getByRole('button', { name: /eliminar/i }))
-
-    await waitFor(() => {
-      expect(screen.queryByText('Roundup')).not.toBeInTheDocument()
-    })
-
-    expect(screen.getByText('2-4D')).toBeInTheDocument()
-  })
-
-  it('shows an error message when products request fails', async () => {
-    server.use(
-      http.get(apiUrl('productos'), () => {
-        return HttpResponse.json({ error: 'Error interno' }, { status: 500 })
-      })
-    )
-
-    renderWithQueryClient(
-      <MemoryRouter>
-        <ProductoList />
-      </MemoryRouter>
-    )
-
-    expect(await screen.findByText('Error: Error fetching productos')).toBeInTheDocument()
-  })
-
 })
