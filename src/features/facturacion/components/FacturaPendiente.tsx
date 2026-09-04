@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import FacturaPendienteSkeleton from "@/features/facturacion/components/FacturaPendienteSkeleton";
 import type { FacturacionGrupoPendiente, FacturacionOrdenPendiente } from "@/features/facturacion/types";
 import { formatHectareas, parseHectareas } from "@/utils/formatHectareas";
 
@@ -76,10 +77,8 @@ export default function FacturaPendiente({
         </label>
       </div>
 
-      {loading && (
-        <div className="text-sm text-muted-foreground">
-          Cargando facturación pendiente...
-        </div>
+      {loading && ordenesPorEstancia.length === 0 && (
+        <FacturaPendienteSkeleton />
       )}
 
       {!loading && ordenesPorEstancia.length === 0 && (
@@ -88,7 +87,7 @@ export default function FacturaPendiente({
         </div>
       )}
 
-      {!loading && ordenesPorEstancia.length > 0 && (
+      {ordenesPorEstancia.length > 0 && (
         <>
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">

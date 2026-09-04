@@ -5,6 +5,7 @@ import { useLotesQuery, useLotesByEstanciaQuery, useLoteMutation } from '@/featu
 import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
 
 import LoteList from '@/features/lotes/components/LoteList'
+import LoteListSkeleton from '@/features/lotes/components/LoteListSkeleton'
 import { Button } from '@/components/ui/button'
 import EstanciaFilterSelect from '@/features/estancias/components/EstanciaFilterSelect'
 import type { EntityId } from '@/utils/types'
@@ -46,7 +47,10 @@ export default function Lotes() {
     setSelectedEstanciaId('all')
   }
 
-  const lotes = selectedEstanciaId == 'all' ? 
+  const isShowingAll = selectedEstanciaId == 'all'
+  const activeQuery = isShowingAll ? lotesQuery : lotesByEstanciaQuery
+
+  const lotes = isShowingAll ?
     lotesQuery.data || [] :
     lotesByEstanciaQuery.data || []
     
@@ -71,9 +75,21 @@ export default function Lotes() {
         </div>
       </div>
 
-      { lotesQuery.isLoading ? 
-        'Cargando...' :
-        <LoteList lotes={lotes} onShow={handleShow} onDelete={handleDelete} />
+      { activeQuery.isLoading ?
+        <LoteListSkeleton /> :
+        activeQuery.isError ? (
+          <div className="space-y-2">
+            <div>Error: {activeQuery.error?.message}</div>
+            <Button onClick={() => activeQuery.refetch()} variant="default">
+              Reintentar
+            </Button>
+          </div>
+        ) :
+        lotes.length === 0 ? (
+          <div>No hay lotes</div>
+        ) : (
+          <LoteList lotes={lotes} onShow={handleShow} onDelete={handleDelete} />
+        )
       }
     </div>
   )

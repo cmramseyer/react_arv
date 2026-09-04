@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronDown } from "lucide-react"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import {
   Collapsible,
   CollapsibleContent,
@@ -142,10 +142,13 @@ export function AppSidebar({...props}) {
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
                                 asChild
+
+                                data-active={isActive || undefined}
+
                                 isActive={isActive}
                                 className={isActive ? "font-bold" : ""}
                               >
-                                <a href={subItem.url}>{subItem.title}</a>
+                                <Link to={subItem.url}>{subItem.title}</Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           )
@@ -166,8 +169,8 @@ export function AppSidebar({...props}) {
 
                     return (
                       <SidebarMenuItem key={subItem.title}>
-                        <SidebarMenuButton asChild isActive={isActive} className={isActive ? "font-bold" : ""}>
-                          <a href={subItem.url}>{subItem.title}</a>
+                        <SidebarMenuButton asChild data-active={isActive || undefined} isActive={isActive} className={isActive ? "font-bold" : ""}>
+                          <Link to={subItem.url}>{subItem.title}</Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     )

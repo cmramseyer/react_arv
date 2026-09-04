@@ -13,12 +13,13 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { EntityId } from '@/utils/types'
+import ProductoListSkeleton from '@/features/productos/components/ProductoListSkeleton'
 
 export default function ProductoList() {
-  
+
   const navigate = useNavigate()
 
-  const { data, isLoading, isError, error } = useProductosQuery()
+  const { data, isLoading, isError, error, refetch } = useProductosQuery()
   const { deleteMutation } = useProductosMutation()
 
   const handleDelete = async (id: EntityId) => {
@@ -30,8 +31,18 @@ export default function ProductoList() {
 
   }
 
-  if (isError) { return <div>Error: {error.message}</div> }
-  if (isLoading || !data) { return <div>Cargando...</div> }
+  if (isLoading) { return <ProductoListSkeleton /> }
+  if (isError) {
+    return (
+      <div className="space-y-2">
+        <div>Error: {error.message}</div>
+        <Button onClick={() => refetch()} variant="default">
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
+  if (!data || data.length === 0) { return <div>No hay productos</div> }
 
   return (
     <Table>

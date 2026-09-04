@@ -159,6 +159,29 @@ const useOrdenWithAdjuntoHandlers = (handlers = []) => {
 }
 
 describe('OrdenFumigacionShow with MSW', () => {
+  it('shows a skeleton while the order is loading', async () => {
+    server.use(
+      http.get(`${API_URL}/ordenes_fumigacion/:id`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return HttpResponse.json(ordenFixture)
+      }),
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>
+        <Routes>
+          <Route path="/ordenes_fumigacion/:id" element={<OrdenFumigacionShow />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByRole('status', { name: /cargando orden/i })).toBeInTheDocument()
+    expect(await screen.findByText('Orden #1')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('status', { name: /cargando orden/i })).not.toBeInTheDocument()
+    })
+  })
+
   it('renders an active order without adjuntos', async () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={['/ordenes_fumigacion/1']}>

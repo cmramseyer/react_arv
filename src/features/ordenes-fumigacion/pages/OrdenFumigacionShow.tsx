@@ -16,6 +16,7 @@ import DialogEditAdjunto from "@/features/ordenes-fumigacion/components/DialogEd
 import OrdenFumigacionAdjuntoParaImprimir from "@/features/ordenes-fumigacion/components/OrdenFumigacionAdjuntoParaImprimir";
 import OrdenFumigacionTerminar from "@/features/ordenes-fumigacion/pages/OrdenFumigacionTerminar";
 import OrdenFumigacionCard from "@/features/ordenes-fumigacion/components/OrdenFumigacionCard";
+import OrdenFumigacionShowSkeleton from "@/features/ordenes-fumigacion/components/OrdenFumigacionShowSkeleton";
 
 const PDF_FILENAME_REGEX = /\.pdf$/i;
 const normalizeAdjuntoId = (adjuntoId) => String(adjuntoId);
@@ -167,14 +168,31 @@ export default function OrdenFumigacionShow() {
     </Button>
   );
 
+  if (!id) {
+    return <div>Error</div>;
+  }
+
+  if (ordenFumigacionQuery.isLoading) {
+    return <OrdenFumigacionShowSkeleton />;
+  }
+
+  if (ordenFumigacionQuery.isError) {
+    return (
+      <div className="space-y-2 p-4">
+        <div>Error al cargar la orden</div>
+        <Button onClick={() => ordenFumigacionQuery.refetch()} variant="default">
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
+
   if (!orden) {
-    return <div className="p-4">Cargando...</div>;
+    return <div className="p-4">Orden no encontrada</div>;
   }
 
   const estadoOrden = (orden.estado_orden || "").toLowerCase();
   const isTerminada = estadoOrden === "terminada";
-
-  if(!id) { return <div>Error</div>}
 
   return (
     <>

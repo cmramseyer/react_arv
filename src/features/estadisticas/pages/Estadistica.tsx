@@ -3,6 +3,8 @@ import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns'
 import { useEstadisticasQuery } from '../hooks/useEstadisticasQuery'
 import EstadisticaFilter from '@/features/estadisticas/components/EstadisticaFilter'
 import EstadisticaCard from '@/features/estadisticas/components/EstadisticaCard'
+import EstadisticaCardSkeleton from '@/features/estadisticas/components/EstadisticaCardSkeleton'
+import { Button } from '@/components/ui/button'
 import type { DateRange } from 'react-day-picker'
 
 // TODO: one query per chart
@@ -105,8 +107,15 @@ export default function Estadistica() {
         rangeLabel={rangeLabel}
       />
 
-      { estadisticasQuery.isLoading && (
-        <div className="text-sm text-muted-foreground">Cargando estadísticas...</div>
+      {estadisticasQuery.isLoading && <EstadisticaCardSkeleton />}
+
+      {estadisticasQuery.isError && (
+        <div className="space-y-2">
+          <div>Error: {estadisticasQuery.error?.message}</div>
+          <Button onClick={() => estadisticasQuery.refetch()} variant="default">
+            Reintentar
+          </Button>
+        </div>
       )}
 
       {estadisticasQuery.data && !hasRange && (

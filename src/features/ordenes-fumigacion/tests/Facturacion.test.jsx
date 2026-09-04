@@ -14,8 +14,24 @@ vi.mock('../api/facturasService', () => ({
 }))
 
 import { facturarOrdenes, getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
-import { getFacturasPago, marcarFacturaPagada } from '../api/facturasService'
+import { getFacturasPago } from '../api/facturasService'
 import Facturacion from '../pages/Facturacion'
+
+const facturasPagoFixture = [
+  {
+    id: 5,
+    fecha_factura_ddmmyyyy: '12/01/2026',
+    nro_factura: 'FAC-001',
+    ordenes_fumigacion: [
+      {
+        id: 101,
+        nombre_estancia: 'Estancia Alfa',
+        importe: 100,
+        lotes: [],
+      },
+    ],
+  },
+]
 
 const createQueryClient = () =>
   new QueryClient({
@@ -70,6 +86,69 @@ describe('Facturacion', () => {
   beforeEach(() => {
     user = userEvent.setup()
     vi.clearAllMocks()
+  })
+
+  it('shows a skeleton while pending orders are loading', async () => {
+    let resolveRequest
+    getOrdenesPendientesFacturacion.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = () => resolve(ordenesFixture)
+        })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    expect(
+      screen.getByRole('status', { name: /cargando facturación pendiente/i })
+    ).toBeInTheDocument()
+
+    resolveRequest()
+
+    expect(
+      await screen.findByRole('checkbox', { name: /seleccionar orden 101/i })
+    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('status', { name: /cargando facturación pendiente/i })
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows a skeleton while payment invoices are loading', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValueOnce([])
+    let resolveRequest
+    getFacturasPago.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = () => resolve(facturasPagoFixture)
+        })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    await user.click(screen.getByRole('switch', { name: /cambiar modo/i }))
+
+    expect(
+      screen.getByRole('status', { name: /cargando facturas para pago/i })
+    ).toBeInTheDocument()
+
+    resolveRequest()
+
+    expect(await screen.findByText('Factura #5')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('status', { name: /cargando facturas para pago/i })
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('shows a dialog when selecting orders from different estancias', async () => {

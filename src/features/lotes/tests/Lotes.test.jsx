@@ -4,10 +4,14 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 
 import Lotes from '@/features/lotes/pages/Lotes'
 import { loteHandlers, resetLoteMocks } from '@/features/lotes/mocks/loteHandlers'
 import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
+import { apiBaseUrl } from '@/services/apiUrl'
+
+const API_URL = apiBaseUrl
 
 const server = setupServer(...loteHandlers, ...estanciaHandlers)
 
@@ -72,6 +76,24 @@ describe('Lotes list', () => {
 
   beforeEach(() => {
     user = userEvent.setup()
+  })
+
+  it('shows a skeleton while lotes are loading', async () => {
+    server.use(
+      http.get(`${API_URL}/lotes`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return HttpResponse.json([])
+      }),
+    )
+
+    renderLotes()
+
+    expect(screen.getByRole('status', { name: /cargando lotes/i })).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status', { name: /cargando lotes/i })).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('No hay lotes')).toBeInTheDocument()
   })
 
   it('fetches lotes and shows them in the table', async () => {

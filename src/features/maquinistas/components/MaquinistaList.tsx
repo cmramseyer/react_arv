@@ -12,6 +12,7 @@ import {
 import type { EntityId } from '@/utils/types'
 
 import { Button } from '@/components/ui/button'
+import MaquinistaListSkeleton from '@/features/maquinistas/components/MaquinistaListSkeleton'
 
 export default function MaquinistaList() {
   const navigate = useNavigate()
@@ -27,9 +28,22 @@ export default function MaquinistaList() {
     }
   }
 
-  if ( maquinistasQuery.isLoading ) { return <div>Cargando...</div> }
+  if (maquinistasQuery.isLoading) { return <MaquinistaListSkeleton /> }
+
+  if (maquinistasQuery.isError) {
+    return (
+      <div className="space-y-2">
+        <div>Error: {maquinistasQuery.error?.message}</div>
+        <Button onClick={() => maquinistasQuery.refetch()} variant="default">
+          Reintentar
+        </Button>
+      </div>
+    )
+  }
 
   const maquinistas = maquinistasQuery.data ?? []
+
+  if (maquinistas.length === 0) { return <div>No hay maquinistas</div> }
 
   return (
     <Table>
