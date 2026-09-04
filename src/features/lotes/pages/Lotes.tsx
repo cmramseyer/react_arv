@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { useLotesQuery, useLotesByEstanciaQuery, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
 import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
@@ -8,6 +9,7 @@ import LoteList from '@/features/lotes/components/LoteList'
 import LoteListSkeleton from '@/features/lotes/components/LoteListSkeleton'
 import { Button } from '@/components/ui/button'
 import EstanciaFilterSelect from '@/features/estancias/components/EstanciaFilterSelect'
+import { toastText } from '@/lib/toast'
 import type { EntityId } from '@/utils/types'
 import type { Lote } from '@/features/lotes/types'
 
@@ -28,10 +30,12 @@ export default function Lotes() {
 
 
   const handleDelete = async (id: EntityId) => {
+    const promise = deleteLoteQuery.mutateAsync(id)
+    toast.promise(promise, toastText('lote', 'delete'))
     try {
-      await deleteLoteQuery.mutateAsync(id)
-    } catch (error) {
-      console.error('Error deleting lote:', error)
+      await promise
+    } catch {
+      // Sonner reports the failure to the user.
     }
   }
 

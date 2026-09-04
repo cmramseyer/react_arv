@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { useLoteQueryById, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
 import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
 import { loteSchema } from '@/features/lotes/schemas/loteSchema'
 import { mapLoteFormValuesToFormData } from '@/features/lotes/mappers/loteMappers'
+import { toastText } from '@/lib/toast'
 import type { EntityId } from '@/utils/types'
 import type { LoteFormValues } from '@/features/lotes/schemas/loteSchema'
 
@@ -73,16 +75,14 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
   const handleCreate = async (formData: LoteFormValues) => {
     const data: FormData = mapLoteFormValuesToFormData(formData)
-    
-    console.log(`formData: ${JSON.stringify(formData)}`)
-    console.log(`data: ${JSON.stringify(data)}`)
 
+    const promise = createMutation.mutateAsync(data)
+    toast.promise(promise, toastText('lote', 'create'))
     try {
-      await createMutation.mutateAsync(data)
+      await promise
       navigate('/lotes')
-    } catch (error) {
-      console.log(error)
-      console.log('Error submit new lote')
+    } catch {
+      // Sonner reports the failure to the user.
     }
   }
 
@@ -90,15 +90,13 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
     if(!isEdit) return
     const data: FormData = mapLoteFormValuesToFormData(formData)
 
-    console.log(`formData: ${JSON.stringify(formData)}`)
-    console.log(`data: ${JSON.stringify(data)}`)
-
+    const promise = updateMutation.mutateAsync({id: loteId, payload: data})
+    toast.promise(promise, toastText('lote', 'update'))
     try {
-      await updateMutation.mutateAsync({id: loteId, payload: data})
+      await promise
       navigate('/lotes')
-    } catch (error) {
-      console.log(error)
-      console.log('Error submit update lote')
+    } catch {
+      // Sonner reports the failure to the user.
     }
   }
 
