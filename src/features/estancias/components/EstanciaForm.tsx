@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { useEstanciaQueryById, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
 import { estanciaSchema } from '@/features/estancias/schemas/estanciaSchema'
 import { EntityId } from '@/utils/types'
@@ -144,7 +145,7 @@ export default function EstanciaForm({ estanciaId, formAction }: EstanciaFormPro
 
           <div className="flex flex-wrap items-center gap-2">
             <Button type="submit" disabled={ isSubmitting }> { isEdit ? 'Actualizar' : 'Grabar' } </Button>
-            { isError && errorMessage } { isSubmitting && 'Guardando...' }
+            { isError && errorMessage } { isSubmitting && <Spinner /> }
           </div>
         </form>
       </Form>

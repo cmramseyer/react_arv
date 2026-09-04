@@ -18,7 +18,8 @@ export default function Estancias() {
     deleteMutation.mutate(id)
   }
 
-  const deleteErrorMessage = deleteMutation.error?.message ?? ''
+  const isDeleting = deleteMutation.isPending
+  const deletingId = deleteMutation.variables ?? null
 
   const handleEdit = (id: EntityId) => {
     navigate(`/estancias/${id}/edit`)
@@ -48,7 +49,8 @@ export default function Estancias() {
               estancias={estanciasQuery.data ?? []}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              deleteErrorMessage={deleteErrorMessage}
+              isDeleting={isDeleting}
+              deletingId={deletingId}
             />
           )
         }

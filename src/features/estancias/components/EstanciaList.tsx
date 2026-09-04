@@ -11,15 +11,17 @@ import type { Estancia } from '@/features/estancias/types'
 import type { EntityId } from '@/utils/types'
 
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 
 type EstanciaListProps = {
   estancias: Estancia[],
   onDelete: (id: EntityId) => void,
   onEdit: (id: EntityId) => void,
-  deleteErrorMessage: string
+  isDeleting: boolean,
+  deletingId: EntityId | null;
 }
 
-export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorMessage }: EstanciaListProps) {
+export default function EstanciaList({ estancias, onDelete, onEdit, isDeleting, deletingId }: EstanciaListProps) {
 
   return (
     <Table>
@@ -47,7 +49,7 @@ export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorM
               <Button variant="default" onClick={() => onDelete(e.id)}>
                 Eliminar
               </Button>
-              { deleteErrorMessage && deleteErrorMessage }
+                { e.id == deletingId && isDeleting && <Spinner />}
             </TableCell>
           </TableRow>
         ))}
