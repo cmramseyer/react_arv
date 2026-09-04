@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { AsyncButton } from '@/components/ui/async-button'
 import { useDeleteEstanciaMutation } from '@/features/estancias/hooks/useEstanciaQuery'
+import { toastText } from '@/lib/toast'
 import type { EntityId } from '@/utils/types'
 
 type DeleteEstanciaButtonProps = {
@@ -14,11 +15,7 @@ export default function DeleteEstanciaButton({ estanciaId }: DeleteEstanciaButto
 
   const handleDelete = async () => {
     try {
-      await toast.promise(deleteMutation.mutateAsync(estanciaId), {
-        loading: 'Eliminando estancia...',
-        success: 'Estancia eliminada',
-        error: 'Hubo un error',
-      })
+      await toast.promise(deleteMutation.mutateAsync(estanciaId), toastText('estancia', 'delete'))
     } catch {
       // Sonner reports the failure to the user.
     }
