@@ -2,6 +2,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/ui/async-button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
@@ -132,14 +133,12 @@ export default function PagoPendiente({
                       </div>
                     )}
                   </div>
-                  <Button
+                  <AsyncButton
                     onClick={() => onAbrirDialogoPago(grupo.id)}
-                    disabled={isPagando}
+                    isLoading={isPagando}
                   >
-                    {isPagando
-                      ? "Marcando..."
-                      : "Marcar como pagado"}
-                  </Button>
+                    Marcar como pagado
+                  </AsyncButton>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {datos.map((orden) => (
@@ -230,12 +229,13 @@ export default function PagoPendiente({
             <Button variant="outline" onClick={onCerrarDialogoPago}>
               Cerrar
             </Button>
-            <Button
+            <AsyncButton
               onClick={onConfirmarPago}
-              disabled={!fechaPago || pagoEnProceso}
+              isLoading={pagoEnProceso}
+              disabled={!fechaPago}
             >
-              {pagoEnProceso ? "Marcando..." : "Confirmar"}
-            </Button>
+              Confirmar
+            </AsyncButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

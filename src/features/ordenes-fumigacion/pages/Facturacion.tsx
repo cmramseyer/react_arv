@@ -162,18 +162,19 @@ export default function Facturacion() {
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
     if (isPagando) return false;
 
+    const promise = marcarFacturaPagadaMutation.mutateAsync(
+      mapPagoFacturaPayload({
+        facturaId,
+        fechaPago: fechaPagoSeleccionada,
+      }),
+    );
+    toast.promise(promise, toastText('factura', 'pay'));
     try {
-
-      await marcarFacturaPagadaMutation.mutateAsync(
-        mapPagoFacturaPayload({
-          facturaId,
-          fechaPago: fechaPagoSeleccionada,
-        }),
-      );
+      await promise;
       return true
 
-    } catch(error) {
-      console.log(error)
+    } catch {
+      // Sonner reports the failure to the user.
       return false
     }
   };

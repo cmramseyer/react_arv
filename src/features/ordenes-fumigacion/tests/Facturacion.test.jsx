@@ -14,9 +14,11 @@ vi.mock('../api/facturasService', () => ({
 }))
 
 import { facturarOrdenes, getOrdenesPendientesFacturacion } from '../api/ordenesFumigacionService'
-import { getFacturasPago } from '../api/facturasService'
+import { getFacturasPago, marcarFacturaPagada } from '../api/facturasService'
 import Facturacion from '../pages/Facturacion'
 import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 vi.mock('sonner', () => ({
   // Mimics real Sonner: with a loading message, toast.promise returns a
@@ -372,5 +374,91 @@ describe('Facturacion', () => {
     await waitFor(() => {
       expect(screen.getByText('0 ordenes seleccionadas')).toBeInTheDocument()
     })
+  })
+
+  it('marks a factura as paid with toast feedback and closes the dialog', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([])
+    getFacturasPago.mockResolvedValue(facturasPagoFixture)
+    marcarFacturaPagada.mockResolvedValue(undefined)
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    await user.click(screen.getByRole('switch', { name: /cambiar modo/i }))
+    await screen.findByText('Factura #5')
+    await user.click(screen.getByRole('button', { name: /marcar como pagado/i }))
+    await screen.findByText('Confirmar pago')
+
+    const now = new Date()
+    const day = now.getDate() === 15 ? 16 : 15
+    const target = new Date(now.getFullYear(), now.getMonth(), day)
+    await user.click(screen.getByRole('button', { name: /seleccionar fecha/i }))
+    await user.click(
+      await screen.findByRole('button', {
+        name: format(target, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }),
+      }),
+    )
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: /^confirmar$/i }))
+
+    const fechaPago = format(target, 'yyyy-MM-dd')
+    await waitFor(() => {
+      expect(marcarFacturaPagada).toHaveBeenCalledWith(5, fechaPago)
+    })
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Marcando factura como pagada...',
+        success: 'Factura marcada como pagada',
+        error: 'Hubo un error',
+      }),
+    )
+    await waitFor(() => {
+      expect(screen.queryByText('Confirmar pago')).not.toBeInTheDocument()
+    })
+  })
+
+  it('keeps the pago dialog open when marking as paid fails', async () => {
+    getOrdenesPendientesFacturacion.mockResolvedValue([])
+    getFacturasPago.mockResolvedValue(facturasPagoFixture)
+    marcarFacturaPagada.mockRejectedValueOnce(new Error('Error updating factura'))
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <Facturacion />
+      </MemoryRouter>
+    )
+
+    await user.click(screen.getByRole('switch', { name: /cambiar modo/i }))
+    await screen.findByText('Factura #5')
+    await user.click(screen.getByRole('button', { name: /marcar como pagado/i }))
+    await screen.findByText('Confirmar pago')
+
+    const now = new Date()
+    const day = now.getDate() === 15 ? 16 : 15
+    const target = new Date(now.getFullYear(), now.getMonth(), day)
+    await user.click(screen.getByRole('button', { name: /seleccionar fecha/i }))
+    await user.click(
+      await screen.findByRole('button', {
+        name: format(target, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }),
+      }),
+    )
+    await user.keyboard('{Escape}')
+    await user.click(screen.getByRole('button', { name: /^confirmar$/i }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalledWith(
+        expect.any(Promise),
+        expect.objectContaining({
+          loading: 'Marcando factura como pagada...',
+          success: 'Factura marcada como pagada',
+          error: 'Hubo un error',
+        }),
+      )
+    })
+    expect(screen.getByText('Confirmar pago')).toBeInTheDocument()
   })
 })
