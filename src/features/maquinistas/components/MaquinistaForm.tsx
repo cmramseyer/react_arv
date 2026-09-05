@@ -1,33 +1,21 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMaquinistaQuery, useMaquinistaMutation } from '@/features/maquinistas/hooks/useMaquinistaQuery'
-import { useNavigate } from 'react-router-dom'
 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
+import { AsyncButton } from '@/components/ui/async-button'
 import { Input } from '@/components/ui/input'
 import { maquinistaSchema } from '@/features/maquinistas/schemas/maquinistaSchema'
 import type { MaquinistaFormValues } from '@/features/maquinistas/schemas/maquinistaSchema'
-import type { EntityId } from '@/utils/types'
 
-type MaquinistaEditFormProps = {
-  formAction: 'edit',
-  id: EntityId
+type MaquinistaFormProps = {
+  defaultValues?: MaquinistaFormValues
+  isSubmitting: boolean
+  onSubmit: (values: MaquinistaFormValues) => Promise<void>
+  submitLabel: string
 }
 
-type MaquinistaCreateFormProps = {
-  formAction: 'create',
-  id?: never
-}
-
-type MaquinistaFormProps = MaquinistaEditFormProps | MaquinistaCreateFormProps
-
-export default function MaquinistaForm(props: MaquinistaFormProps) {
-
-  const navigate = useNavigate()
-  const isEdit = props.formAction === 'edit'
-
+export default function MaquinistaForm({ defaultValues, isSubmitting, onSubmit, submitLabel }: MaquinistaFormProps) {
   const form = useForm<MaquinistaFormValues>({
     resolver: zodResolver(maquinistaSchema),
     defaultValues: {
@@ -37,36 +25,13 @@ export default function MaquinistaForm(props: MaquinistaFormProps) {
 
   const { handleSubmit, control, reset } = form
 
-  const enabled = isEdit
-  const maquinistaQuery = useMaquinistaQuery(isEdit ? props.id : null, enabled)
-  const { createMutation, updateMutation } = useMaquinistaMutation()
-
   useEffect(() => {
-    if(maquinistaQuery.data) reset(maquinistaQuery.data)
-  }, [maquinistaQuery.data, reset])
-
-  const handleCreate = async (data: MaquinistaFormValues) => {
-    try {
-      await createMutation.mutateAsync(data)
-      navigate('/maquinistas')
-    } catch (error) {
-      console.log(`error create: ${error.message}`)
-    }
-  }
-  
-  const handleUpdate = async (data: MaquinistaFormValues) => {
-    if (!isEdit) return
-    try {
-      await updateMutation.mutateAsync({id: props.id, payload: data})
-      navigate('/maquinistas')
-    } catch (error) {
-      console.log(`error update: ${error.message}`)
-    }
-  }
+    if (defaultValues) { reset(defaultValues) }
+  }, [defaultValues, reset])
 
   return (
     <Form {...form}>
-      <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={control}
           name="nombre"
@@ -82,7 +47,7 @@ export default function MaquinistaForm(props: MaquinistaFormProps) {
         />
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit">{isEdit ? 'Actualizar' : 'Grabar'}</Button>
+          <AsyncButton type="submit" isLoading={isSubmitting}>{submitLabel}</AsyncButton>
         </div>
       </form>
     </Form>

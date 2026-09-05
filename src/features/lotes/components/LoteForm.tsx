@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { useLoteQueryById, useLoteMutation } from '@/features/lotes/hooks/useLoteQuery'
 import { useEstanciasQuery } from '@/features/estancias/hooks/useEstanciaQuery'
@@ -10,16 +11,15 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import SelectField from '@/features/ordenes-fumigacion/components/SelectField'
-import { AdjuntosList } from '@/features/lotes/components/AdjuntosList'
 import { loteSchema } from '@/features/lotes/schemas/loteSchema'
 import { mapLoteFormValuesToFormData } from '@/features/lotes/mappers/loteMappers'
+import { toastText } from '@/lib/toast'
 import type { EntityId } from '@/utils/types'
 import type { LoteFormValues } from '@/features/lotes/schemas/loteSchema'
 
 type LoteFormEditProps = {
   formAction: 'edit',
-  loteId: EntityId,
-  showAdjuntos: true
+  loteId: EntityId
 }
 
 type LoteFormCreateProps = {
@@ -65,8 +65,6 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
   })
   const { handleSubmit, reset, control, formState } = form
 
-  const showAdjuntos = isEdit
-
   useEffect(() => {
     if (!isEdit || !loteQuery.data || formState.isDirty) return
     reset(defaultValues || {})
@@ -77,32 +75,28 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
 
   const handleCreate = async (formData: LoteFormValues) => {
     const data: FormData = mapLoteFormValuesToFormData(formData)
-    
-    console.log(`formData: ${JSON.stringify(formData)}`)
-    console.log(`data: ${JSON.stringify(data)}`)
 
+    const promise = createMutation.mutateAsync(data)
+    toast.promise(promise, toastText('lote', 'create'))
     try {
-      await createMutation.mutateAsync(data)
+      await promise
       navigate('/lotes')
-    } catch (error) {
-      console.log(error)
-      console.log('Error submit new lote')
+    } catch {
+      // Sonner reports the failure to the user.
     }
   }
 
   const handleUpdate = async (formData: LoteFormValues) => {
     if(!isEdit) return
-    const data: FormData = mapLoteFormValuesToFormData(formData, { includeAdjuntos: showAdjuntos })
+    const data: FormData = mapLoteFormValuesToFormData(formData)
 
-    console.log(`formData: ${JSON.stringify(formData)}`)
-    console.log(`data: ${JSON.stringify(data)}`)
-
+    const promise = updateMutation.mutateAsync({id: loteId, payload: data})
+    toast.promise(promise, toastText('lote', 'update'))
     try {
-      await updateMutation.mutateAsync({id: loteId, payload: data})
+      await promise
       navigate('/lotes')
-    } catch (error) {
-      console.log(error)
-      console.log('Error submit update lote')
+    } catch {
+      // Sonner reports the failure to the user.
     }
   }
 
@@ -204,35 +198,11 @@ export default function LoteForm({ formAction, loteId }: LoteFormProps) {
             )}
           />
 
-          {showAdjuntos && (
-            <FormField
-              control={control}
-              name="adjuntos"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Adjuntos</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      multiple
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      onChange={(event) => field.onChange(event.target.files)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
           <div className="flex flex-wrap items-center gap-2">
             <Button type="submit">{isEdit ? 'Actualizar' : 'Guardar'}</Button>
           </div>
         </form>
       </Form>
-
-      <AdjuntosList loteId={loteQuery.data?.id} />
 
       <Button type="button" variant="secondary" onClick={() => navigate('/lotes')}>
         Volver

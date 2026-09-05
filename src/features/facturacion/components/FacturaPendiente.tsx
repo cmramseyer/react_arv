@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/ui/async-button";
 import {
   Card,
   CardContent,
@@ -105,16 +106,16 @@ export default function FacturaPendiente({
                   aria-label="Nro factura"
                 />
               </div>
-              <Button
+              <AsyncButton
                 onClick={onFacturar}
+                isLoading={isFacturando}
                 disabled={
                   cantidadSeleccionadas === 0 ||
-                  isFacturando ||
                    tienePreciosInvalidos
                 }
               >
-                {isFacturando ? "Facturando..." : "Facturar"}
-              </Button>
+                Facturar
+              </AsyncButton>
             </div>
           </div>
 

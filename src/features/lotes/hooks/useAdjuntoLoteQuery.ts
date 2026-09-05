@@ -23,22 +23,24 @@ export const useAdjuntoLoteQuery = (loteId: number | string, enabled = true) => 
   })
 }
 
-export const useAdjuntoLoteMutation = () => {
+export const useUploadAdjuntoLoteMutation = () => {
   const queryClient = useQueryClient()
 
-  const uploadMutation = useMutation<AdjuntoLote, Error, UploadAdjuntoLoteMutationVariables>({
+  return useMutation<AdjuntoLote, Error, UploadAdjuntoLoteMutationVariables>({
     mutationFn: ({loteId, payload}) => uploadAdjuntoLote(loteId, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: adjuntosLoteQueryKey(variables.loteId)})
     }
   })
+}
 
-  const deleteMutation = useMutation<null, Error, DeleteAdjuntoLoteMutationVariables>({
+export const useDeleteAdjuntoLoteMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<null, Error, DeleteAdjuntoLoteMutationVariables>({
     mutationFn: ({ loteId, payload }) => deleteAdjuntoLote(loteId, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: adjuntosLoteQueryKey(variables.loteId)})
     },
   })
-
-  return { uploadMutation, deleteMutation }
 }

@@ -13,7 +13,6 @@ export const loteSchema = z.object({
     .regex(/^\d+(\.\d+)?$/, 'Debe ser un número válido')
     .refine((value) => Number(value) >= 0.01, 'Debe ser mayor a 0')
     .refine((value) => Number(value) <= 10000, 'Debe ser menor a 10000'),
-  adjuntos: z.any().optional(),
 })
 
 export type LoteFormValues = z.infer<typeof loteSchema>

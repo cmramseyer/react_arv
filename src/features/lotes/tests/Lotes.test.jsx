@@ -5,6 +5,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import Lotes from '@/features/lotes/pages/Lotes'
 import { loteHandlers, resetLoteMocks } from '@/features/lotes/mocks/loteHandlers'
@@ -14,6 +16,18 @@ import { apiBaseUrl } from '@/services/apiUrl'
 const API_URL = apiBaseUrl
 
 const server = setupServer(...loteHandlers, ...estanciaHandlers)
+
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
 
 beforeAll(() => {
   if (!Element.prototype.hasPointerCapture) {
@@ -33,6 +47,7 @@ afterEach(() => {
   server.resetHandlers()
   resetLoteMocks()
   resetEstanciaMocks()
+  vi.clearAllMocks()
 })
 
 afterAll(() => server.close())
@@ -143,5 +158,14 @@ describe('Lotes list', () => {
       expect(screen.queryByText('Lote Uno')).not.toBeInTheDocument()
       expect(screen.getByText('Lote Dos')).toBeInTheDocument()
     })
+
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Eliminando lote...',
+        success: 'Lote eliminado',
+        error: 'Hubo un error',
+      }),
+    )
   })
 })

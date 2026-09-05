@@ -14,7 +14,6 @@ export default function LoteEdit() {
 
         <LoteForm
           formAction='edit'
-          showAdjuntos={true}
           loteId={id}
         />
 

@@ -1,50 +1,22 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useMaquinistasQuery, useMaquinistaMutation } from '@/features/maquinistas/hooks/useMaquinistaQuery'
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 import type { EntityId } from '@/utils/types'
 
-import { Button } from '@/components/ui/button'
-import MaquinistaListSkeleton from '@/features/maquinistas/components/MaquinistaListSkeleton'
+import MaquinistaRow from '@/features/maquinistas/components/MaquinistaRow'
+import type { Maquinista } from '@/features/maquinistas/types'
 
-export default function MaquinistaList() {
-  const navigate = useNavigate()
+type MaquinistaListProps = {
+  maquinistas: Maquinista[]
+  onEdit: (id: EntityId) => void
+}
 
-  const maquinistasQuery = useMaquinistasQuery()
-  const { deleteMutation } = useMaquinistaMutation()
-
-  const handleDelete = async (id: EntityId) => {
-    try {
-      await deleteMutation.mutateAsync(id)
-    } catch {
-      console.log('error delete')
-    }
-  }
-
-  if (maquinistasQuery.isLoading) { return <MaquinistaListSkeleton /> }
-
-  if (maquinistasQuery.isError) {
-    return (
-      <div className="space-y-2">
-        <div>Error: {maquinistasQuery.error?.message}</div>
-        <Button onClick={() => maquinistasQuery.refetch()} variant="default">
-          Reintentar
-        </Button>
-      </div>
-    )
-  }
-
-  const maquinistas = maquinistasQuery.data ?? []
-
-  if (maquinistas.length === 0) { return <div>No hay maquinistas</div> }
-
+export default function MaquinistaList({ maquinistas, onEdit }: MaquinistaListProps) {
   return (
     <Table>
       <TableHeader>
@@ -56,17 +28,7 @@ export default function MaquinistaList() {
 
       <TableBody>
         {maquinistas.map((m) => (
-          <TableRow key={m.id}>
-            <TableCell>{m.nombre}</TableCell>
-            <TableCell>
-              <Button variant="default" onClick={() => navigate(`/maquinistas/${m.id}/edit`)}>
-                Editar
-              </Button>
-              <Button variant="default" onClick={() => handleDelete(m.id)}>
-                Eliminar
-              </Button>
-            </TableCell>
-          </TableRow>
+          <MaquinistaRow key={m.id} maquinista={m} onEdit={onEdit} />
         ))}
       </TableBody>
     </Table>

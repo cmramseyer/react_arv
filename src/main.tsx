@@ -33,6 +33,8 @@ import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { RequireAuth } from '@/components/RequireAuth'
+import { Toaster } from 'sonner'
+import 'sonner/dist/styles.css'
 
 const queryClient = new QueryClient()
 
@@ -45,6 +47,7 @@ createRoot(root).render(
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
+          <Toaster position="top-right" />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={<RequireAuth />}>

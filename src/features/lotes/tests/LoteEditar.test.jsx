@@ -5,6 +5,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import { apiBaseUrl } from '@/services/apiUrl'
 import LoteEdit from '@/features/lotes/pages/LoteEdit'
@@ -14,11 +16,24 @@ import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks
 const API_URL = apiBaseUrl
 const server = setupServer(...loteHandlers, ...estanciaHandlers)
 
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   resetLoteMocks()
   resetEstanciaMocks()
+  vi.clearAllMocks()
 })
 afterAll(() => server.close())
 
@@ -99,6 +114,43 @@ describe('LoteEdit', () => {
 
     expect(requestFormData.get('lote[nombre]')).toBe('Lote Tres')
     expect(requestFormData.get('lote[estancia_id]')).toBe('1')
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Actualizando lote...',
+        success: 'Lote actualizado',
+        error: 'Hubo un error',
+      }),
+    )
+  })
+
+  it('stays on the edit page and keeps form values when the update fails', async () => {
+    server.use(
+      http.patch(`${API_URL}/lotes/:id`, () => {
+        return HttpResponse.json({ error: 'Error updating lote' }, { status: 500 })
+      }),
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={['/lotes/1/edit']}>
+        <Routes>
+          <Route path="/lotes" element={<LocationDisplay />} />
+          <Route path="/lotes/:id/edit" element={<LoteEdit />} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    )
+
+    const nombre = await screen.findByDisplayValue('Lote Uno')
+    await user.clear(nombre)
+    await user.type(nombre, 'Cambio que falla')
+    await user.click(screen.getByRole('button', { name: /actualizar/i }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalled()
+    })
+    expect(screen.getByTestId('location')).toHaveTextContent('/lotes/1/edit')
+    expect(screen.getByDisplayValue('Cambio que falla')).toBeInTheDocument()
   })
 
   it('returns to Lotes when clicking Volver', async () => {

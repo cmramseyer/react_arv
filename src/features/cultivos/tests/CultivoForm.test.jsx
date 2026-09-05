@@ -1,127 +1,52 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { vi } from 'vitest'
 
 import CultivoForm from '@/features/cultivos/components/CultivoForm'
 
-import { setupServer } from 'msw/node'
-import { cultivoHandlers, resetCultivoMocks } from '@/features/cultivos/mocks/cultivoHandlers'
- 
-export const server = setupServer(...cultivoHandlers)
+const renderForm = (props = {}) => {
+  const onSubmit = vi.fn().mockResolvedValue(undefined)
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => {
-  server.resetHandlers();
-  resetCultivoMocks();
-});
-afterAll(() => server.close());
+  render(
+    <CultivoForm
+      isSubmitting={false}
+      onSubmit={onSubmit}
+      submitLabel="Grabar"
+      {...props}
+    />,
+  )
 
-const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: { retry: false, staleTime: Infinity },
-      mutations: { retry: false },
-    },
-  });
-
-const renderWithQueryClient = (ui, queryClient = createQueryClient()) => {
-  return {
-    queryClient,
-    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
-  };
-};
-
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+  return { onSubmit }
 }
 
 describe('CultivoForm', () => {
-  let user
+  it('resets fields from the supplied default values', () => {
+    renderForm({
+      defaultValues: { nombre: 'Soja' },
+      submitLabel: 'Actualizar',
+    })
 
-  beforeEach(() => {
-    user = userEvent.setup()
+    expect(screen.getByDisplayValue('Soja')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /actualizar/i })).toBeInTheDocument()
   })
 
-  describe('Edit mode', () => {
-    it('renders cultivo edit form', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <CultivoForm formAction="edit" id="1" />
-        </MemoryRouter>
-      )
+  it('validates form data before submitting', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
 
-      await screen.findByDisplayValue('Soja')
+    await user.click(screen.getByRole('button', { name: /grabar/i }))
 
-      expect(screen.getByRole("button", { name: /actualizar/i })).toBeInTheDocument();
-
-    })
-
-    it('updates a cultivo and navigates to cultivos page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/cultivos/1/edit']}>
-          <Routes>
-            <Route path="/cultivos" element={<LocationDisplay />} />
-            <Route path="/cultivos/:id/edit" element={<CultivoForm formAction="edit" id="1" />} />
-          </Routes>
-        </MemoryRouter>
-      )
-
-      const nombreInput = await screen.findByDisplayValue('Soja')
-      await user.clear(nombreInput)
-      await user.type(nombreInput, 'Maiz')
-      await user.click(screen.getByRole("button", { name: /actualizar/i }))
-
-      await waitFor(() => {
-        expect(screen.getByTestId('location')).toHaveTextContent('/cultivos')
-      })
-    })
+    expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  describe('Create mode', () => {
+  it('shows its loading state inside the submit button', () => {
+    renderForm({ isSubmitting: true })
 
-    it('renders cultivo new form', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <CultivoForm formAction="create" />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByRole("button", { name: /grabar/i })).toBeInTheDocument();
-
-    })
-    it('validates form data', async () => {
-      renderWithQueryClient(
-        <MemoryRouter>
-          <CultivoForm formAction="create" />
-        </MemoryRouter>
-      )
-
-      await user.click(screen.getByRole("button", { name: /grabar/i }));
-      expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument()
-
-    })
-
-    it('creates a cultivo and navigates to cultivos page', async () => {
-      renderWithQueryClient(
-        <MemoryRouter initialEntries={['/cultivos/new']}>
-          <Routes>
-            <Route path="/cultivos" element={<LocationDisplay />} />
-            <Route path="/cultivos/new" element={<CultivoForm formAction="create" />} />
-          </Routes>
-        </MemoryRouter>
-      )
-
-      await user.type(screen.getByRole('textbox', { name: /nombre/i }), 'Maiz')
-      await user.click(screen.getByRole("button", { name: /grabar/i }))
-
-      await waitFor(() => {
-        expect(screen.getByTestId('location')).toHaveTextContent('/cultivos')
-      })
-    })
+    const submitButton = screen.getByRole('button', { name: /cargando/i })
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByText('Grabar')).not.toBeInTheDocument()
   })
-
 })

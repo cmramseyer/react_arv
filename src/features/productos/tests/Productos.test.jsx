@@ -1,52 +1,116 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import Productos from '@/features/productos/pages/Productos'
+import { productoHandlers, resetProductoMocks } from '@/features/productos/mocks/productoHandlers'
+import { apiBaseUrl } from '@/services/apiUrl'
 
-vi.mock('@/features/productos/components/ProductoList', () => ({
-  default: () => <div data-testid="producto-list" />,
+const server = setupServer(...productoHandlers)
+const API_URL = apiBaseUrl
+
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
 }))
 
-function LocationDisplay() {
-  const location = useLocation()
-  return <div data-testid="location">{location.pathname}</div>
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+afterEach(() => {
+  server.resetHandlers()
+  resetProductoMocks()
+  vi.clearAllMocks()
+})
+afterAll(() => server.close())
+
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+
+const renderProductos = () => {
+  return render(
+    <QueryClientProvider client={createQueryClient()}>
+      <MemoryRouter initialEntries={['/productos']}>
+        <Routes>
+          <Route path="/productos" element={<Productos />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  )
 }
 
-describe('Productos', () => {
-  it('renders page title', () => {
-    render(
-      <MemoryRouter>
-        <Productos />
-      </MemoryRouter>
+describe('Productos list', () => {
+  it('shows a skeleton while products are loading', async () => {
+    server.use(
+      http.get(`${API_URL}/productos`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return HttpResponse.json([])
+      }),
     )
 
-    expect(screen.getByRole('heading', { name: /listado de productos/i })).toBeInTheDocument()
+    renderProductos()
+
+    expect(screen.getByRole('status', { name: /cargando productos/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /crear producto/i })).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status', { name: /cargando productos/i })).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('No hay productos')).toBeInTheDocument()
   })
 
-  it('renders ProductoList', () => {
-    render(
-      <MemoryRouter>
-        <Productos />
-      </MemoryRouter>
-    )
+  it('renders products after loading', async () => {
+    renderProductos()
 
-    expect(screen.getByTestId('producto-list')).toBeInTheDocument()
+    expect(await screen.findByText('Roundup')).toBeInTheDocument()
+    expect(screen.getByText('2-4D')).toBeInTheDocument()
+    expect(screen.queryByRole('status', { name: /cargando productos/i })).not.toBeInTheDocument()
   })
 
-  it('navigates to new product page when clicking Crear Producto', async () => {
+  it('disables only the delete button whose mutation is pending', async () => {
     const user = userEvent.setup()
-
-    render(
-      <MemoryRouter initialEntries={['/productos']}>
-        <Productos />
-        <LocationDisplay />
-      </MemoryRouter>
+    server.use(
+      http.delete(`${API_URL}/productos/:id`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return new HttpResponse(null, { status: 204 })
+      }),
     )
 
-    await user.click(screen.getByRole('button', { name: /crear producto/i }))
+    renderProductos()
+    await screen.findByText('Roundup')
 
-    expect(screen.getByTestId('location')).toHaveTextContent('/productos/new')
+    const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i })
+    await user.click(deleteButtons[0])
+
+    expect(screen.getByRole('button', { name: /cargando/i })).toBeDisabled()
+    expect(deleteButtons[1]).toBeEnabled()
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Eliminando producto...',
+        success: 'Producto eliminado',
+        error: 'Hubo un error',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /eliminar/i })[0]).toBeEnabled()
+    })
   })
 })

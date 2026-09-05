@@ -2,24 +2,20 @@ import React from 'react'
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 import type { Estancia } from '@/features/estancias/types'
 import type { EntityId } from '@/utils/types'
-
-import { Button } from '@/components/ui/button'
+import EstanciaRow from '@/features/estancias/components/EstanciaRow'
 
 type EstanciaListProps = {
   estancias: Estancia[],
-  onDelete: (id: EntityId) => void,
   onEdit: (id: EntityId) => void,
-  deleteErrorMessage: string
 }
 
-export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorMessage }: EstanciaListProps) {
+export default function EstanciaList({ estancias, onEdit }: EstanciaListProps) {
 
   return (
     <Table>
@@ -34,25 +30,10 @@ export default function EstanciaList({ estancias, onDelete, onEdit, deleteErrorM
       </TableHeader>
 
       <TableBody>
-        {estancias.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell>{e.nombre}</TableCell>
-            <TableCell>{e.contacto}</TableCell>
-            <TableCell>{e.telefono}</TableCell>
-            <TableCell>{e.email}</TableCell>
-            <TableCell>
-              <Button variant="default" onClick={() => onEdit(e.id)}>
-                Editar
-              </Button>
-              <Button variant="default" onClick={() => onDelete(e.id)}>
-                Eliminar
-              </Button>
-              { deleteErrorMessage && deleteErrorMessage }
-            </TableCell>
-          </TableRow>
+        {estancias.map((estancia) => (
+          <EstanciaRow key={estancia.id} estancia={estancia} onEdit={onEdit} />
         ))}
       </TableBody>
     </Table>
   )
 }
-

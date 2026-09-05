@@ -3,8 +3,10 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import type { Control, Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
+import { AsyncButton } from '@/components/ui/async-button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import DosisFields from '@/features/ordenes-fumigacion/components/DosisFields'
@@ -18,6 +20,7 @@ import { useLotesByEstanciaQuery } from '@/features/lotes/hooks/useLoteQuery'
 import { useOrdenFumigacionEditLoader } from '../hooks/useOrdenFumigacionEditLoader'
 import { ordenFumigacionSchema } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import { mapOrdenFumigacionFormValuesToPayload } from '@/features/ordenes-fumigacion/mappers/ordenFumigacionMappers'
+import { toastText } from '@/lib/toast'
 import type { OrdenFumigacionFormValues } from '@/features/ordenes-fumigacion/schemas/ordenFumigacionSchema'
 import type { EntityId } from '@/utils/types'
 
@@ -111,13 +114,22 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
   const onSubmit = async (data) => {
     const payload = mapOrdenFumigacionFormValuesToPayload(data)
 
-    try {
-      if (isEdit) {
-        await updateOrdenFumigacionMutation.mutateAsync({id: ordenId, payload})
-        navigate(`/ordenes_fumigacion`)
+    if (isEdit) {
+      const promise = updateOrdenFumigacionMutation.mutateAsync({id: ordenId, payload})
+      toast.promise(promise, toastText('orden_fumigacion', 'update'))
+      try {
+        await promise
+      } catch {
+        // Sonner reports the failure to the user.
         return
       }
-      await createOrdenFumigacionMutation.mutateAsync(payload)
+      navigate(`/ordenes_fumigacion`)
+      return
+    }
+    try {
+      const promise = createOrdenFumigacionMutation.mutateAsync(payload)
+      toast.promise(promise, toastText('orden_fumigacion', 'create'))
+      await promise
       navigate('/ordenes_fumigacion')
      } catch {
        return
@@ -312,7 +324,12 @@ export default function OrdenFumigacionForm({ formAction, ordenId }: OrdenFumiga
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit">{ isEdit ? "Actualizar" : "Crear" }</Button>
+          <AsyncButton
+            type="submit"
+            isLoading={isEdit ? updateOrdenFumigacionMutation.isPending : createOrdenFumigacionMutation.isPending}
+          >
+            { isEdit ? "Actualizar" : "Crear" }
+          </AsyncButton>
           <Button type="button" variant="secondary" onClick={() => navigate('/ordenes_fumigacion')}>
             Volver
           </Button>

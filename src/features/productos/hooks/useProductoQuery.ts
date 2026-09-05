@@ -36,30 +36,36 @@ export const useProductoQuery = (id: MaybeEntityId, enabled = true) => {
   })
 }
 
-export const useProductosMutation = () => {
+export const useCreateProductoMutation = () => {
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation<Producto, Error, ProductoFormValues>({
+  return useMutation<Producto, Error, ProductoFormValues>({
     mutationFn: (payload) => createProducto(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: productosQueryKey()})
     }
   })
+}
 
-  const updateMutation = useMutation<Producto, Error, UpdateProductoMutationVariables>({
+export const useUpdateProductoMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<Producto, Error, UpdateProductoMutationVariables>({
     mutationFn: ({id, payload}) => updateProducto(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: productoQueryKey(variables.id)})
       await queryClient.invalidateQueries({queryKey: productosQueryKey()})
     }
   })
+}
 
-  const deleteMutation = useMutation<null, Error, EntityId>({
+export const useDeleteProductoMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteProducto(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: productosQueryKey()})
     }
   })
-
-  return { updateMutation, createMutation, deleteMutation }
 }

@@ -1,91 +1,47 @@
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
+import { AsyncButton } from '@/components/ui/async-button'
 import { Input } from '@/components/ui/input'
-import { useEstanciaQueryById, useMutationsEstancia } from '@/features/estancias/hooks/useEstanciaQuery'
 import { estanciaSchema } from '@/features/estancias/schemas/estanciaSchema'
-import { EntityId } from '@/utils/types'
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
-import { mapEstanciaForm } from '@/features/estancias/mappers/estanciaMappers'
 
-type EstanciaFormEditProps = {
-  formAction: 'edit',
-  estanciaId: EntityId
+type EstanciaFormProps = {
+  defaultValues?: EstanciaFormValues
+  isSubmitting: boolean
+  onCancel: () => void
+  onSubmit: (values: EstanciaFormValues) => Promise<void>
+  submitLabel: string
 }
 
-type EstanciaFormCreateProps = {
-  formAction: 'create',
-  estanciaId?: never
-}
-
-type EstanciaFormProps = EstanciaFormEditProps | EstanciaFormCreateProps
-
-export default function EstanciaForm({ estanciaId, formAction }: EstanciaFormProps) {
-
-  const navigate = useNavigate()
-  const isEdit = formAction === 'edit'
-
-  const queryEnabled = isEdit && Boolean(estanciaId)
-  const estanciaQuery = useEstanciaQueryById(estanciaId, queryEnabled)
-
-
-  const emptyValues = {
-    nombre: '',
-    contacto: '',
-    telefono: '',
-    email: ''
-  }
-
+export default function EstanciaForm({
+  defaultValues,
+  isSubmitting,
+  onCancel,
+  onSubmit,
+  submitLabel,
+}: EstanciaFormProps) {
   const form = useForm<EstanciaFormValues>({
     resolver: zodResolver(estanciaSchema),
-    defaultValues: emptyValues
+    defaultValues: {
+      nombre: '',
+      contacto: '',
+      telefono: '',
+      email: '',
+    },
   })
 
   const { handleSubmit, control, reset } = form
 
-  const { createMutation, updateMutation } = useMutationsEstancia()
-
-
-  const isSubmitting = createMutation.isPending || updateMutation.isPending
-  const isError = createMutation.isError || updateMutation.isError
-  const errorMessage = createMutation.error?.message || updateMutation.error?.message || 'Error desconocido'
-
-  const handleUpdate = async (data: EstanciaFormValues) => {
-    if(!isEdit) return
-    try {
-      await updateMutation.mutateAsync({id: estanciaId, payload: data})
-      navigate('/estancias')
-    } catch(error) {
-      console.log(`error en el try: ${error}`)
-    }
-    
-  }
-  
-  const handleCreate = async (data: EstanciaFormValues) => { 
-    try {
-      await createMutation.mutateAsync(data)
-      navigate('/estancias')
-    } catch(error) {
-      console.log(`error en el try: ${error}`)
-    }
-  }
-
   useEffect(() => {
-    if (estanciaQuery.data) reset(mapEstanciaForm(estanciaQuery.data))
-  }, [estanciaQuery.data, reset])
-
-  if (estanciaQuery.isLoading) return <div>Cargando...</div>
-  
-  if (isEdit && isError) return <div>No se encontró la estancia</div>
-
+    if (defaultValues) reset(defaultValues)
+  }, [defaultValues, reset])
 
   return (
-    <>
-      <Form {...form}>
-        <form noValidate onSubmit={handleSubmit(isEdit ? handleUpdate : handleCreate)} className="space-y-4">
+    <Form {...form}>
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={control}
             name="nombre"
@@ -142,15 +98,15 @@ export default function EstanciaForm({ estanciaId, formAction }: EstanciaFormPro
             )}
           />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="submit" disabled={ isSubmitting }> { isEdit ? 'Actualizar' : 'Grabar' } </Button>
-            { isError && errorMessage } { isSubmitting && 'Guardando...' }
-          </div>
-        </form>
-      </Form>
-      <Button type="button" variant="secondary" onClick={() => navigate('/estancias')}>
-        Volver
-      </Button>
-    </>
+        <div className="flex flex-wrap items-center gap-2">
+          <AsyncButton type="submit" isLoading={isSubmitting}>
+            {submitLabel}
+          </AsyncButton>
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Volver
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }

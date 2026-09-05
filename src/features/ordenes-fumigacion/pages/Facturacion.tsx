@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import FacturaPendiente from "@/features/facturacion/components/FacturaPendiente";
 import PagoPendiente from "@/features/facturacion/components/PagoPendiente";
+import { toastText } from "@/lib/toast";
 import {
   useFacturacionMutation,
   useFacturasPagoQuery,
@@ -136,8 +138,19 @@ export default function Facturacion() {
 
     if (ordenesIds.length === 0) return;
 
-    const response = await facturarMutation.mutateAsync(payload);
-    if (!response?.ok) return;
+    const promise = facturarMutation.mutateAsync(payload).then((response) => {
+      // Only an explicit ok: false is a failure. A 201 response without an
+      // ok field (the created factura) is a success.
+      if (response && 'ok' in response && !response.ok) throw new Error('Hubo un error');
+      return response;
+    });
+    toast.promise(promise, toastText('factura', 'create'));
+    try {
+      await promise;
+    } catch {
+      // Sonner reports the failure to the user. The selection is preserved.
+      return;
+    }
 
     setOrdenesSeleccionadas(new Set());
     setPreciosPorOrden({});
@@ -149,18 +162,19 @@ export default function Facturacion() {
   const handleMarcarPagado = async (facturaId, fechaPagoSeleccionada) => {
     if (isPagando) return false;
 
+    const promise = marcarFacturaPagadaMutation.mutateAsync(
+      mapPagoFacturaPayload({
+        facturaId,
+        fechaPago: fechaPagoSeleccionada,
+      }),
+    );
+    toast.promise(promise, toastText('factura', 'pay'));
     try {
-
-      await marcarFacturaPagadaMutation.mutateAsync(
-        mapPagoFacturaPayload({
-          facturaId,
-          fechaPago: fechaPagoSeleccionada,
-        }),
-      );
+      await promise;
       return true
 
-    } catch(error) {
-      console.log(error)
+    } catch {
+      // Sonner reports the failure to the user.
       return false
     }
   };

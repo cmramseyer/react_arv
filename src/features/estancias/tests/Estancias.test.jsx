@@ -1,9 +1,12 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import Estancias from '@/features/estancias/pages/Estancias'
 import { estanciaHandlers, resetEstanciaMocks } from '@/features/estancias/mocks/estanciaHandlers'
@@ -12,10 +15,15 @@ import { apiBaseUrl } from '@/services/apiUrl'
 const server = setupServer(...estanciaHandlers)
 const API_URL = apiBaseUrl
 
+vi.mock('sonner', () => ({
+  toast: { promise: vi.fn((promise) => promise) },
+}))
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   resetEstanciaMocks()
+  vi.clearAllMocks()
 })
 afterAll(() => server.close())
 
@@ -65,5 +73,36 @@ describe('Estancias list', () => {
     expect(await screen.findByText('Estancia Uno')).toBeInTheDocument()
     expect(screen.getByText('Estancia Dos')).toBeInTheDocument()
     expect(screen.queryByRole('status', { name: /cargando estancias/i })).not.toBeInTheDocument()
+  })
+
+  it('disables only the delete button whose mutation is pending', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.delete(`${API_URL}/estancias/:id`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+
+    renderEstancias()
+    await screen.findByText('Estancia Uno')
+
+    const deleteButtons = screen.getAllByRole('button', { name: /eliminar/i })
+    await user.click(deleteButtons[0])
+
+    expect(screen.getByRole('button', { name: /cargando/i })).toBeDisabled()
+    expect(deleteButtons[1]).toBeEnabled()
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Eliminando estancia...',
+        success: 'Estancia eliminada',
+        error: 'Hubo un error',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /eliminar/i })[0]).toBeEnabled()
+    })
   })
 })

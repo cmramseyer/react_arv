@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { toast } from "sonner";
 import {
   useOrdenFumigacionQuery,
   useOrdenFumigacionMutation,
 } from "../hooks/useOrdenFumigacionQuery";
 import { useMaquinistasQuery } from "../../maquinistas/hooks/useMaquinistaQuery";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/ui/async-button";
+import { toastText } from "@/lib/toast";
 import {
   Select,
   SelectContent,
@@ -73,7 +76,14 @@ export default function OrdenFumigacionTerminar({
       },
     };
 
-    await terminarMutation.mutateAsync({ id: selectedOrdenId, payload });
+    const promise = terminarMutation.mutateAsync({ id: selectedOrdenId, payload })
+    toast.promise(promise, toastText('orden_fumigacion', 'finish'))
+    try {
+      await promise
+    } catch {
+      // Sonner reports the failure to the user.
+      return
+    }
     await onSuccess?.();
     setIsTerminarDialogOpen(false);
   };
@@ -161,7 +171,9 @@ export default function OrdenFumigacionTerminar({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button type="submit">Confirmar Terminar</Button>
+              <AsyncButton type="submit" isLoading={terminarMutation.isPending}>
+                Confirmar Terminar
+              </AsyncButton>
                 <Button
                   type="button"
                   variant="secondary"

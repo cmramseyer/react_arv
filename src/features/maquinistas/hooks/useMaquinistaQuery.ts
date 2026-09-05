@@ -35,30 +35,36 @@ export const useMaquinistaQuery = (id: MaybeEntityId, enabled = true) => {
   })
 }
 
-export const useMaquinistaMutation = () => {
+export const useCreateMaquinistaMutation = () => {
   const queryClient = useQueryClient()
 
-  const createMutation = useMutation<Maquinista, Error, MaquinistaFormValues>({
+  return useMutation<Maquinista, Error, MaquinistaFormValues>({
     mutationFn: (data) => createMaquinista(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: maquinistasQueryKey()})
     }
   })
+}
 
-  const updateMutation = useMutation<Maquinista, Error, UpdateMaquinistaMutationFormValues>({
+export const useUpdateMaquinistaMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<Maquinista, Error, UpdateMaquinistaMutationFormValues>({
     mutationFn: ({id, payload}) => updateMaquinista(id, payload),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({queryKey: maquinistasQueryKey()})
       await queryClient.invalidateQueries({queryKey: maquinistaQueryKey(variables.id)})
     }
   })
+}
 
-  const deleteMutation = useMutation<null, Error, EntityId>({
+export const useDeleteMaquinistaMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<null, Error, EntityId>({
     mutationFn: (id) => deleteMaquinista(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({queryKey: maquinistasQueryKey()})
     }
   })
-
-  return { createMutation, updateMutation, deleteMutation }
 }

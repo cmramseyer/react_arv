@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
+import { vi } from 'vitest'
+import { toast } from 'sonner'
 
 import { apiBaseUrl } from '@/services/apiUrl'
 import { ordenFumigacionHandlers, resetOrdenFumigacionMocks } from '@/features/ordenes-fumigacion/mocks/ordenFumigacionHandlers'
@@ -15,11 +17,24 @@ const API_URL = apiBaseUrl
 
 const server = setupServer(...ordenFumigacionHandlers, ...maquinistaHandlers)
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+vi.mock('sonner', () => ({
+  // Mimics real Sonner: with a loading message, toast.promise returns a
+  // non-rejecting wrapper instead of the original promise, so awaiting it
+  // never throws. Control flow must await the mutation promise itself.
+  toast: {
+    promise: vi.fn((promise) => {
+      promise.catch(() => {})
+      return { unwrap: () => promise }
+    }),
+  },
+}))
+
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
-  server.resetHandlers()
-  resetOrdenFumigacionMocks()
-  resetMaquinistaMocks()
+  server.resetHandlers();
+  resetOrdenFumigacionMocks();
+  resetMaquinistaMocks();
+  vi.clearAllMocks();
 })
 afterAll(() => server.close())
 
@@ -98,6 +113,14 @@ describe('OrdenFumigacionTerminar', () => {
         maquinista_id: '1',
       },
     })
+    expect(toast.promise).toHaveBeenCalledWith(
+      expect.any(Promise),
+      expect.objectContaining({
+        loading: 'Terminando orden de fumigación...',
+        success: 'Orden de fumigación terminada',
+        error: 'Hubo un error',
+      }),
+    )
   })
   it('returns to Ordenes without extra requests when clicking Volver', async () => {
     const user = userEvent.setup()
@@ -132,5 +155,49 @@ describe('OrdenFumigacionTerminar', () => {
     expect(setIsTerminarDialogOpen).toHaveBeenCalledWith(false)
     expect(onSuccess).not.toHaveBeenCalled()
     expect(terminarRequests).toBe(0)
+  })
+
+  it('keeps the dialog open when finishing fails', async () => {
+    const user = userEvent.setup()
+    const setIsTerminarDialogOpen = vi.fn()
+    const onOpenChange = vi.fn()
+    const onSuccess = vi.fn()
+
+    server.use(
+      http.patch(`${API_URL}/ordenes_fumigacion/:id/terminar`, () => {
+        return HttpResponse.json({ error: 'Error finishing orden' }, { status: 500 })
+      })
+    )
+
+    renderWithQueryClient(
+      <MemoryRouter>
+        <OrdenFumigacionTerminar
+          selectedOrdenId="1"
+          isTerminarDialogOpen
+          setIsTerminarDialogOpen={setIsTerminarDialogOpen}
+          onOpenChange={onOpenChange}
+          onSuccess={onSuccess}
+        />
+      </MemoryRouter>
+    )
+
+    await screen.findByText('Terminar Orden de Fumigación')
+
+    await user.type(document.querySelector('input[name="datos_clima"]'), 'Soleado')
+    await user.click(screen.getByRole('button', { name: /confirmar terminar/i }))
+
+    await waitFor(() => {
+      expect(toast.promise).toHaveBeenCalledWith(
+        expect.any(Promise),
+        expect.objectContaining({
+          loading: 'Terminando orden de fumigación...',
+          success: 'Orden de fumigación terminada',
+          error: 'Hubo un error',
+        }),
+      )
+    })
+    expect(onSuccess).not.toHaveBeenCalled()
+    expect(setIsTerminarDialogOpen).not.toHaveBeenCalledWith(false)
+    expect(screen.getByText('Terminar Orden de Fumigación')).toBeInTheDocument()
   })
 })
