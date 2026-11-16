@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 
@@ -67,5 +67,38 @@ describe('EstanciaForm', () => {
     await user.click(screen.getByRole('button', { name: /volver/i }))
 
     expect(onCancel).toHaveBeenCalledOnce()
+  })
+
+  it('masks the phone number while typing', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    await user.type(screen.getByLabelText('Telefono'), '3462672842')
+
+    expect(screen.getByLabelText('Telefono')).toHaveValue('(3462) 67-2842')
+  })
+
+  it('submits the phone number as ten digits', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
+
+    await user.type(screen.getByLabelText('Nombre'), 'Estancia Uno')
+    await user.type(screen.getByLabelText('Telefono'), '3462672842')
+    await user.click(screen.getByRole('button', { name: /grabar/i }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit.mock.calls[0][0].telefono).toBe('3462672842')
+  })
+
+  it('rejects a phone number that is not ten digits long', async () => {
+    const user = userEvent.setup()
+    const { onSubmit } = renderForm()
+
+    await user.type(screen.getByLabelText('Nombre'), 'Estancia Uno')
+    await user.type(screen.getByLabelText('Telefono'), '346267')
+    await user.click(screen.getByRole('button', { name: /grabar/i }))
+
+    expect(await screen.findByText('El telefono debe tener 10 digitos')).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 })

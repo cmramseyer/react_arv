@@ -1,14 +1,13 @@
 import { z } from 'zod'
+import { isValidEstanciaPhone } from '@/features/estancias/utils/phone'
 
 export const estanciaSchema = z.object({
   nombre: z.string().trim().min(1, 'El nombre es requerido'),
   contacto: z.string().trim().optional(),
   telefono: z
     .string()
-    .trim()
-    .regex(/^\d+$/, 'El telefono debe ser numerico')
-    .optional()
-    .or(z.literal('')),
+    .refine((value) => isValidEstanciaPhone(value), 'El telefono debe tener 10 digitos')
+    .optional(),
   email: z
     .string()
     .trim()
