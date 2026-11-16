@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Button } from '@/components/ui/button'
 import DeleteEstanciaButton from '@/features/estancias/components/DeleteEstanciaButton'
+import { displayEstanciaPhone } from '@/features/estancias/utils/phone'
 import {
   TableCell,
   TableRow,
@@ -19,7 +20,7 @@ export default function EstanciaRow({ estancia, onEdit }: EstanciaRowProps) {
     <TableRow>
       <TableCell>{estancia.nombre}</TableCell>
       <TableCell>{estancia.contacto}</TableCell>
-      <TableCell>{estancia.telefono}</TableCell>
+      <TableCell>{displayEstanciaPhone(estancia.telefono)}</TableCell>
       <TableCell>{estancia.email}</TableCell>
       <TableCell>
         <Button variant="default" onClick={() => onEdit(estancia.id)}>

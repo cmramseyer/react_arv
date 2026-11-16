@@ -75,6 +75,37 @@ describe('Estancias list', () => {
     expect(screen.queryByRole('status', { name: /cargando estancias/i })).not.toBeInTheDocument()
   })
 
+  it('formats stored phone numbers and leaves legacy values untouched', async () => {
+    server.use(
+      http.get(`${API_URL}/estancias`, () => HttpResponse.json([
+        {
+          id: 1,
+          nombre: 'Estancia Valida',
+          contacto: null,
+          telefono: '3462672842',
+          email: null,
+          created_at: null,
+          updated_at: null,
+        },
+        {
+          id: 2,
+          nombre: 'Estancia Legacy',
+          contacto: null,
+          telefono: '12345678',
+          email: null,
+          created_at: null,
+          updated_at: null,
+        },
+      ])),
+    )
+
+    renderEstancias()
+
+    expect(await screen.findByText('(3462) 67-2842')).toBeInTheDocument()
+    expect(screen.getByText('12345678')).toBeInTheDocument()
+    expect(screen.queryByText('(11) 2345-678')).not.toBeInTheDocument()
+  })
+
   it('disables only the delete button whose mutation is pending', async () => {
     const user = userEvent.setup()
     server.use(
