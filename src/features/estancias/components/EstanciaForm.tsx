@@ -7,6 +7,11 @@ import { AsyncButton } from '@/components/ui/async-button'
 import { Input } from '@/components/ui/input'
 import { estanciaSchema } from '@/features/estancias/schemas/estanciaSchema'
 import type { EstanciaFormValues } from '@/features/estancias/schemas/estanciaSchema'
+import {
+  displayEstanciaPhone,
+  maskEstanciaPhone,
+  normalizeEstanciaPhone,
+} from '@/features/estancias/utils/phone'
 
 type EstanciaFormProps = {
   defaultValues?: EstanciaFormValues
@@ -36,12 +41,23 @@ export default function EstanciaForm({
   const { handleSubmit, control, reset } = form
 
   useEffect(() => {
-    if (defaultValues) reset(defaultValues)
+    if (defaultValues) {
+      reset({
+        ...defaultValues,
+        telefono: displayEstanciaPhone(defaultValues.telefono),
+      })
+    }
   }, [defaultValues, reset])
+
+  const submitForm = (values: EstanciaFormValues) =>
+    onSubmit({
+      ...values,
+      telefono: normalizeEstanciaPhone(values.telefono),
+    })
 
   return (
     <Form {...form}>
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit(submitForm)} className="space-y-4">
           <FormField
             control={control}
             name="nombre"
@@ -77,7 +93,13 @@ export default function EstanciaForm({
               <FormItem>
                 <FormLabel>Telefono</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value ?? ''} type="tel" />
+                  <Input
+                    {...field}
+                    value={field.value ?? ''}
+                    type="tel"
+                    inputMode="numeric"
+                    onChange={(event) => field.onChange(maskEstanciaPhone(event.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
